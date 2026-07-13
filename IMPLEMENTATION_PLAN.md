@@ -85,6 +85,21 @@ jikken/
   `#2f6fed` reserved for numbered pins/markers only — exactly like
   `RetailorDemo.tsx` in the folio repo.
 
+**Vendoring, not importing** — `jikken` is a separate repo/build, so the
+shell can't `import` folio's CSS. Instead, copy the actual token values into
+`presentation/src/styles/portfolio-tokens.css`, same pattern already used for
+`auth-storage.ts` (vendored from `components`, re-copy if the canonical
+changes):
+- The 9-step stone scale (`--stone-950` `#0c0a09` → `--stone-50` `#fafaf9`)
+  and the semantic layer on top of it (`--portfolio-bg`, `-text-primary/
+  -secondary/-muted`, `-border`, `-badge-bg/-text`, etc.), light block + the
+  `.dark` override block that re-maps the same names — copied verbatim from
+  `folio/src/index.css`.
+- IBM Plex Sans/Serif/Mono `@font-face` rules and the `--font-size-*` /
+  `--font-weight-*` / `--line-height-*` scale.
+- `#2f6fed` is *not* a token in folio (it's a one-off literal in
+  `RetailorDemo.tsx`) — carry it the same way, as a literal reserved for pins.
+
 ## 🖥 The Presentation Shell (replaces spec §9 layout)
 
 Reference implementation: `folio/src/pages/RetailorDemo.tsx`. Reproduce its
