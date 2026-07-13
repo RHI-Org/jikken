@@ -35,7 +35,14 @@ export function TerminalWindow({ title, children, footer, style, variant = 'titl
         display: 'flex',
         flexDirection: 'column',
         minHeight: 0,
-        height: '100%',
+        // Landscape "app window" proportions: fill the available width (capped
+        // so it doesn't sprawl on huge screens), derive height from the ratio.
+        // maxHeight is a safety clip for unusually short viewports.
+        width: '100%',
+        maxWidth: '76rem',
+        height: 'auto',
+        maxHeight: '100%',
+        aspectRatio: '16 / 9',
         borderRadius: '0.7rem',
         border: '1px solid var(--portfolio-border)',
         background: 'var(--portfolio-bg-card)',

@@ -14,32 +14,32 @@ import SimulationView from './pages/SimulationView';
 import HistoryPage from './pages/HistoryPage';
 import SettingsPage from './pages/SettingsPage';
 
+// Left-hand nav column — Flags / History / Settings stacked vertically,
+// instead of a top bar, so the dashboard reads as a two-column app.
 function NavBar() {
   const location = useLocation();
   const isActive = (prefix: string) => location.pathname.startsWith(prefix);
 
   const linkClass = (active: boolean) =>
-    `px-3 py-2 rounded text-sm font-medium ${
+    `block px-3 py-2 rounded text-sm font-medium ${
       active ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'
     }`;
 
   return (
-    <nav className="bg-white border-b border-gray-200">
-      <div className="max-w-4xl mx-auto px-6 py-3 flex items-center justify-between">
-        <Link to="/flags" className="font-semibold text-lg text-gray-900">
-          Jikken
+    <nav className="w-48 shrink-0 bg-white border-r border-gray-200 flex flex-col">
+      <Link to="/flags" className="font-semibold text-lg text-gray-900 px-4 py-4 border-b border-gray-200">
+        Jikken
+      </Link>
+      <div className="flex flex-col gap-1 p-3">
+        <Link to="/flags" className={linkClass(isActive('/flags') && !isActive('/flags/history'))}>
+          Flags
         </Link>
-        <div className="flex items-center space-x-1">
-          <Link to="/flags" className={linkClass(isActive('/flags') && !isActive('/flags/history'))}>
-            Flags
-          </Link>
-          <Link to="/flags/history" className={linkClass(isActive('/flags/history'))}>
-            History
-          </Link>
-          <Link to="/settings" className={linkClass(isActive('/settings'))}>
-            Settings
-          </Link>
-        </div>
+        <Link to="/flags/history" className={linkClass(isActive('/flags/history'))}>
+          History
+        </Link>
+        <Link to="/settings" className={linkClass(isActive('/settings'))}>
+          Settings
+        </Link>
       </div>
     </nav>
   );
@@ -62,25 +62,27 @@ function NotFoundPage() {
 export default function App() {
   return (
     <Router basename={import.meta.env.BASE_URL}>
-      <div className="min-h-screen bg-gray-50">
+      <div className="h-screen bg-gray-50 flex">
         <NavBar />
         <Toaster position="top-right" />
-        <Routes>
-          {/* Default route */}
-          <Route path="/" element={<FlagList />} />
+        <main className="flex-1 min-w-0 overflow-y-auto">
+          <Routes>
+            {/* Default route */}
+            <Route path="/" element={<FlagList />} />
 
-          {/* Flag workflows */}
-          <Route path="/flags" element={<FlagList />} />
-          <Route path="/flags/history" element={<HistoryPage />} />
-          <Route path="/flags/edit/:id" element={<FlagEditor />} />
-          <Route path="/flags/simulate/:id" element={<SimulationView />} />
+            {/* Flag workflows */}
+            <Route path="/flags" element={<FlagList />} />
+            <Route path="/flags/history" element={<HistoryPage />} />
+            <Route path="/flags/edit/:id" element={<FlagEditor />} />
+            <Route path="/flags/simulate/:id" element={<SimulationView />} />
 
-          {/* Settings */}
-          <Route path="/settings" element={<SettingsPage />} />
+            {/* Settings */}
+            <Route path="/settings" element={<SettingsPage />} />
 
-          {/* Catch-all */}
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
+            {/* Catch-all */}
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </main>
       </div>
     </Router>
   );

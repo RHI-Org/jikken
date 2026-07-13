@@ -123,7 +123,7 @@ export function SdkSurface({ scenario }: { scenario: ScenarioId }) {
   );
 
   return (
-    <div style={{ height: '100%', minHeight: 0, padding: '2rem', boxSizing: 'border-box' }}>
+    <div style={{ height: '100%', minHeight: 0, padding: '2rem', boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <TerminalWindow title="deploy-gate.ts — jikken sdk" footer={footer}>
         <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', background: '#1c1917' }}>
           <CodeSample scenario={scenario} />

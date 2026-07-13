@@ -128,7 +128,7 @@ export function CiSurface({ scenario }: { scenario: Scenario }) {
   );
 
   return (
-    <div style={{ height: '100%', minHeight: 0, padding: '2rem', boxSizing: 'border-box' }}>
+    <div style={{ height: '100%', minHeight: 0, padding: '2rem', boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <TerminalWindow title="deploy.yml — pipeline" footer={footer}>
         <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '1.3rem 1.4rem' }}>
           {/* Trigger context */}

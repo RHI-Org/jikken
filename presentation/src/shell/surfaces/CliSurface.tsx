@@ -154,7 +154,7 @@ export function CliSurface({
   // reads as a real terminal app rather than a full-bleed console. Command
   // shortcuts now live in the Commands tab (left panel), not a bottom bar.
   return (
-    <div style={{ height: '100%', minHeight: 0, padding: '2rem', boxSizing: 'border-box' }}>
+    <div style={{ height: '100%', minHeight: 0, padding: '2rem', boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <TerminalWindow title="jikken — zsh" titleBarBg="#e5e5e5">
         <div
           ref={hostRef}
