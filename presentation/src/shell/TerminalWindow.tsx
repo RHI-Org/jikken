@@ -42,7 +42,7 @@ export function TerminalWindow({ title, children, footer, style, variant = 'titl
         maxWidth: '76rem',
         height: 'auto',
         maxHeight: '100%',
-        aspectRatio: '16 / 9',
+        aspectRatio: '4 / 3',
         borderRadius: '0.7rem',
         border: '1px solid var(--portfolio-border)',
         background: 'var(--portfolio-bg-card)',
