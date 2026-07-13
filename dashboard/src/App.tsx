@@ -37,24 +37,43 @@ function TutorialBridge() {
   return null;
 }
 
-// Full-width product navigation. Utility placeholders on the right establish
-// the eventual notification/account affordances without implying live data.
-function NavBar() {
-  const location = useLocation();
-  const isActive = (prefix: string) => location.pathname.startsWith(prefix);
-
-  const linkClass = (active: boolean) =>
-    `inline-flex items-center h-16 px-3 border-b-2 text-sm font-medium ${
-      active ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-900'
-    }`;
-
+// Full-width product header. Navigation lives in the persistent sidebar below,
+// leaving this row for identity and account-level utilities.
+function TopBar() {
   return (
-    <header className="h-16 w-full shrink-0 bg-white border-b border-gray-200 flex items-center px-5 gap-7">
+    <header className="h-16 w-full shrink-0 bg-white border-b border-gray-200 flex items-center px-5">
       <Link to="/flags" className="flex items-center gap-2 font-semibold text-lg text-gray-900">
         <JikkenMark size={20} />
         <span>Jikken</span>
       </Link>
-      <nav className="flex items-center h-full gap-1" aria-label="Dashboard navigation">
+      <div className="ml-auto flex items-center gap-3 text-gray-500">
+        <button type="button" aria-label="Notifications" title="Notifications coming soon" className="relative grid place-items-center w-9 h-9 rounded-full hover:bg-gray-100">
+          <Bell size={18} />
+          <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-blue-600" />
+        </button>
+        <div className="h-6 w-px bg-gray-200" />
+        <button type="button" aria-label="User menu" title="User menu coming soon" className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 hover:bg-gray-100">
+          <UserCircle size={25} />
+          <span className="text-xs font-medium text-gray-700">Demo user</span>
+        </button>
+      </div>
+    </header>
+  );
+}
+
+function SideNav() {
+  const location = useLocation();
+  const isActive = (prefix: string) => location.pathname.startsWith(prefix);
+
+  const linkClass = (active: boolean) =>
+    `block px-3 py-2 rounded-md text-sm font-medium ${
+      active ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+    }`;
+
+  return (
+    <aside className="w-48 shrink-0 bg-white border-r border-gray-200 px-3 py-5">
+      <div className="px-3 pb-3 text-[0.65rem] font-semibold uppercase tracking-wider text-gray-400">Workspace</div>
+      <nav className="flex flex-col gap-1" aria-label="Dashboard navigation">
         <Link to="/flags" className={linkClass(isActive('/flags') && !isActive('/flags/history'))}>
           Flags
         </Link>
@@ -74,18 +93,7 @@ function NavBar() {
           Settings
         </Link>
       </nav>
-      <div className="ml-auto flex items-center gap-3 text-gray-500">
-        <button type="button" aria-label="Notifications" title="Notifications coming soon" className="relative grid place-items-center w-9 h-9 rounded-full hover:bg-gray-100">
-          <Bell size={18} />
-          <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-blue-600" />
-        </button>
-        <div className="h-6 w-px bg-gray-200" />
-        <button type="button" aria-label="User menu" title="User menu coming soon" className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 hover:bg-gray-100">
-          <UserCircle size={25} />
-          <span className="text-xs font-medium text-gray-700">Demo user</span>
-        </button>
-      </div>
-    </header>
+    </aside>
   );
 }
 
@@ -108,10 +116,12 @@ export default function App() {
     <Router basename={import.meta.env.BASE_URL}>
       <div className="h-screen bg-gray-50 flex flex-col">
         <TutorialBridge />
-        <NavBar />
+        <TopBar />
         <Toaster position="top-right" />
-        <main className="flex-1 min-h-0 min-w-0 overflow-y-auto">
-          <Routes>
+        <div className="flex flex-1 min-h-0">
+          <SideNav />
+          <main className="flex-1 min-h-0 min-w-0 overflow-y-auto">
+            <Routes>
             {/* Default route */}
             <Route path="/" element={<FlagList />} />
 
@@ -126,8 +136,9 @@ export default function App() {
 
             {/* Catch-all */}
             <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </main>
+            </Routes>
+          </main>
+        </div>
       </div>
     </Router>
   );

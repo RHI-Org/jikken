@@ -6,13 +6,15 @@
  * interactive, with a numbered pin overlay when a principle is selected from
  * the notes panel.
  */
-import { PanelLeftOpen } from 'lucide-react';
+import { useState } from 'react';
+import { LogOut, PanelLeftOpen } from 'lucide-react';
 import { SCENARIO_IDS, type FeatureDef, type FeatureId, type ScenarioId, type SimulationResult } from '@jikken/shared';
 import { CliSurface, type CliInject } from './surfaces/CliSurface';
 import { SdkSurface } from './surfaces/SdkSurface';
 import { DashboardSurface } from './surfaces/DashboardSurface';
 import { CiSurface } from './surfaces/CiSurface';
 import type { Surface, Principle } from './types';
+import { useAuth } from '@/contexts/AuthContext';
 
 const SURFACES: { id: Surface; label: string }[] = [
   { id: 'cli', label: 'CLI' },
@@ -135,6 +137,8 @@ export function Stage({
   tutorialCompleted: boolean;
   onStartTutorial: () => void;
 }) {
+  const { signOut } = useAuth();
+  const [signingOut, setSigningOut] = useState(false);
   const showPin = activePrinciple !== null && activePrinciple.surface === surface;
   // The selected feature drives each surface's situation lookup, since each
   // feature frames the same three archetypes in its own domain language.
@@ -197,7 +201,7 @@ export function Stage({
         </div>
 
         {/* Surface switcher */}
-        <div style={{ display: 'flex', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           {SURFACES.map((s) => {
             const active = s.id === surface;
             return (
@@ -220,6 +224,25 @@ export function Stage({
               </button>
             );
           })}
+          <span aria-hidden="true" style={{ width: 1, height: '1.1rem', background: 'var(--portfolio-border)' }} />
+          <button
+            type="button"
+            disabled={signingOut}
+            onClick={async () => {
+              setSigningOut(true);
+              try {
+                await signOut();
+              } finally {
+                setSigningOut(false);
+              }
+            }}
+            aria-label="Log out of demo"
+            title="Log out of demo"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.25rem 0', border: 0, background: 'none', color: 'var(--portfolio-text-muted)', cursor: signingOut ? 'default' : 'pointer', fontSize: '0.75rem', fontWeight: 'var(--font-weight-medium)', opacity: signingOut ? 0.6 : 1 }}
+          >
+            <LogOut size={13} />
+            {signingOut ? 'Logging out…' : 'Log out of demo'}
+          </button>
         </div>
       </div>
 

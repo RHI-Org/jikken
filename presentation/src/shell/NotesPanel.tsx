@@ -1,5 +1,5 @@
 /**
- * Left panel — project notes. Overview / Design / Principles / Tech text tabs, a
+ * Left panel — project notes. Overview / Commands / UX / Tech text tabs, a
  * collapse button, and (when collapsed) a vertical "PROJECT NOTES" edge tab
  * to re-open — the Retailor standalone pattern, not a floating hamburger.
  */
@@ -14,17 +14,17 @@ import { CommandsTab } from './tabs/CommandsTab';
 import type { Principle } from './types';
 import { JikkenMark } from '@/components/JikkenMark';
 
-export type NotesTab = 'overview' | 'details' | 'commands';
+export type NotesTab = 'overview' | 'details' | 'commands' | 'tech';
 
 const TABS: { id: NotesTab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
   { id: 'commands', label: 'Commands' },
-  { id: 'details', label: 'Details' },
+  { id: 'details', label: 'UX' },
+  { id: 'tech', label: 'Tech' },
 ];
 
-// Collapsible section inside the merged Details tab (Design / Principles /
-// Tech). Design starts open (it carries the product thesis + hand-off);
-// Principles and Tech start collapsed — reference material, not the lead.
+// Collapsible section inside the UX tab. Design starts open because it carries
+// the product thesis and hand-off; Principles remains optional reference.
 function DetailsSection({ label, defaultOpen = false, children }: { label: string; defaultOpen?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
@@ -168,11 +168,9 @@ export function NotesPanel({
             <DetailsSection label="Principles (10)">
               <PrinciplesTab activeNumber={activePrinciple} onSelect={onSelectPrinciple} />
             </DetailsSection>
-            <DetailsSection label="Tech">
-              <TechTab />
-            </DetailsSection>
           </div>
         )}
+        {tab === 'tech' && <TechTab />}
         {tab === 'commands' && (
           <CommandsTab
             features={features}
