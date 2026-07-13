@@ -10,9 +10,9 @@ import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
 import { COLORS, type SimulationResult } from '@jikken/shared';
-import { runCommand, PRESET_COMMANDS } from '../cli-runtime';
+import { runCommand, colorizeCommand, PRESET_COMMANDS } from '../cli-runtime';
 
-const PROMPT = '\x1b[38;5;250mjikken\x1b[0m \x1b[38;5;107m$\x1b[0m ';
+const PROMPT = '\x1b[38;5;250mjikken\x1b[0m \x1b[38;5;245m$\x1b[0m ';
 
 export interface CliInject {
   command: string;
@@ -91,7 +91,7 @@ export function CliSurface({
     };
     safeFit();
 
-    term.writeln('\x1b[38;5;245mjikken v1.0.0 — feature flag lifecycle tool\x1b[0m');
+    term.writeln('\x1b[1m\x1b[38;5;252mjikken v1.0.0\x1b[0m\x1b[38;5;245m — feature flag lifecycle tool\x1b[0m');
     term.writeln('\x1b[38;5;240mType a command, or use a chip above. `help` for options.\x1b[0m');
     term.write('\r\n' + PROMPT);
 
@@ -144,8 +144,8 @@ export function CliSurface({
   useEffect(() => {
     if (!inject || !termRef.current) return;
     const term = termRef.current;
-    // echo the command as if typed, then run it
-    term.write(inject.command);
+    // echo the command as if typed (with keyword/flag hierarchy), then run it
+    term.write(colorizeCommand(inject.command));
     (term as unknown as { _runLine: (l: string) => void })._runLine(inject.command);
   }, [inject]);
 
@@ -153,7 +153,7 @@ export function CliSurface({
     const term = termRef.current;
     if (!term) return;
     term.focus();
-    term.write(command);
+    term.write(colorizeCommand(command));
     (term as unknown as { _runLine: (l: string) => void })._runLine(command);
   };
 
@@ -178,13 +178,16 @@ export function CliSurface({
             key={c.label}
             onClick={() => sendChip(c.command)}
             style={{
-              padding: '0.3rem 0.6rem',
+              // Shared chip base (matches the Situation row in Stage); momentary,
+              // so no sticky/active fill — just the outlined base shape.
+              padding: '0.3rem 0.7rem',
               borderRadius: '999px',
               border: '1px solid var(--portfolio-border)',
               background: 'var(--portfolio-bg-card)',
               color: 'var(--portfolio-text-secondary)',
               fontSize: '0.72rem',
               fontFamily: 'var(--font-mono)',
+              lineHeight: 1.2,
               cursor: 'pointer',
             }}
           >

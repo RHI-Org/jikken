@@ -6,18 +6,39 @@
  * selected from the notes panel.
  */
 import { RotateCw } from 'lucide-react';
-import { SCENARIOS, type ScenarioId, type SimulationResult } from '@jikken/shared';
+import { SCENARIOS, SCENARIO_IDS, type ScenarioId, type SimulationResult } from '@jikken/shared';
 import { CliSurface, type CliInject } from './surfaces/CliSurface';
 import { SdkSurface } from './surfaces/SdkSurface';
 import { DashboardSurface } from './surfaces/DashboardSurface';
 import type { Surface, Principle } from './types';
 
-const SCENARIO_IDS: ScenarioId[] = ['all-clear', 'conflict', 'warning'];
 const SURFACES: { id: Surface; label: string }[] = [
   { id: 'cli', label: 'CLI' },
   { id: 'dashboard', label: 'Dashboard' },
   { id: 'sdk', label: 'SDK' },
 ];
+
+// Shared chip base — the single visual family for the Situation row (here) and
+// the "Try a command" run row (CliSurface). Situation chips are sticky (the
+// active one is filled); the run-row chips reuse the same base but are momentary.
+const CHIP_BASE = {
+  padding: '0.3rem 0.7rem',
+  borderRadius: '999px',
+  border: '1px solid var(--portfolio-border)',
+  fontSize: '0.72rem',
+  fontFamily: 'var(--font-mono)',
+  lineHeight: 1.2,
+  cursor: 'pointer',
+} as const;
+
+// Reused micro-label pattern (matches CliSurface's "Try a command").
+const MICRO_LABEL = {
+  fontSize: '0.62rem',
+  fontWeight: 'var(--font-weight-bold)',
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  color: 'var(--portfolio-text-faint)',
+} as const;
 
 export function Stage({
   surface,
@@ -32,7 +53,7 @@ export function Stage({
 }: {
   surface: Surface;
   onSurfaceChange: (s: Surface) => void;
-  scenario: ScenarioId;
+  scenario: ScenarioId | null;
   onScenarioChange: (s: ScenarioId) => void;
   onRestart: () => void;
   cliInject: CliInject | null;
@@ -57,42 +78,56 @@ export function Stage({
           flexWrap: 'wrap',
         }}
       >
-        {/* Scenario picker */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        {/* Situation row — sticky/selectable chips (one per scenario) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
           <span
             title="The shared situation. Sets the same deterministic input for the CLI, Dashboard, and SDK at once."
-            style={{ fontSize: '0.72rem', color: 'var(--portfolio-text-faint)', fontWeight: 'var(--font-weight-semibold)', cursor: 'help' }}
+            style={{ ...MICRO_LABEL, cursor: 'help' }}
           >
-            scenario
+            Situation
           </span>
-          <div style={{ display: 'flex', border: '1px solid var(--portfolio-border)', borderRadius: '0.5rem', overflow: 'hidden' }}>
-            {SCENARIO_IDS.map((id) => {
-              const active = id === scenario;
-              return (
-                <button
-                  key={id}
-                  onClick={() => onScenarioChange(id)}
-                  title={SCENARIOS[id].description}
-                  style={{
-                    padding: '0.35rem 0.7rem',
-                    border: 'none',
-                    background: active ? 'var(--portfolio-text-primary)' : 'transparent',
-                    color: active ? '#fff' : 'var(--portfolio-text-secondary)',
-                    fontSize: '0.75rem',
-                    fontFamily: 'var(--font-mono)',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {id}
-                </button>
-              );
-            })}
-          </div>
+          {SCENARIO_IDS.map((id) => {
+            const active = id === scenario;
+            return (
+              <button
+                key={id}
+                onClick={() => onScenarioChange(id)}
+                title={SCENARIOS[id].description}
+                style={{
+                  ...CHIP_BASE,
+                  background: active ? 'var(--portfolio-text-primary)' : 'transparent',
+                  color: active ? '#fff' : 'var(--portfolio-text-secondary)',
+                  borderColor: active ? 'var(--portfolio-text-primary)' : 'var(--portfolio-border)',
+                  fontWeight: active ? 'var(--font-weight-semibold)' : 'var(--font-weight-regular)',
+                }}
+              >
+                {SCENARIOS[id].label}
+              </button>
+            );
+          })}
+          <span style={{ fontSize: '0.7rem', color: 'var(--portfolio-text-muted)', marginLeft: '0.15rem' }}>
+            Feature: {SCENARIOS[SCENARIO_IDS[0]].feature}
+          </span>
+          {scenario === null && (
+            <span style={{ fontSize: '0.7rem', color: 'var(--portfolio-text-faint)', fontStyle: 'italic' }}>
+              Pick a situation to begin
+            </span>
+          )}
           <button
             onClick={onRestart}
+            disabled={scenario === null}
             aria-label="Replay the current surface"
-            title="Replay this surface"
-            style={{ display: 'flex', padding: '0.35rem', borderRadius: '0.4rem', border: '1px solid var(--portfolio-border)', background: 'transparent', color: 'var(--portfolio-text-muted)', cursor: 'pointer' }}
+            title={scenario === null ? 'Pick a situation first' : 'Replay this surface'}
+            style={{
+              display: 'flex',
+              padding: '0.35rem',
+              borderRadius: '0.4rem',
+              border: '1px solid var(--portfolio-border)',
+              background: 'transparent',
+              color: 'var(--portfolio-text-muted)',
+              cursor: scenario === null ? 'not-allowed' : 'pointer',
+              opacity: scenario === null ? 0.4 : 1,
+            }}
           >
             <RotateCw size={13} />
           </button>
@@ -138,7 +173,13 @@ export function Stage({
         )}
         {surface === 'sdk' && (
           <div style={{ position: 'absolute', inset: 0 }}>
-            <SdkSurface key={restartNonce} scenario={scenario} />
+            {scenario === null ? (
+              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--portfolio-text-faint)', fontSize: '0.85rem' }}>
+                Pick a situation to begin
+              </div>
+            ) : (
+              <SdkSurface key={restartNonce} scenario={scenario} />
+            )}
           </div>
         )}
 

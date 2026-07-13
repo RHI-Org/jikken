@@ -17,10 +17,10 @@ describe('scenario outcomes are exactly their names', () => {
     const r = evaluateFlag(s.flag, s.users);
     expect(r.exit_code).toBe(EXIT_CODES.CONFLICT);
     expect(r.result).toBe('conflict');
-    expect(r.summary.conflicted).toBe(2);
-    expect(r.summary.passed).toBe(5);
+    expect(r.summary.conflicted).toBe(3);
+    expect(r.summary.passed).toBe(7);
     const excluded = r.decisions.filter((d) => d.decision === 'exclude').map((d) => d.user_id);
-    expect(excluded).toEqual(['user_004', 'user_005']);
+    expect(excluded).toEqual(['user_004', 'user_005', 'user_009']);
   });
 
   it('warning → exit 2, partial matches flagged but nothing excluded', () => {
@@ -28,7 +28,7 @@ describe('scenario outcomes are exactly their names', () => {
     const r = evaluateFlag(s.flag, s.users);
     expect(r.exit_code).toBe(EXIT_CODES.WARNING);
     expect(r.result).toBe('warning');
-    expect(r.summary.warned).toBe(2);
+    expect(r.summary.warned).toBe(6);
     expect(r.summary.conflicted).toBe(0);
     expect(r.summary.passed).toBe(4);
   });

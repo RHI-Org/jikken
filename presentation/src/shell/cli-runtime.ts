@@ -19,6 +19,34 @@ import {
 } from '@jikken/shared';
 import { formatOutput } from '@jikken/cli-formatter';
 
+// ── Greyscale visual hierarchy (matches the concurrent formatter change) ──
+// COLORS.RECEIVE/EXCLUDE/PARTIAL stay reserved for semantic states; these tones
+// only shape the non-semantic chrome: banners, prompt, help, echoed commands.
+const C_HEADER = '\x1b[1m\x1b[38;5;252m'; // bold header
+const C_LABEL = '\x1b[38;5;245m'; //  dim label
+const C_FAINT = '\x1b[38;5;240m'; // faint
+const C_CMD = '\x1b[1m\x1b[38;5;250m'; // command keyword (bold)
+const C_FLAG = '\x1b[38;5;244m'; // --flags
+
+const CMD_KEYWORDS = new Set(['jikken', 'simulate', 'validate', 'help']);
+
+/**
+ * Colorize an echoed command line: the command keyword(s) render bold-grey and
+ * their --flags a dimmer grey, so an injected command reads with hierarchy
+ * instead of a flat wall of white. Flag values keep the default foreground.
+ */
+export function colorizeCommand(line: string): string {
+  return line
+    .trim()
+    .split(/\s+/)
+    .map((tok) => {
+      if (tok.startsWith('--')) return `${C_FLAG}${tok}${ANSI_RESET}`;
+      if (CMD_KEYWORDS.has(tok)) return `${C_CMD}${tok}${ANSI_RESET}`;
+      return tok;
+    })
+    .join(' ');
+}
+
 export interface RunOutput {
   /** ANSI-colored text to write to xterm. */
   text: string;
@@ -136,13 +164,15 @@ export function runCommand(line: string): RunOutput {
     return { text: '', exitCode: 0, result: null, scenario: null };
   }
   if (cmd === 'help') {
+    const cmdLine = (keyword: string, rest: string) =>
+      `  ${C_CMD}${keyword}${ANSI_RESET} ${rest}\r\n`;
     return {
       text:
-        'jikken — feature flag lifecycle tool\r\n\r\n' +
-        'Commands:\r\n' +
-        '  simulate --scenario <all-clear|conflict|warning>\r\n' +
-        '  simulate --flag <id> [--rollout 0-100] [--format json] [--quiet]\r\n' +
-        '  validate --scenario <id> [--strict]\r\n',
+        `${C_HEADER}jikken${ANSI_RESET}${C_LABEL} — feature flag lifecycle tool${ANSI_RESET}\r\n\r\n` +
+        `${C_LABEL}Commands:${ANSI_RESET}\r\n` +
+        cmdLine('simulate', `${C_FLAG}--scenario${ANSI_RESET} ${C_FAINT}<all-clear|conflict|warning>${ANSI_RESET}`) +
+        cmdLine('simulate', `${C_FLAG}--flag${ANSI_RESET} ${C_FAINT}<id>${ANSI_RESET} ${C_FLAG}--rollout${ANSI_RESET} ${C_FAINT}0-100${ANSI_RESET} ${C_FLAG}--format${ANSI_RESET} ${C_FAINT}json${ANSI_RESET} ${C_FLAG}--quiet${ANSI_RESET}`) +
+        cmdLine('validate', `${C_FLAG}--scenario${ANSI_RESET} ${C_FAINT}<id>${ANSI_RESET} ${C_FLAG}--strict${ANSI_RESET}`),
       exitCode: 0,
       result: null,
       scenario: null,
@@ -204,6 +234,7 @@ export function runCommand(line: string): RunOutput {
 export const PRESET_COMMANDS: { label: string; command: string }[] = [
   { label: 'simulate --flag dark-mode', command: 'jikken simulate --flag dark-mode --rollout 25' },
   { label: '--format json', command: 'jikken simulate --flag dark-mode --rollout 25 --format json' },
+  { label: '--quiet', command: 'jikken simulate --flag dark-mode --rollout 25 --quiet' },
   { label: 'validate --strict', command: 'jikken validate --scenario conflict --strict' },
   { label: '"did you mean?"', command: 'jikken simulate --flag "Dark Mode!"' },
   { label: 'help', command: 'help' },

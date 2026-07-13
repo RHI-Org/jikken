@@ -18,7 +18,7 @@ export function Shell() {
   const [panelOpen, setPanelOpen] = useState(true);
   const [notesTab, setNotesTab] = useState<NotesTab>('overview');
   const [surface, setSurface] = useState<Surface>('cli');
-  const [scenario, setScenario] = useState<ScenarioId>('all-clear');
+  const [scenario, setScenario] = useState<ScenarioId | null>(null);
   const [activePrinciple, setActivePrinciple] = useState<Principle | null>(null);
   const [cliInject, setCliInject] = useState<CliInject | null>(null);
   const [restartNonce, setRestartNonce] = useState(0);
@@ -45,6 +45,7 @@ export function Shell() {
   // that re-keys the surface so it remounts fresh — visible feedback on every
   // surface, not just the CLI.
   const restart = useCallback(() => {
+    if (!scenario) return; // no situation chosen yet — nothing to replay
     setActivePrinciple(null);
     if (surface === 'cli') injectCli(`jikken simulate --scenario ${scenario}`);
     else setRestartNonce((n) => n + 1);
@@ -65,6 +66,7 @@ export function Shell() {
   // to the Dashboard where the run lands in history (Realtime pulse arrives
   // once the dashboard's Supabase data layer is wired).
   const handoff = useCallback(() => {
+    if (!scenario) return; // hand-off needs a chosen situation to replay
     setActivePrinciple(null);
     setSurface('cli');
     injectCli(`jikken simulate --scenario ${scenario}`);
@@ -75,8 +77,10 @@ export function Shell() {
   // the Dashboard's Realtime history; silently ignored if not yet deployed).
   const onCliResult = useCallback(
     (_r: SimulationResult, sc: string | null) => {
+      const scenarioId = sc ?? scenario;
+      if (!scenarioId) return; // nothing chosen / no scenario to attribute the run to
       void supabase.functions
-        .invoke('jikken-simulate', { body: { scenario: sc ?? scenario, surface: 'cli' } })
+        .invoke('jikken-simulate', { body: { scenario: scenarioId, surface: 'cli' } })
         .catch(() => {});
     },
     [scenario],
