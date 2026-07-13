@@ -19,4 +19,21 @@ describe('browser CLI terminal helpers', () => {
     expect(colored).toContain('\x1b[');
     expect(plain).toBe(command);
   });
+
+  it('rejects a pattern-valid but unknown flag with the nearest catalog flag suggested', () => {
+    const output = runCommand('simulate --flag drak-mode');
+    const plain = output.text.replace(/\x1b\[[0-9;]*m/g, '');
+
+    expect(output.exitCode).toBe(3);
+    expect(plain).toMatch(/Flag 'drak-mode' not found/);
+    expect(plain).toMatch(/Did you mean 'dark-mode'\?/);
+  });
+
+  it('warns that --flag is ignored when --scenario is set, but still runs the scenario', () => {
+    const output = runCommand('simulate --scenario all-clear --flag dark-mode --quiet');
+    const plain = output.text.replace(/\x1b\[[0-9;]*m/g, '');
+
+    expect(output.exitCode).toBe(0);
+    expect(plain).toMatch(/--flag 'dark-mode' is ignored when --scenario is set/);
+  });
 });

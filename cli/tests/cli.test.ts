@@ -6,7 +6,7 @@
  * entry point via `npx tsx src/index.ts <args>` so these tests exercise the
  * exact code path a user would hit.
  */
-import { execSync } from 'node:child_process';
+import { execSync, spawnSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -111,6 +111,22 @@ describe('error handling', () => {
   it('rejects an out-of-range rollout percentage with exit code 3', () => {
     const result = runExpectFailure('simulate --flag dark-mode --rollout 150');
     expect(result.status).toBe(3);
+  });
+
+  it('rejects a pattern-valid but unknown flag with the nearest real flag suggested', () => {
+    const result = runExpectFailure('simulate --flag drak-mode');
+    expect(result.stderr).toMatch(/Flag 'drak-mode' not found/);
+    expect(result.stderr).toMatch(/Did you mean 'dark-mode'\?/);
+    expect(result.status).toBe(3);
+  });
+
+  it('warns that --flag is ignored when --scenario is set, but still runs the scenario', () => {
+    const result = spawnSync('npx', ['tsx', 'src/index.ts', 'simulate', '--scenario', 'all-clear', '--flag', 'dark-mode', '--quiet'], {
+      cwd: CLI_DIR,
+      encoding: 'utf8',
+    });
+    expect(result.status).toBe(0);
+    expect(result.stderr).toMatch(/--flag 'dark-mode' is ignored when --scenario is set/);
   });
 });
 

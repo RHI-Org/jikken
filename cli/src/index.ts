@@ -10,12 +10,12 @@
  * Design Principle: Suggestions beat diagnoses.
  * Design Principle: Validate before you compute.
  */
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Command } from 'commander';
 import type { FlagConfig, MockUser, SimulationDiff, SimulationResult } from '@jikken/shared';
-import { ANSI_RESET, COLORS, EXIT_CODES, PATTERNS, SCENARIOS, SCENARIO_IDS, diffSimulations, evaluateFlag } from '@jikken/shared';
+import { ANSI_RESET, COLORS, EXIT_CODES, PATTERNS, SCENARIOS, SCENARIO_IDS, closestMatch, diffSimulations, evaluateFlag } from '@jikken/shared';
 import { formatDiff, formatOutput } from './formatter';
 
 type ScenarioId = (typeof SCENARIO_IDS)[number];
@@ -56,6 +56,19 @@ function defaultMockUsers(): MockUser[] {
     segment: segments[i % segments.length],
     country: countries[i % countries.length],
   }));
+}
+
+/**
+ * Flag IDs the repo actually defines (flags/*.json). Returns null when the
+ * flags/ directory is absent — a standalone install away from the monorepo —
+ * in which case ad-hoc flag IDs stay allowed (see buildFlagConfig's fallback).
+ */
+function knownFlagIds(): string[] | null {
+  const flagsDir = join(REPO_ROOT, 'flags');
+  if (!existsSync(flagsDir)) return null;
+  return readdirSync(flagsDir)
+    .filter((f) => f.endsWith('.json'))
+    .map((f) => f.slice(0, -'.json'.length));
 }
 
 function buildFlagConfig(flagId: string, rolloutPercentage: number): FlagConfig {
@@ -99,6 +112,9 @@ function resolveFlagAndUsers(options: {
   users?: string;
 }): ResolvedInput {
   if (options.scenario) {
+    if (options.flag) {
+      console.error(`${COLORS.PARTIAL.ansi}[WARN]${ANSI_RESET} --flag '${options.flag}' is ignored when --scenario is set.`);
+    }
     if (!isScenarioId(options.scenario)) {
       errorLine(`Unknown scenario '${options.scenario}'. Valid scenarios: ${SCENARIO_IDS.join(', ')}.`);
       process.exit(EXIT_CODES.INVALID_INPUT);
@@ -116,6 +132,16 @@ function resolveFlagAndUsers(options: {
   if (!PATTERNS.FLAG_ID.test(flagId)) {
     errorLine('Invalid flag ID. Use lowercase letters, numbers, and hyphens.');
     console.error(`Did you mean '${suggestFlagId(flagId)}'?`);
+    process.exit(EXIT_CODES.INVALID_INPUT);
+  }
+
+  // A pattern-valid but unknown ID must not silently simulate a made-up flag:
+  // "validate before you compute." Suggest the nearest real flag instead.
+  const known = knownFlagIds();
+  if (known && !known.includes(flagId)) {
+    errorLine(`Flag '${flagId}' not found.`);
+    const suggestion = closestMatch(flagId, known);
+    console.error(suggestion ? `Did you mean '${suggestion}'?` : `Known flags: ${known.join(', ')}.`);
     process.exit(EXIT_CODES.INVALID_INPUT);
   }
 

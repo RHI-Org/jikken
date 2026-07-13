@@ -12,6 +12,7 @@ import {
   PATTERNS,
   SCENARIOS,
   SCENARIO_IDS,
+  closestMatch,
   diffSimulations,
   evaluateFlag,
   type FeatureDef,
@@ -147,14 +148,19 @@ function parseArgs(line: string): { cmd: string; opts: Record<string, string | t
 }
 
 function resolveInput(opts: Record<string, string | true>):
-  | { flag: FlagConfig; users: MockUser[]; scenario: ScenarioId | null }
+  | { flag: FlagConfig; users: MockUser[]; scenario: ScenarioId | null; warning?: string }
   | { error: string; exitCode: number } {
   if (typeof opts.scenario === 'string') {
+    // Same wording as the Node CLI — terminology parity extends to warnings.
+    const warning =
+      typeof opts.flag === 'string'
+        ? `${COLORS.PARTIAL.ansi}[WARN]${ANSI_RESET} --flag '${opts.flag}' is ignored when --scenario is set.\r\n`
+        : undefined;
     const resolved = resolveScenario(opts);
     if ('error' in resolved) {
       return { error: resolved.error, exitCode: EXIT_CODES.INVALID_INPUT };
     }
-    return { flag: resolved.scenario.flag, users: resolved.scenario.users, scenario: resolved.situation };
+    return { flag: resolved.scenario.flag, users: resolved.scenario.users, scenario: resolved.situation, warning };
   }
 
   const flagId = typeof opts.flag === 'string' ? opts.flag : undefined;
@@ -169,6 +175,19 @@ function resolveInput(opts: Record<string, string | true>):
       error:
         err('Invalid flag ID. Use lowercase letters, numbers, and hyphens.') +
         `Did you mean '${suggestFlagId(flagId)}'?\r\n`,
+      exitCode: EXIT_CODES.INVALID_INPUT,
+    };
+  }
+
+  // A pattern-valid but unknown ID must not silently simulate a made-up flag:
+  // "validate before you compute." Same wording and suggestion as the Node CLI.
+  const known = activeCatalog.map((f) => f.id);
+  if (!known.includes(flagId)) {
+    const suggestion = closestMatch(flagId, known);
+    return {
+      error:
+        err(`Flag '${flagId}' not found.`) +
+        (suggestion ? `Did you mean '${suggestion}'?\r\n` : `Known flags: ${known.join(', ')}.\r\n`),
       exitCode: EXIT_CODES.INVALID_INPUT,
     };
   }
@@ -273,6 +292,7 @@ export function runCommand(line: string): RunOutput {
   }
 
   const result = evaluateFlag(resolved.flag, resolved.users);
+  const warning = resolved.warning ?? '';
 
   if (cmd === 'validate') {
     let text: string;
@@ -287,11 +307,11 @@ export function runCommand(line: string): RunOutput {
       text = `${COLORS.RECEIVE.ansi}[OK]${ANSI_RESET} Flag validated. Ready for deployment.\r\n`;
       exitCode = EXIT_CODES.ALL_CLEAR;
     }
-    return { text, exitCode, result, scenario: resolved.scenario };
+    return { text: warning + text, exitCode, result, scenario: resolved.scenario };
   }
 
   const output = crlf(formatOutput(result, format as 'text' | 'json', Boolean(opts.quiet)));
-  return { text: output + '\r\n', exitCode: result.exit_code, result, scenario: resolved.scenario };
+  return { text: warning + output + '\r\n', exitCode: result.exit_code, result, scenario: resolved.scenario };
 }
 
 /**
