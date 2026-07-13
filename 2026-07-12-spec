@@ -1,0 +1,2632 @@
+Feature Flag Lifecycle Tool — Complete Technical Specification
+Version 1.0 — Final
+Purpose: Cross-Surface UX Demonstration + SaaS Prototype
+Timeline: 3–4 Days
+
+Table of Contents
+Section	Title
+1	Executive Summary
+2	Architecture Overview
+3	Data Model
+4	CLI Specification
+5	Dashboard Specification
+6	SDK Specification
+7	CI/CD Integration
+8	Testing Strategy
+9	Presentation & Demo UI
+10	Deliverables Checklist
+11	Design Rationale & Success Metrics
+
+Section 1: Executive Summary
+Problem Statement
+Non-engineers (product managers, analysts, marketers) are increasingly responsible for releasing software features. They face three options:
+    1. File a ticket — Wait 1–2 weeks for engineering bandwidth
+    2. Get complex tool access — Enterprise-grade platforms overwhelm non-technical users
+    3. Ask informally — Shadow IT pattern where features bypass governance
+The tension is structural: velocity engineers want to ship; governance teams want control. The answer isn't restriction — it's infrastructure with guardrails built in.
+Solution
+A feature flag lifecycle tool that provides:
+    • Self-serve configuration for non-technical stakeholders
+    • Coherent UX across CLI (engineers), Dashboard (product), SDK (pipelines)
+    • Simulation before deployment — See impact before rolling out
+    • Progressive disclosure — Simple defaults, advanced options on demand
+What This Demonstrates
+This project demonstrates cross-surface UX coherence as a thesis for modern developer tooling. The architecture applies to feature flags, but also to agent governance, data validation, experiment configuration — any lifecycle spanning human designers, developers, and automated pipelines.
+Success Criteria
+    • Three surfaces (CLI, Dashboard, SDK) share same terminology, colors, and exit codes
+    • Non-technical user can configure and deploy without engineering help
+    • CI/CD pipeline validates flag changes automatically
+    • All design principles from Section 11 are demonstrated in code
+
+Section 2: Architecture Overview
+System Components
+┌─────────────────────────────────────────────────────────────────────┐
+│                     FEATURE FLAG LIFECYCLE SYSTEM                    │
+└─────────────────────────────────────────────────────────────────────┘
+
+                        ┌──────────────────┐
+                        │  Mock API Server │
+                        │   (Localhost)    │
+                        └────────┬─────────┘
+                                 │
+        ┌────────────────────────┼────────────────────────┐
+        │                        │                        │
+        ▼                        ▼                        ▼
+┌───────────────┐       ┌───────────────┐       ┌───────────────┐
+│     CLI       │       │   Dashboard   │       │      SDK      │
+│  (Engineer)   │       │   (Product)   │       │   (Pipeline)  │
+│               │       │               │       │               │
+│ • Commander.js│       │ • React       │       │ • TypeScript  │
+│ • Exit codes  │       │ • Tailwind    │       │ • Async/Await │
+│ • JSON output │       │ • Form Hooks  │       │ • Error objs  │
+└───────┬───────┘       └───────┬───────┘       └───────┬───────┘
+        │                       │                       │
+        └───────────────────────┼───────────────────────┘
+                                │
+                                ▼
+                    ┌─────────────────────┐
+                    │  Shared Types &     │
+                    │  Constants          │
+                    │  (Single Source)    │
+                    └─────────────────────┘
+Data Flow
+Stage	Actor	Surface	Action
+1. Configure	Product Manager	Dashboard	Write flag rule, audience, rollout %
+2. Simulate	Engineer	CLI	flagsim simulate --flag dark-mode --rollout 25
+3. Review	Product Manager	Dashboard	View simulated audience distribution
+4. Validate	CI/CD Pipeline	SDK	await client.validate(flag) → exit code
+5. Deploy	Automated	CI/CD	Merge PR → auto-deploy to staging
+Key Design Decisions
+Decision	Rationale
+Mock API for demo	Real backend not needed. Focus on UX patterns, not infrastructure.
+Shared types folder	Single source of truth. If CLI says rollout_percentage, Dashboard must too.
+Exit codes for CLI	Machines depend on numeric codes. Humans read text output. Both served.
+No authentication	Out of UX scope. Assume OAuth exists in real deployment.
+LocalStorage persistence	Demo-only. Real app would use backend database.
+Repository Structure
+feature-flag-lifecycle-demo/
+├── cli/
+│   ├── index.js
+│   ├── services/
+│   │   └── simulator.js
+│   ├── utils/
+│   │   └── formatters.js
+│   └── tests/
+│       └── cli.test.js
+├── dashboard/
+│   ├── src/
+│   │   ├── pages/
+│   │   │   ├── FlagList.jsx
+│   │   │   ├── FlagEditor.jsx
+│   │   │   ├── SimulationView.jsx
+│   │   │   ├── HistoryPage.jsx
+│   │   │   └── SettingsPage.jsx
+│   │   ├── components/
+│   │   │   └── DecisionTraceTree.jsx
+│   │   ├── api/
+│   │   │   └── flags.js
+│   │   ├── __tests__/
+│   │   └── App.jsx
+│   └── package.json
+├── sdk/
+│   ├── lib/
+│   │   ├── client.ts
+│   │   └── errors.ts
+│   ├── tests/
+│   │   └── client.test.ts
+│   └── package.json
+├── shared/
+│   ├── types.ts
+│   └── constants.ts
+├── presentation/
+│   └── src/
+│       └── PresentationLayout.jsx
+├── mock-api-server/
+│   └── index.js
+├── .github/
+│   └── workflows/
+│       └── flag-validation.yml
+├── flags/
+│   └── dark-mode.json
+├── data/
+│   ├── mock-users.json
+│   └── mock-flags.json
+├── .env.example
+├── package.json
+└── README.md
+
+Section 3: Data Model
+3.1 Shared TypeScript Types
+Location: shared/types.ts
+/**
+ * Shared Type Definitions
+ * 
+ * Single source of truth across CLI, Dashboard, and SDK.
+ * If a type is updated here, all surfaces must compile.
+ */
+
+/**
+ * Feature flag configuration
+ */
+export interface FlagConfig {
+  id: string;                          // Unique identifier (e.g., 'dark-mode')
+  name: string;                        // Display name (e.g., 'Dark Mode Toggle')
+  description?: string;                // Optional explanation
+  enabled: boolean;                    // Is flag active?
+  rollout_percentage: number;          // 0–100% of users receive flag
+  audience_rules?: AudienceRule[];     // Optional targeting rules
+  environment: 'development' | 'staging' | 'production';
+  created_at: string;                  // ISO 8601 timestamp
+  updated_at: string;                  // ISO 8601 timestamp
+}
+
+/**
+ * Targeting rule — who gets the flag
+ */
+export interface AudienceRule {
+  type: 'segment' | 'country' | 'email_domain' | 'user_id';
+  operator: 'equals' | 'not_equals' | 'contains' | 'in_list';
+  value: string | string[];
+}
+
+/**
+ * Simulation request — what to test
+ */
+export interface SimulationRequest {
+  flag_id: string;
+  mock_users: MockUser[];              // Sample audience for testing
+  environment: 'development' | 'staging' | 'production';
+}
+
+/**
+ * Sample user for simulation
+ */
+export interface MockUser {
+  user_id: string;
+  email?: string;
+  country?: string;
+  segment?: string;
+  attributes?: Record<string, string>;
+}
+
+/**
+ * Simulation result — predicted outcome
+ */
+export interface SimulationResult {
+  flag_id: string;
+  simulation_id: string;
+  result: 'all_clear' | 'conflict' | 'warning';
+  summary: {
+    passed: number;                    // Users who would receive flag
+    conflicted: number;                // Users excluded by conflicting rules
+    warned: number;                    // Users with partial matches
+    total: number;
+  };
+  decisions: FlagDecision[];           // Per-user breakdown
+  exit_code: number;                   // 0=all clear, 1=conflict, 2=warning
+  evaluated_at: string;
+  total_latency_ms: number;
+}
+
+/**
+ * Per-user decision in simulation
+ */
+export interface FlagDecision {
+  user_id: string;
+  decision: 'receive' | 'exclude' | 'partial';
+  matched_rules: string[];             // Which rules applied
+  reason: string;                      // Human-readable explanation
+  rule_sources: string[];              // Source file locations (for tracing)
+}
+
+/**
+ * Conflict types between rules
+ */
+export interface ConflictDetail {
+  rule_a: string;
+  rule_b: string;
+  conflict_type: 'overlap' | 'mutual_exclusion' | 'circular_dependency';
+  affected_users: number;
+}
+3.2 Shared Constants
+Location: shared/constants.ts
+/**
+ * Shared Constants Across Surfaces
+ * 
+ * Colors, exit codes, severities — all surfaces use these.
+ */
+
+/**
+ * Exit codes — machines read these
+ */
+export const EXIT_CODES = {
+  ALL_CLEAR: 0,        // All checks passed
+  CONFLICT: 1,         // Rule conflicts detected — stop deployment
+  WARNING: 2,           // Non-blocking issues — proceed with caution
+  INVALID_INPUT: 3,    // Bad request — fix and retry
+  CONNECTION_FAILURE: 4, // API unreachable — retryable
+  DEPRECATED: 5,        // Flag uses deprecated config pattern
+  QUOTA_EXCEEDED: 6,    // Rate limit hit
+} as const;
+
+/**
+ * Severity levels for messages
+ */
+export const SEVERITY = {
+  FATAL: 'fatal',      // Stops execution
+  WARNING: 'warning',  // Continues but alerts
+  INFO: 'info',        // Nice-to-have notice
+} as const;
+
+/**
+ * Color semantics — consistent across surfaces
+ */
+export const COLORS = {
+  RECEIVE: {
+    bg: 'bg-green-200',
+    border: 'border-green-500',
+    text: 'text-green-700',
+    ansi: '\u001b[32m',
+  },
+  EXCLUDE: {
+    bg: 'bg-red-200',
+    border: 'border-red-500',
+    text: 'text-red-700',
+    ansi: '\u001b[31m',
+  },
+  PARTIAL: {
+    bg: 'bg-yellow-200',
+    border: 'border-yellow-500',
+    text: 'text-yellow-700',
+    ansi: '\u001b[33m',
+  },
+} as const;
+
+/**
+ * Validation patterns
+ */
+export const PATTERNS = {
+  FLAG_ID: /^[a-z0-9-]+$/,
+  EMAIL: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+  COUNTRY_CODE: /^[A-Z]{2}$/,
+} as const;
+3.3 Request/Response Examples
+Valid Simulation Request
+{
+  "flag_id": "dark-mode",
+  "mock_users": [
+    {
+      "user_id": "user_001",
+      "email": "alice@example.com",
+      "country": "US",
+      "segment": "early_adopter"
+    },
+    {
+      "user_id": "user_002",
+      "email": "bob@internal.company.com",
+      "country": "CA",
+      "segment": "standard"
+    }
+  ],
+  "environment": "staging"
+}
+Successful Simulation Response
+{
+  "flag_id": "dark-mode",
+  "simulation_id": "sim_abc123",
+  "result": "all_clear",
+  "summary": {
+    "passed": 25,
+    "conflicted": 0,
+    "warned": 0,
+    "total": 25
+  },
+  "decisions": [
+    {
+      "user_id": "user_001",
+      "decision": "receive",
+      "matched_rules": ["segment:early_adopter"],
+      "reason": "User matches 'early_adopter' segment and rollout percentage",
+      "rule_sources": ["flags/dark-mode.json:8"]
+    }
+  ],
+  "exit_code": 0,
+  "evaluated_at": "2026-07-13T14:23:01Z",
+  "total_latency_ms": 4.2
+}
+Conflict Simulation Response
+{
+  "flag_id": "dark-mode",
+  "simulation_id": "sim_def456",
+  "result": "conflict",
+  "summary": {
+    "passed": 18,
+    "conflicted": 7,
+    "warned": 0,
+    "total": 25
+  },
+  "decisions": [
+    {
+      "user_id": "user_002",
+      "decision": "exclude",
+      "matched_rules": ["email_domain:internal.company.com"],
+      "reason": "Internal domain excluded from production rollout",
+      "rule_sources": ["flags/dark-mode.json:14"]
+    }
+  ],
+  "exit_code": 1,
+  "evaluated_at": "2026-07-13T14:24:15Z",
+  "total_latency_ms": 5.1
+}
+Bad Request — Validation Error
+{
+  "error": {
+    "code": "INVALID_INPUT",
+    "message": "Flag ID contains invalid characters",
+    "details": [
+      {
+        "field": "flag_id",
+        "value": "Dark Mode!",
+        "suggestion": "Use lowercase letters, numbers, and hyphens only. Try 'dark-mode'"
+      }
+    ]
+  }
+}
+
+Section 4: CLI Specification
+Location: cli/
+4.1 Command Structure
+# Basic simulation
+flagsim simulate --flag dark-mode --rollout 25
+
+# With mock users
+flagsim simulate --flag dark-mode --users ./data/mock-users.json
+
+# With custom audience rules
+flagsim simulate --flag dark-mode --rules ./flags/audience-rules.json
+
+# JSON output for CI/CD
+flagsim simulate --flag dark-mode --format json
+
+# Quiet mode (suppress info messages)
+flagsim simulate --flag dark-mode --quiet
+
+# Validate (for CI/CD — stricter)
+flagsim validate --flag dark-mode --strict
+
+# Help
+flagsim --help
+flagsim simulate --help
+4.2 CLI Entry Point
+Location: cli/index.js
+#!/usr/bin/env node
+
+/**
+ * CLI Entry Point
+ *
+ * Feature flag lifecycle — simulation and validation commands.
+ *
+ * Design Principle: Exit codes are the real product.
+ * Design Principle: Suggestions beat diagnoses.
+ * Design Principle: Validate before you compute.
+ */
+const { Command } = require('commander');
+const { simulateFlag } = require('./services/simulator');
+const { formatOutput } = require('./utils/formatters');
+const { EXIT_CODES, COLORS } = require('../shared/constants');
+
+const program = new Command();
+
+program
+  .name('flagsim')
+  .description('Feature flag lifecycle tool — simulate and validate flag configurations')
+  .version('1.0.0');
+
+// ─── Simulate Command ───
+program
+  .command('simulate')
+  .description('Run simulation for a feature flag')
+  .requiredOption('--flag <id>', 'Flag identifier (e.g., dark-mode)')
+  .option('--rollout <percentage>', 'Rollout percentage (0–100)', '100')
+  .option('--users <path>', 'Path to mock users JSON file')
+  .option('--rules <path>', 'Path to audience rules JSON file')
+  .option('--format <type>', 'Output format: text or json', 'text')
+  .option('--quiet', 'Suppress info-level messages')
+  .action(async (options) => {
+    try {
+      const flagId = options.flag;
+      const rolloutPercentage = parseInt(options.rollout, 10);
+
+      // Validate flag ID pattern
+      if (!/^[a-z0-9-]+$/.test(flagId)) {
+        console.error(
+          `${COLORS.EXCLUDE.ansi}[ERROR]\u001b[0m Invalid flag ID. Use lowercase letters, numbers, and hyphens.`
+        );
+        console.error(`Did you mean 'dark-mode' instead of '${flagId}'?`);
+        process.exit(EXIT_CODES.INVALID_INPUT);
+      }
+
+      // Validate rollout range
+      if (isNaN(rolloutPercentage) || rolloutPercentage < 0 || rolloutPercentage > 100) {
+        console.error(
+          `${COLORS.EXCLUDE.ansi}[ERROR]\u001b[0m Invalid rollout percentage. Must be 0–100.`
+        );
+        process.exit(EXIT_CODES.INVALID_INPUT);
+      }
+
+      // Load mock users (or generate defaults)
+      let mockUsers = [];
+      if (options.users) {
+        mockUsers = require(options.users);
+      } else {
+        mockUsers = generateDefaultMockUsers(100);
+      }
+
+      // Run simulation
+      const result = await simulateFlag({
+        flag_id: flagId,
+        rollout_percentage: rolloutPercentage,
+        mock_users: mockUsers,
+        environment: 'staging',
+      });
+
+      // Output formatted result
+      const output = formatOutput(result, options.format, options.quiet);
+      console.log(output);
+
+      // Set exit code
+      process.exit(result.exit_code);
+
+    } catch (error) {
+      if (error.message.includes('API connection')) {
+        console.error(
+          `${COLORS.EXCLUDE.ansi}[ERROR]\u001b[0m Cannot reach simulation service.`
+        );
+        console.error(`Suggestion: Verify localhost:8080 is running.`);
+        process.exit(EXIT_CODES.CONNECTION_FAILURE);
+      }
+
+      console.error(`${COLORS.EXCLUDE.ansi}[ERROR]\u001b[0m ${error.message}`);
+      if (error.suggestion) {
+        console.error(`Suggestion: ${error.suggestion}`);
+      }
+      process.exit(EXIT_CODES.CONFLICT);
+    }
+  });
+
+// ─── Validate Command (for CI/CD) ───
+program
+  .command('validate')
+  .description('Validate flag configuration before deployment')
+  .requiredOption('--flag <id>', 'Flag identifier')
+  .option('--strict', 'Fail on warnings (CI/CD mode)')
+  .action(async (options) => {
+    try {
+      const result = await simulateFlag({
+        flag_id: options.flag,
+        mock_users: generateDefaultMockUsers(100),
+        environment: 'production',
+      });
+
+      if (result.exit_code === 1) {
+        console.error(
+          `${COLORS.EXCLUDE.ansi}[FAIL]\u001b[0m Conflict detected. Deployment halted.`
+        );
+        process.exit(EXIT_CODES.CONFLICT);
+      }
+
+      if (result.exit_code === 2 && options.strict) {
+        console.error(
+          `${COLORS.EXCLUDE.ansi}[WARN]\u001b[0m Partial matches detected. --strict mode halting.`
+        );
+        process.exit(EXIT_CODES.WARNING);
+      }
+
+      console.log(
+        `${COLORS.RECEIVE.ansi}[OK]\u001b[0m Flag validated. Ready for deployment.`
+      );
+      process.exit(EXIT_CODES.ALL_CLEAR);
+
+    } catch (error) {
+      console.error(
+        `${COLORS.EXCLUDE.ansi}[ERROR]\u001b[0m Validation failed: ${error.message}`
+      );
+      process.exit(EXIT_CODES.CONFLICT);
+    }
+  });
+
+program.parse(process.argv);
+
+// ─── Utility: Generate default mock users ───
+function generateDefaultMockUsers(count) {
+  const segments = ['early_adopter', 'standard', 'premium', 'enterprise'];
+  const countries = ['US', 'CA', 'UK', 'DE', 'FR'];
+
+  return Array.from({ length: count }, (_, i) => ({
+    user_id: `user_${String(i).padStart(3, '0')}`,
+    email: `user${i}@example.com`,
+    segment: segments[i % segments.length],
+    country: countries[i % countries.length],
+  }));
+}
+4.3 Formatter Utilities
+Location: cli/utils/formatters.js
+/**
+ * Output Formatters
+ *
+ * Consistent styling between text and JSON output.
+ *
+ * Design Principle: Output scannable in 3 seconds.
+ * Design Principle: Colors functional, not decorative.
+ */
+const { COLORS, EXIT_CODES } = require('../../shared/constants');
+
+function formatOutput(result, format = 'text', quiet = false) {
+  if (format === 'json') {
+    return JSON.stringify(result, null, 2);
+  }
+
+  // Text output
+  let output = '\n';
+  output += `FLAG SIMULATION RESULT\n`;
+  output += `${'='.repeat(60)}\n\n`;
+
+  output += `Flag: ${result.flag_id}\n`;
+  output += `Evaluated: ${result.evaluated_at}\n\n`;
+
+  // Summary — always visible first
+  output += `SUMMARY\n`;
+  output += `${'-'.repeat(40)}\n`;
+  output += `  Received:  ${COLORS.RECEIVE.ansi}${result.summary.passed}\u001b[0m\n`;
+  output += `  Excluded:  ${COLORS.EXCLUDE.ansi}${result.summary.conflicted}\u001b[0m\n`;
+  output += `  Partial:   ${COLORS.PARTIAL.ansi}${result.summary.warned}\u001b[0m\n`;
+  output += `  Total:     ${result.summary.total}\n\n`;
+
+  // Exit code interpretation
+  const exitMessages = {
+    [EXIT_CODES.ALL_CLEAR]: 'All checks passed.',
+    [EXIT_CODES.CONFLICT]: 'Conflicts detected. Fix before deploying.',
+    [EXIT_CODES.WARNING]: 'Partial matches. Proceed with caution.',
+    [EXIT_CODES.INVALID_INPUT]: 'Invalid input. Check flag ID and rules.',
+    [EXIT_CODES.CONNECTION_FAILURE]: 'Service unavailable. Retry later.',
+    [EXIT_CODES.DEPRECATED]: 'Flag uses deprecated config pattern.',
+    [EXIT_CODES.QUOTA_EXCEEDED]: 'Rate limit exceeded. Wait and retry.',
+  };
+
+  output += `Exit code: ${result.exit_code} — ${exitMessages[result.exit_code]}\n`;
+
+  if (!quiet) {
+    output += `\nDECISION TRACE\n`;
+    output += `${'-'.repeat(40)}\n`;
+    result.decisions.slice(0, 5).forEach((dec) => {
+      const color =
+        dec.decision === 'receive'
+          ? COLORS.RECEIVE
+          : dec.decision === 'exclude'
+          ? COLORS.EXCLUDE
+          : COLORS.PARTIAL;
+
+      output += `  ${color.ansi}[${dec.decision.toUpperCase()}]\u001b[0m ${dec.user_id}\n`;
+      output += `    Reason: ${dec.reason}\n`;
+    });
+
+    if (result.decisions.length > 5) {
+      output += `\n  ... and ${result.decisions.length - 5} more\n`;
+    }
+  }
+
+  return output;
+}
+
+module.exports = { formatOutput };
+4.4 Simulator Service
+Location: cli/services/simulator.js
+/**
+ * Simulator Service
+ *
+ * Evaluates flag configurations against mock users.
+ * Determines which users would receive, be excluded, or partially match.
+ *
+ * Design Principle: Transparent reasoning — every decision explains why.
+ */
+const { EXIT_CODES } = require('../../shared/constants');
+
+async function simulateFlag(request) {
+  const { flag_id, mock_users, environment } = request;
+
+  // Mock evaluation logic (demo only)
+  const decisions = mock_users.map((user) => {
+    // Example logic — real system would evaluate Cedar-like rules
+    const receivesFlag = Math.random() > 0.3;
+    const isPartial = Math.random() > 0.8;
+
+    if (isPartial) {
+      return {
+        user_id: user.user_id,
+        decision: 'partial',
+        matched_rules: ['segment:partial_match'],
+        reason: 'User matches some but not all targeting rules',
+        rule_sources: [`flags/${flag_id}.json:12`],
+      };
+    }
+
+    return {
+      user_id: user.user_id,
+      decision: receivesFlag ? 'receive' : 'exclude',
+      matched_rules: receivesFlag ? ['segment:match'] : ['segment:no_match'],
+      reason: receivesFlag
+        ? 'User matches audience rules and rollout percentage'
+        : 'User excluded by audience rule or rollout percentage',
+      rule_sources: [`flags/${flag_id}.json:${receivesFlag ? 8 : 14}`],
+    };
+  });
+
+  const summary = {
+    passed: decisions.filter((d) => d.decision === 'receive').length,
+    conflicted: decisions.filter((d) => d.decision === 'exclude').length,
+    warned: decisions.filter((d) => d.decision === 'partial').length,
+    total: decisions.length,
+  };
+
+  let exitCode = EXIT_CODES.ALL_CLEAR;
+  if (summary.conflicted > 0) exitCode = EXIT_CODES.CONFLICT;
+  else if (summary.warned > 0) exitCode = EXIT_CODES.WARNING;
+
+  return {
+    flag_id,
+    simulation_id: `sim_${Date.now()}`,
+    result: exitCode === 0 ? 'all_clear' : exitCode === 1 ? 'conflict' : 'warning',
+    summary,
+    decisions,
+    exit_code: exitCode,
+    evaluated_at: new Date().toISOString(),
+    total_latency_ms: Math.round(Math.random() * 10 * 100) / 100,
+  };
+}
+
+module.exports = { simulateFlag };
+4.5 CLI Exit Code Reference
+Exit Code	Constant	Meaning	CI/CD Behavior
+0	ALL_CLEAR	All checks passed	Proceed
+1	CONFLICT	Rule conflicts detected	Fail deployment
+2	WARNING	Non-blocking partial matches	Proceed (unless --strict)
+3	INVALID_INPUT	Bad request — fix and retry	Fail (fix and retry)
+4	CONNECTION_FAILURE	API unreachable	Retry with backoff
+5	DEPRECATED	Flag uses deprecated config	Warn (proceed unless --strict)
+6	QUOTA_EXCEEDED	Rate limit hit	Retry after delay
+
+Section 5: Dashboard Specification
+Location: dashboard/
+5.1 Pages Overview
+Page	Route	Purpose	Primary User
+Flag List	/flags	List and manage all flags	Product Manager
+Flag Editor	/flags/edit/:id	Create/update flag configuration	Product Manager
+Simulation View	/flags/simulate/:id	Preview audience impact	Product Manager
+History	/flags/history	Past simulations and changes	Engineer / Auditor
+Settings	/settings	API config, environments	Platform Engineer
+5.2 Flag List Page
+Location: dashboard/src/pages/FlagList.jsx
+/**
+ * FlagList Component
+ *
+ * Landing page — shows all flags with status badges.
+ *
+ * Design Principle: Output scannable in 3 seconds.
+ */
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+
+export default function FlagList() {
+  const [flags, setFlags] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Mock data for demo
+    setFlags([
+      { id: 'dark-mode', name: 'Dark Mode Toggle', enabled: true, rollout_percentage: 25, environment: 'staging' },
+      { id: 'new-checkout', name: 'New Checkout Flow', enabled: true, rollout_percentage: 10, environment: 'production' },
+      { id: 'beta-dashboard', name: 'Beta Dashboard', enabled: false, rollout_percentage: 0, environment: 'development' },
+    ]);
+    setLoading(false);
+  }, []);
+
+  return (
+    <div className="max-w-4xl mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-semibold">Feature Flags</h1>
+        <Link
+          to="/flags/edit/new"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          New Flag
+        </Link>
+      </div>
+
+      {loading ? (
+        <p className="text-gray-500">Loading...</p>
+      ) : (
+        <div className="space-y-3">
+          {flags.map(flag => (
+            <Link
+              key={flag.id}
+              to={`/flags/simulate/${flag.id}`}
+              className="block p-4 bg-white rounded-lg shadow hover:shadow-md transition"
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <div className="font-medium text-lg">{flag.name}</div>
+                  <div className="text-sm text-gray-500 font-mono">{flag.id}</div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm text-gray-600">{flag.rollout_percentage}%</span>
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${
+                    flag.enabled
+                      ? 'bg-green-200 text-green-700'
+                      : 'bg-gray-200 text-gray-600'
+                  }`}>
+                    {flag.enabled ? 'ACTIVE' : 'INACTIVE'}
+                  </span>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+5.3 Flag Editor
+Location: dashboard/src/pages/FlagEditor.jsx
+/**
+ * FlagEditor Component
+ *
+ * Create and edit feature flag configurations.
+ *
+ * Design Principle: Suggestions beat diagnoses.
+ * Design Principle: Validate before you compute.
+ * Design Principle: Intentional restraint — show less by default.
+ */
+import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+
+export default function FlagEditor({ initialData, onSave }) {
+  const navigate = useNavigate();
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const { register, handleSubmit, watch, formState: { errors } } = useForm({
+    defaultValues: initialData || {
+      id: '',
+      name: '',
+      description: '',
+      enabled: true,
+      rollout_percentage: 100,
+      environment: 'development',
+    },
+  });
+
+  const rolloutValue = watch('rollout_percentage');
+
+  const handleSave = async (formData) => {
+    if (onSave) {
+      await onSave(formData);
+    }
+    navigate('/flags');
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto p-6">
+      <h2 className="text-xl font-semibold mb-6">
+        {initialData ? 'Edit Flag' : 'New Flag'}
+      </h2>
+
+      <form onSubmit={handleSubmit(handleSave)} className="space-y-6">
+        {/* Flag ID — Required */}
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Flag ID <span className="text-red-500">*</span>
+          </label>
+          <input
+            {...register('id', {
+              required: 'Flag ID is required',
+              pattern: {
+                value: /^[a-z0-9-]+$/,
+                message: 'Use lowercase letters, numbers, and hyphens only',
+              },
+            })}
+            className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
+            placeholder="dark-mode"
+          />
+          {errors.id && (
+            <p className="text-sm text-red-600 mt-1">{errors.id.message}</p>
+          )}
+          {errors.id?.message?.includes('lowercase') && (
+            <p className="text-xs text-gray-500 mt-1">
+              Tip: Try "dark-mode" instead of "DarkMode"
+            </p>
+          )}
+        </div>
+
+        {/* Display Name — Required */}
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Display Name <span className="text-red-500">*</span>
+          </label>
+          <input
+            {...register('name', { required: 'Name is required' })}
+            className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
+            placeholder="Dark Mode Toggle"
+          />
+          {errors.name && (
+            <p className="text-sm text-red-600 mt-1">{errors.name.message}</p>
+          )}
+        </div>
+
+        {/* Rollout Percentage — Required */}
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Rollout Percentage <span className="text-gray-500">(0–100%)</span>
+          </label>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            {...register('rollout_percentage', {
+              required: 'Rollout percentage is required',
+              min: 0,
+              max: 100,
+            })}
+            className="w-full"
+          />
+          <div className="text-right text-sm font-medium mt-1">
+            {rolloutValue || 100}%
+          </div>
+        </div>
+
+        {/* Environment — Dropdown */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Environment</label>
+          <select
+            {...register('environment')}
+            className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="development">Development</option>
+            <option value="staging">Staging</option>
+            <option value="production">Production</option>
+          </select>
+        </div>
+
+        {/* Description — Optional */}
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Description <span className="text-gray-500">(optional)</span>
+          </label>
+          <textarea
+            {...register('description')}
+            className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
+            rows={3}
+            placeholder="Explain what this flag controls"
+          />
+        </div>
+
+        {/* Advanced Settings — Collapsed by default */}
+        <div>
+          <button
+            type="button"
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="text-sm text-blue-600 hover:text-blue-800"
+          >
+            {showAdvanced ? '▾ Hide advanced settings' : '▸ Show advanced settings'}
+          </button>
+
+          {showAdvanced && (
+            <div className="mt-3 p-4 bg-gray-50 rounded space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Audience Rules <span className="text-gray-500">(optional)</span>
+                </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Target specific user segments, countries, or email domains
+                </p>
+                {/* Audience rule builder would go here */}
+                <div className="text-sm text-gray-400 italic">
+                  Audience rule builder — add rules to target specific users
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Submit */}
+        <div className="flex justify-end space-x-3">
+          <button
+            type="button"
+            onClick={() => navigate('/flags')}
+            className="px-4 py-2 text-gray-600 hover:text-gray-800"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+          >
+            Save Flag
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+5.4 Simulation View (Decision Trace Tree)
+Location: dashboard/src/pages/SimulationView.jsx
+/**
+ * SimulationView Component
+ *
+ * Displays simulated audience distribution with expandable decision trace.
+ * Includes Copy to Clipboard and Export PDF functionality.
+ *
+ * Design Principle: Output scannable in 3 seconds.
+ * Design Principle: Progressive disclosure.
+ * Design Principle: Consistency — same colors as CLI.
+ * Design Principle: Transparent reasoning — every decision explained.
+ */
+import { ChevronDown, ChevronRight, ClipboardCopy, Download } from '@heroicons/react/outline';
+import { useState } from 'react';
+import { COLORS } from '../../../shared/constants';
+import { exportToPDF } from '../utils/export';
+import toast from 'react-hot-toast';
+
+export default function SimulationView({ simulationResult }) {
+  const [expanded, setExpanded] = useState(new Set());
+  const { summary, decisions, flag_id } = simulationResult;
+
+  const toggleExpand = (userId) => {
+    const next = new Set(expanded);
+    next.has(userId) ? next.delete(userId) : next.add(userId);
+    setExpanded(next);
+  };
+
+  const handleCopy = async () => {
+    const text = formatResultForClipboard(simulationResult);
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success('Results copied to clipboard');
+    } catch (err) {
+      toast.error('Failed to copy');
+    }
+  };
+
+  const handleExportPDF = () => {
+    exportToPDF({
+      title: `Flag Simulation: ${flag_id}`,
+      meta: simulationResult,
+      summary,
+      decisions,
+    });
+    toast.success('Report exported to PDF');
+  };
+
+  const styleMap = {
+    receive: COLORS.RECEIVE,
+    exclude: COLORS.EXCLUDE,
+    partial: COLORS.PARTIAL,
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
+      {/* Summary Card — always visible first */}
+      <div className="p-4 bg-white rounded-lg shadow">
+        <div className="flex justify-between items-start mb-4">
+          <h3 className="text-lg font-semibold">Simulation Summary</h3>
+
+          {/* Export / Copy buttons */}
+          <div className="flex space-x-2">
+            <button
+              onClick={handleCopy}
+              className="flex items-center px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm text-gray-700"
+              title="Copy results to clipboard"
+            >
+              <ClipboardCopy className="w-4 h-4 mr-1" />
+              Copy
+            </button>
+            <button
+              onClick={handleExportPDF}
+              className="flex items-center px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm text-gray-700"
+              title="Export report as PDF"
+            >
+              <Download className="w-4 h-4 mr-1" />
+              PDF
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-4 gap-4 text-center">
+          <div>
+            <div className="text-2xl font-bold text-green-600">{summary.passed}</div>
+            <div className="text-sm text-gray-600">Would Receive</div>
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-red-600">{summary.conflicted}</div>
+            <div className="text-sm text-gray-600">Excluded</div>
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-yellow-600">{summary.warned}</div>
+            <div className="text-sm text-gray-600">Partial Match</div>
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-gray-600">{summary.total}</div>
+            <div className="text-sm text-gray-600">Total Mock Users</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Decision Trace Tree */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Audience Distribution</h3>
+        <div className="space-y-2">
+          {decisions.map((dec) => {
+            const style = styleMap[dec.decision];
+            const isExpanded = expanded.has(dec.user_id);
+
+            return (
+              <div
+                key={dec.user_id}
+                className={`border-l-4 pl-4 py-3 ${style.bg} ${style.border} rounded-r`}
+              >
+                <div
+                  className="flex justify-between items-center cursor-pointer"
+                  onClick={() => toggleExpand(dec.user_id)}
+                >
+                  <div>
+                    <div className="font-medium">{dec.user_id}</div>
+                    <div className="text-xs text-gray-500">
+                      {dec.matched_rules.join(' • ') || 'No rules matched'}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-medium ${style.bg} ${style.text}`}
+                    >
+                      {dec.decision.toUpperCase()}
+                    </span>
+                    {isExpanded ? (
+                      <ChevronDown className="w-4 h-4 text-gray-400" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 text-gray-400" />
+                    )}
+                  </div>
+                </div>
+
+                {/* Expanded detail */}
+                {isExpanded && (
+                  <div className="mt-3 pt-3 border-t border-gray-200">
+                    <div className="text-sm">
+                      <strong className="text-gray-700">Reason:</strong>{' '}
+                      <span className="text-gray-600">{dec.reason}</span>
+                    </div>
+                    <div className="mt-2 text-xs text-gray-500 font-mono">
+                      Rules: {dec.rule_sources.join(', ')}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Utility: Format result for clipboard (plain text) ───
+function formatResultForClipboard(result) {
+  let text = `FLAG SIMULATION REPORT\n`;
+  text += `============================\n\n`;
+  text += `Flag: ${result.flag_id}\n`;
+  text += `Simulation ID: ${result.simulation_id}\n`;
+  text += `Evaluated: ${result.evaluated_at}\n`;
+  text += `Result: ${result.summary.passed} received, ${result.summary.conflicted} excluded, ${result.summary.warned} partial\n\n`;
+  text += `Decisions:\n`;
+  result.decisions.forEach((d) => {
+    text += `  ${d.decision.toUpperCase()}: ${d.user_id}\n`;
+    text += `    Reason: ${d.reason}\n\n`;
+  });
+  return text;
+}
+5.5 Export Utility (PDF)
+Location: dashboard/src/utils/export.js
+/**
+ * Export Utility — PDF Generation
+ *
+ * Generates a report suitable for documentation or stakeholder review.
+ *
+ * Design Principle: Transparent reasoning — every decision documented.
+ */
+import jsPDF from 'jspdf';
+
+export function exportToPDF({ title, meta, summary, decisions }) {
+  const doc = new jsPDF();
+
+  // Header
+  doc.setFontSize(18);
+  doc.text(title, 14, 20);
+
+  // Meta info
+  doc.setFontSize(12);
+  doc.text(`Flag: ${meta.flag_id}`, 14, 30);
+  doc.text(`Simulation ID: ${meta.simulation_id}`, 14, 36);
+  doc.text(`Evaluated: ${meta.evaluated_at}`, 14, 42);
+  doc.text(`Latency: ${meta.total_latency_ms}ms`, 14, 48);
+
+  // Summary
+  doc.setFontSize(14);
+  doc.text('Summary', 14, 60);
+  doc.setFontSize(11);
+  doc.text(
+    `${summary.passed} Received  |  ${summary.conflicted} Excluded  |  ${summary.warned} Partial  |  ${summary.total} Total`,
+    14,
+    67
+  );
+
+  // Decisions
+  let yPos = 80;
+  doc.setFontSize(14);
+  doc.text('Decision Trace', 14, yPos);
+  yPos += 10;
+  doc.setFontSize(10);
+
+  decisions.forEach((decision) => {
+    if (yPos > 270) {
+      doc.addPage();
+      yPos = 20;
+    }
+
+    const color =
+      decision.decision === 'receive'
+        ? [0, 128, 0]
+        : decision.decision === 'exclude'
+        ? [255, 0, 0]
+        : [200, 150, 0];
+
+    doc.setTextColor(...color);
+    doc.text(`[${decision.decision.toUpperCase()}] ${decision.user_id}`, 14, yPos);
+    doc.setTextColor(0, 0, 0);
+
+    yPos += 7;
+    doc.text(`  Reason: ${decision.reason.substring(0, 70)}`, 18, yPos);
+    yPos += 6;
+    doc.text(`  Rules: ${decision.rule_sources.join(', ')}`, 18, yPos);
+    yPos += 10;
+  });
+
+  // Footer
+  doc.setFontSize(8);
+  doc.text('Generated by Feature Flag Lifecycle Tool', 14, 290);
+
+  doc.save(`flag-simulation-${meta.flag_id}-${meta.simulation_id}.pdf`);
+}
+5.6 Routing Configuration
+Location: dashboard/src/App.jsx
+/**
+ * Application Routing
+ *
+ * Maps URLs to page components.
+ *
+ * Design Principle: Consistency across surfaces.
+ * Design Principle: Graceful failure is a feature.
+ */
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import FlagList from './pages/FlagList';
+import FlagEditor from './pages/FlagEditor';
+import SimulationView from './pages/SimulationView';
+import HistoryPage from './pages/HistoryPage';
+import SettingsPage from './pages/SettingsPage';
+
+export default function App() {
+  return (
+    <Router>
+      <Routes>
+        {/* Default route */}
+        <Route path="/" element={<FlagList />} />
+
+        {/* Flag workflows */}
+        <Route path="/flags" element={<FlagList />} />
+        <Route path="/flags/edit/:id" element={<FlagEditor />} />
+        <Route path="/flags/simulate/:id" element={<SimulationView />} />
+        <Route path="/flags/history" element={<HistoryPage />} />
+
+        {/* Settings */}
+        <Route path="/settings" element={<SettingsPage />} />
+
+        {/* Catch-all */}
+        <Route path="*" element={<NotFoundRedirect />} />
+      </Routes>
+    </Router>
+  );
+}
+
+function NotFoundRedirect() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <h1 className="text-3xl font-semibold text-gray-800 mb-2">Page Not Found</h1>
+        <p className="text-gray-600 mb-4">The page you're looking for doesn't exist.</p>
+        <a href="/flags" className="text-blue-600 hover:text-blue-800 underline">
+          Go to Flags
+        </a>
+      </div>
+    </div>
+  );
+}
+5.7 API Integration Layer
+Location: dashboard/src/api/flags.js
+/**
+ * Dashboard API Layer
+ *
+ * Communicates with local mock server.
+ *
+ * Design Principle: Transparent reasoning — every error explains what happened.
+ * Design Principle: Suggestions beat diagnoses.
+ */
+const API_BASE = '/api';
+
+export async function saveFlag(config) {
+  const response = await fetch(`${API_BASE}/flags`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(config),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new FlagApiError(error.code, error.message, error.details);
+  }
+
+  return response.json();
+}
+
+export async function simulateFlag(request) {
+  const response = await fetch(`${API_BASE}/simulate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new FlagApiError(error.code, error.message, error.details);
+  }
+
+  return response.json();
+}
+
+export async function getHistory(filters = {}) {
+  const params = new URLSearchParams(filters).toString();
+  const response = await fetch(`${API_BASE}/history?${params}`);
+  return response.json();
+}
+
+export class FlagApiError extends Error {
+  constructor(code, message, details = []) {
+    super(message);
+    this.name = 'FlagApiError';
+    this.code = code;
+    this.details = details;
+  }
+
+  getSuggestion() {
+    switch (this.code) {
+      case 'FLAG_NOT_FOUND':
+        return 'Check that the flag is registered in the system';
+      case 'INVALID_CONFIG':
+        return 'Review flag configuration syntax';
+      case 'QUOTA_EXCEEDED':
+        return 'Wait for quota reset or request an increase';
+      default:
+        return 'Check connection and try again';
+    }
+  }
+}
+
+Section 6: SDK Specification
+Location: sdk/
+6.1 Package Structure
+sdk/
+├── lib/
+│   ├── client.ts           # Main client class
+│   ├── errors.ts           # Custom error classes
+│   └── index.ts            # Public exports
+├── tests/
+│   └── client.test.ts
+└── package.json
+6.2 Client Library
+Location: sdk/lib/client.ts
+/**
+ * SDK Client for Feature Flag Validation
+ *
+ * Machine-to-machine interface for CI/CD pipelines.
+ *
+ * Design Principle: Exit codes are the real product.
+ * Design Principle: Graceful failure is a feature.
+ * Design Principle: Suggestions beat diagnoses (even for machines).
+ */
+import { SimulationResult, SimulationRequest } from '../../shared/types';
+import { FlagApiError } from './errors';
+
+export interface ClientConfig {
+  apiKey: string;
+  baseUrl?: string;
+  timeoutMs?: number;
+}
+
+export class FlagClient {
+  private apiKey: string;
+  private baseUrl: string;
+  private timeoutMs: number;
+
+  constructor(config: ClientConfig) {
+    this.apiKey = config.apiKey;
+    this.baseUrl = config.baseUrl || 'http://localhost:8080';
+    this.timeoutMs = config.timeoutMs || 5000;
+  }
+
+  /**
+   * Run a flag simulation
+   * @returns Promise<SimulationResult>
+   * @throws FlagApiError on failure
+   */
+  async simulate(request: SimulationRequest): Promise<SimulationResult> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
+
+    try {
+      const response = await fetch(`${this.baseUrl}/api/simulate`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new FlagApiError(
+          error.code || 'UNKNOWN_ERROR',
+          error.message || 'Simulation failed',
+          error.details || []
+        );
+      }
+
+      return response.json();
+    } catch (err) {
+      if (err instanceof FlagApiError) throw err;
+
+      if ((err as Error).name === 'AbortError') {
+        throw new FlagApiError(
+          'TIMEOUT',
+          `Timed out after ${this.timeoutMs}ms`,
+          [{ field: 'timeout', suggestion: 'Increase timeoutMs in client config' }]
+        );
+      }
+
+      throw new FlagApiError(
+        'CONNECTION_FAILURE',
+        'Cannot reach simulation service',
+        [{ field: 'baseUrl', suggestion: `Verify ${this.baseUrl} is reachable` }]
+      );
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  /**
+   * Convenience method for CI/CD pipelines
+   * Returns true if safe to deploy, false if conflicts detected
+   */
+  async isSafeToDeploy(request: SimulationRequest): Promise<boolean> {
+    const result = await this.simulate(request);
+    return result.exit_code === 0 || result.exit_code === 2;
+  }
+}
+6.3 Error Classes
+Location: sdk/lib/errors.ts
+/**
+ * SDK Error Classes
+ *
+ * Design Principle: Errors teach, they don't just fail.
+ * Every error includes a recovery path.
+ */
+export class FlagApiError extends Error {
+  constructor(
+    public code: string,
+    message: string,
+    public details: Array<{ field: string; suggestion: string }> = []
+  ) {
+    super(message);
+    this.name = 'FlagApiError';
+  }
+
+  /**
+   * Returns the first suggestion for quick recovery
+   */
+  getFirstSuggestion(): string | null {
+    return this.details.length > 0 ? this.details[0].suggestion : null;
+  }
+
+  /**
+   * Checks if this error is retryable
+   */
+  isRetryable(): boolean {
+    return this.code === 'TIMEOUT' || this.code === 'CONNECTION_FAILURE';
+  }
+
+  /**
+   * Returns retry delay in milliseconds (exponential backoff, capped at 10s)
+   */
+  getRetryDelay(attempt: number): number {
+    if (!this.isRetryable()) return 0;
+    return Math.min(1000 * Math.pow(2, attempt), 10000);
+  }
+}
+6.4 Public Exports
+Location: sdk/lib/index.ts
+export { FlagClient, ClientConfig } from './client';
+export { FlagApiError } from './errors';
+export { SimulationResult, SimulationRequest, FlagConfig } from '../../shared/types';
+export { EXIT_CODES, COLORS, SEVERITY } from '../../shared/constants';
+6.5 Usage Examples
+CI/CD Pipeline Integration
+import { FlagClient } from '@flagsim/sdk';
+
+const client = new FlagClient({
+  apiKey: process.env.FLAG_API_KEY!,
+});
+
+async function validateBeforeDeploy() {
+  try {
+    const result = await client.simulate({
+      flag_id: 'dark-mode',
+      mock_users: mockUsers,
+      environment: 'production',
+    });
+
+    // Machine makes the decision
+    if (result.exit_code === 1) {
+      console.error(`Deploy halted: ${result.summary.conflicted} conflicts detected`);
+      process.exit(1);
+    }
+
+    // Warnings continue but alert
+    if (result.exit_code === 2) {
+      console.warn(`Proceeding with ${result.summary.warned} partial matches`);
+    }
+
+    // Safe to deploy
+    console.log('Flag validated successfully');
+  } catch (error) {
+    if (error.isRetryable?.()) {
+      console.log(`Retrying in ${error.getRetryDelay(1)}ms...`);
+    } else {
+      console.error(`Pipeline failed: ${error.message}`);
+      if (error.getFirstSuggestion?.()) {
+        console.error(`Suggestion: ${error.getFirstSuggestion()}`);
+      }
+      process.exit(1);
+    }
+  }
+}
+Convenience Method
+// Instead of checking exit codes manually:
+const result = await client.simulate({...});
+if (result.exit_code === 0 || result.exit_code === 2) {
+  deploy();
+}
+
+// Use the helper:
+if (await client.isSafeToDeploy({...})) {
+  deploy();
+}
+
+Section 7: CI/CD Integration
+7.1 GitHub Actions Workflow
+Location: .github/workflows/flag-validation.yml
+name: Flag Validation
+
+# When should this run?
+on:
+  push:
+    branches: [main]
+    paths: ['flags/*.json']          # Only runs when flag files change
+  pull_request:
+    branches: [main]
+    paths: ['flags/*.json']
+
+env:
+  FLAG_API_KEY: ${{ secrets.FLAG_API_KEY }}  # Stored in GitHub secrets
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install SDK
+        run: npm install
+
+      - name: Run flag simulation
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { FlagClient } = require('./sdk/lib/client');
+
+            const client = new FlagClient({
+              apiKey: process.env.FLAG_API_KEY,
+              baseUrl: 'http://localhost:8080'
+            });
+
+            try {
+              const result = await client.simulate({
+                flag_id: 'dark-mode',
+                mock_users: [
+                  { user_id: 'user_001', email: 'alice@example.com', country: 'US', segment: 'early_adopter' },
+                  { user_id: 'user_002', email: 'bob@example.com', country: 'CA', segment: 'standard' },
+                ],
+                environment: 'production',
+              });
+
+              console.log(`Result: ${result.result}`);
+              console.log(`Summary: ${result.summary.passed} received, ${result.summary.conflicted} excluded`);
+
+              if (result.exit_code === 1) {
+                core.setFailed(`Conflict detected. ${result.summary.conflicted} users excluded. Deployment halted.`);
+                return;
+              }
+
+              if (result.exit_code === 2) {
+                core.warning(`Partial matches: ${result.summary.warned} users. Proceeding with caution.`);
+              }
+
+              console.log('✅ Flag validated successfully');
+
+            } catch (error) {
+              core.setFailed(`Simulation failed: ${error.message}`);
+              if (error.getFirstSuggestion?.()) {
+                console.log(`Suggestion: ${error.getFirstSuggestion()}`);
+              }
+            }
+
+      - name: Deploy if safe
+        if: success()
+        run: |
+          echo "Deploying flag..."
+          echo "Flag deployed!"
+
+      - name: Upload results as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: simulation-results
+          path: sim_*.json
+          retention-days: 30
+7.2 Sample Flag File
+Location: flags/dark-mode.json
+{
+  "id": "dark-mode",
+  "name": "Dark Mode Toggle",
+  "description": "Enables dark mode UI for eligible users",
+  "enabled": true,
+  "rollout_percentage": 25,
+  "audience_rules": [
+    {
+      "type": "segment",
+      "operator": "equals",
+      "value": "early_adopter"
+    },
+    {
+      "type": "country",
+      "operator": "in_list",
+      "value": ["US", "CA", "UK"]
+    }
+  ],
+  "environment": "staging",
+  "created_at": "2026-07-13T10:00:00Z",
+  "updated_at": "2026-07-13T10:00:00Z"
+}
+7.3 .env.example
+Location: .env.example
+# API Configuration
+FLAG_API_KEY=your-api-key-here
+API_BASE_URL=http://localhost:8080
+
+# Dashboard
+PORT=3000
+
+# Mock API Server
+MOCK_SERVER_PORT=8080
+
+Section 8: Testing Strategy
+8.1 CLI Tests
+Location: cli/tests/cli.test.js
+/**
+ * CLI Test Suite
+ *
+ * Tests command-line interface behavior:
+ * - Exit codes
+ * - Output formatting (text and JSON)
+ * - Error handling
+ * - Edge cases
+ */
+const assert = require('assert');
+const { execSync } = require('child_process');
+
+describe('CLI Simulation', () => {
+  describe('Basic Execution', () => {
+    it('should output simulation results for valid flag', () => {
+      const output = execSync('node index.js simulate --flag dark-mode --rollout 25', {
+        encoding: 'utf8',
+      });
+
+      assert.match(output, /FLAG SIMULATION RESULT/);
+      assert.match(output, /Received/);
+    });
+
+    it('should exit with code 0 when all clear', () => {
+      try {
+        execSync('node index.js simulate --flag dark-mode --rollout 100', {
+          encoding: 'utf8',
+        });
+        assert.ok(true);
+      } catch (error) {
+        assert.strictEqual(error.status, 0);
+      }
+    });
+  });
+
+  describe('Output Format', () => {
+    it('should produce valid JSON with --format json', () => {
+      const output = execSync(
+        'node index.js simulate --flag dark-mode --format json',
+        { encoding: 'utf8' }
+      );
+
+      const result = JSON.parse(output);
+      assert.ok(result.simulation_id);
+      assert.ok(result.decisions instanceof Array);
+      assert.ok([0, 1, 2, 3, 4, 5, 6].includes(result.exit_code));
+    });
+
+    it('should suppress info messages with --quiet', () => {
+      const output = execSync(
+        'node index.js simulate --flag dark-mode --quiet',
+        { encoding: 'utf8' }
+      );
+
+      assert.ok(!output.includes('DECISION TRACE'));
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should error when flag ID has invalid characters', () => {
+      try {
+        execSync('node index.js simulate --flag "Dark Mode!"', {
+          encoding: 'utf8',
+          stdio: 'pipe',
+        });
+        assert.fail('Should have exited with error');
+      } catch (error) {
+        assert.match(error.stderr, /Invalid flag ID/i);
+        assert.strictEqual(error.status, 3);
+      }
+    });
+
+    it('should suggest correct name when typo detected', () => {
+      try {
+        execSync('node index.js simulate --flag "DarkMode"', {
+          encoding: 'utf8',
+          stdio: 'pipe',
+        });
+        assert.fail('Should have exited with error');
+      } catch (error) {
+        assert.match(error.stderr, /dark-mode/i);
+        assert.match(error.stderr, /Did you mean/i);
+      }
+    });
+
+    it('should error on invalid rollout percentage', () => {
+      try {
+        execSync('node index.js simulate --flag dark-mode --rollout 150', {
+          encoding: 'utf8',
+          stdio: 'pipe',
+        });
+        assert.fail('Should have exited with error');
+      } catch (error) {
+        assert.match(error.stderr, /Invalid rollout/i);
+        assert.strictEqual(error.status, 3);
+      }
+    });
+  });
+});
+8.2 Dashboard Tests
+Location: dashboard/src/__tests__/components.test.jsx
+/**
+ * Dashboard Component Tests
+ *
+ * Tests UI behavior, validation, and state management.
+ */
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import FlagEditor from '../pages/FlagEditor';
+import SimulationView from '../pages/SimulationView';
+
+const mockResult = {
+  flag_id: 'dark-mode',
+  simulation_id: 'sim_123',
+  result: 'all_clear',
+  summary: { passed: 25, conflicted: 0, warned: 0, total: 25 },
+  decisions: [
+    {
+      user_id: 'user_001',
+      decision: 'receive',
+      matched_rules: ['segment:early_adopter'],
+      reason: 'User matches segment and rollout',
+      rule_sources: ['flags/dark-mode.json:8'],
+    },
+  ],
+  exit_code: 0,
+  evaluated_at: '2026-07-13T14:23:01Z',
+  total_latency_ms: 4.2,
+};
+
+describe('FlagEditor', () => {
+  it('validates flag ID pattern', async () => {
+    render(<FlagEditor />);
+
+    const input = screen.getByPlaceholderText('dark-mode');
+    fireEvent.change(input, { target: { value: 'Dark Mode!' } });
+
+    await waitFor(() => {
+      expect(screen.getByText(/lowercase/i)).toBeInTheDocument();
+    });
+  });
+
+  it('shows suggestion for invalid flag ID', async () => {
+    render(<FlagEditor />);
+
+    const input = screen.getByPlaceholderText('dark-mode');
+    fireEvent.change(input, { target: { value: 'DarkMode' } });
+
+    await waitFor(() => {
+      expect(screen.getByText(/Try.*dark-mode/i)).toBeInTheDocument();
+    });
+  });
+
+  it('toggles advanced settings on click', () => {
+    render(<FlagEditor />);
+
+    const toggle = screen.getByText(/Show advanced/i);
+    fireEvent.click(toggle);
+
+    expect(screen.getByText(/Audience Rules/i)).toBeInTheDocument();
+  });
+});
+
+describe('SimulationView', () => {
+  it('renders summary counts correctly', () => {
+    render(<SimulationView simulationResult={mockResult} />);
+
+    expect(screen.getByText('25')).toBeInTheDocument();
+    expect(screen.getByText('Would Receive')).toBeInTheDocument();
+  });
+
+  it('expands decision on click', () => {
+    render(<SimulationView simulationResult={mockResult} />);
+
+    // Initially collapsed
+    expect(screen.queryByText(/Reason:/i)).not.toBeInTheDocument();
+
+    // Click to expand
+    const row = screen.getByText('user_001');
+    fireEvent.click(row);
+
+    // Now visible
+    expect(screen.getByText(/Reason:/i)).toBeInTheDocument();
+  });
+
+  it('shows copy and PDF export buttons', () => {
+    render(<SimulationView simulationResult={mockResult} />);
+
+    expect(screen.getByText('Copy')).toBeInTheDocument();
+    expect(screen.getByText('PDF')).toBeInTheDocument();
+  });
+});
+8.3 SDK Tests
+Location: sdk/tests/client.test.ts
+/**
+ * SDK Client Tests
+ *
+ * Tests API integration, error handling, and retry logic.
+ */
+import { FlagClient } from '../lib/client';
+import { FlagApiError } from '../lib/errors';
+
+global.fetch = jest.fn();
+
+const mockResult = {
+  flag_id: 'dark-mode',
+  simulation_id: 'sim_123',
+  result: 'all_clear',
+  summary: { passed: 25, conflicted: 0, warned: 0, total: 25 },
+  decisions: [],
+  exit_code: 0,
+  evaluated_at: '2026-07-13T14:23:01Z',
+  total_latency_ms: 4.2,
+};
+
+describe('FlagClient', () => {
+  let client: FlagClient;
+
+  beforeEach(() => {
+    client = new FlagClient({ apiKey: 'test_key' });
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('simulate()', () => {
+    it('calls the correct endpoint', async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => mockResult,
+      });
+
+      await client.simulate({
+        flag_id: 'dark-mode',
+        mock_users: [],
+        environment: 'staging',
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        'http://localhost:8080/api/simulate',
+        expect.objectContaining({
+          method: 'POST',
+          headers: {
+            Authorization: 'Bearer test_key',
+            'Content-Type': 'application/json',
+          },
+        })
+      );
+    });
+
+    it('throws FlagApiError on failure', async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        json: async () => ({ code: 'FLAG_NOT_FOUND', message: 'Flag not registered' }),
+      });
+
+      await expect(
+        client.simulate({ flag_id: 'missing', mock_users: [], environment: 'staging' })
+      ).rejects.toThrow(FlagApiError);
+    });
+
+    it('attaches suggestion to error object', async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        json: async () => ({
+          code: 'FLAG_NOT_FOUND',
+          message: 'Flag not registered',
+          details: [{ field: 'flag_id', suggestion: 'Check registered flags' }],
+        }),
+      });
+
+      try {
+        await client.simulate({ flag_id: 'missing', mock_users: [], environment: 'staging' });
+      } catch (error) {
+        expect(error.getFirstSuggestion()).toBe('Check registered flags');
+      }
+    });
+  });
+
+  describe('isSafeToDeploy()', () => {
+    it('returns true when exit_code is 0', async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ ...mockResult, exit_code: 0 }),
+      });
+
+      const result = await client.isSafeToDeploy({
+        flag_id: 'dark-mode',
+        mock_users: [],
+        environment: 'staging',
+      });
+
+      expect(result).toBe(true);
+    });
+
+    it('returns false when exit_code is 1', async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ ...mockResult, exit_code: 1 }),
+      });
+
+      const result = await client.isSafeToDeploy({
+        flag_id: 'dark-mode',
+        mock_users: [],
+        environment: 'staging',
+      });
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('Error Retry Logic', () => {
+    it('marks TIMEOUT as retryable', () => {
+      const error = new FlagApiError('TIMEOUT', 'Request timed out', []);
+      expect(error.isRetryable()).toBe(true);
+    });
+
+    it('marks CONNECTION_FAILURE as retryable', () => {
+      const error = new FlagApiError('CONNECTION_FAILURE', 'Cannot reach service', []);
+      expect(error.isRetryable()).toBe(true);
+    });
+
+    it('marks FLAG_NOT_FOUND as non-retryable', () => {
+      const error = new FlagApiError('FLAG_NOT_FOUND', 'Flag not registered', []);
+      expect(error.isRetryable()).toBe(false);
+    });
+
+    it('calculates exponential backoff delays', () => {
+      const error = new FlagApiError('TIMEOUT', 'Request timed out', []);
+
+      expect(error.getRetryDelay(1)).toBe(1000);
+      expect(error.getRetryDelay(2)).toBe(2000);
+      expect(error.getRetryDelay(3)).toBe(4000);
+      expect(error.getRetryDelay(10)).toBe(10000); // Capped
+    });
+  });
+});
+8.4 Integration Tests
+Location: tests/integration/full-stack.test.js
+/**
+ * End-to-End Integration Tests
+ *
+ * Tests full workflow: CLI → API → Dashboard → SDK
+ * Verifies data consistency across all surfaces.
+ */
+const { execSync } = require('child_process');
+
+describe('Full Stack Integration', () => {
+  it('produces consistent exit codes across CLI and SDK', () => {
+    // Run CLI
+    const cliOutput = execSync(
+      'node cli/index.js simulate --flag dark-mode --format json',
+      { encoding: 'utf8' }
+    );
+    const cliResult = JSON.parse(cliOutput);
+
+    // Run SDK (same mock data)
+    const sdkOutput = execSync(
+      'node -e "const {FlagClient}=require(\'./sdk/lib/client\'); const c=new FlagClient({apiKey:\'test\'}); c.simulate({flag_id:\'dark-mode\',mock_users:[],environment:\'staging\'}).then(r=>console.log(JSON.stringify(r)))"',
+      { encoding: 'utf8' }
+    );
+    const sdkResult = JSON.parse(sdkOutput);
+
+    // Both should use same exit code values
+    expect(typeof cliResult.exit_code).toBe('number');
+    expect(typeof sdkResult.exit_code).toBe('number');
+  });
+
+  it('handles API failure gracefully in CLI', () => {
+    try {
+      execSync('node cli/index.js simulate --flag dark-mode', {
+        encoding: 'utf8',
+        env: { ...process.env, API_BASE_URL: 'http://localhost:9999' },
+        stdio: 'pipe',
+      });
+      fail('Should have exited with error');
+    } catch (error) {
+      expect(error.stderr).toMatch(/Cannot reach/i);
+      expect(error.status).toBe(4); // CONNECTION_FAILURE
+    }
+  });
+});
+8.5 Coverage Requirements
+Component	Minimum	Target	Critical Lines
+CLI	80%	90%	Exit code paths, error handling
+Dashboard	70%	85%	Validation logic, color mapping
+SDK	85%	95%	Retry logic, error classes
+Shared Types	100%	100%	All interfaces used
+Integration	60%	80%	Full workflow, API failure
+
+
+Section 9: Presentation & Demo UI
+9.1 Presentation Layout
+A split-screen interface for presenting the demo during interviews.
+Left side: Collapsible sidebar with 10 design principles (click to expand each). Right side: Tabbed live demo area with tabs for CLI, Dashboard, and SDK.
+Location: presentation/src/PresentationLayout.jsx
+9.2 Presentation UI Code
+/**
+ * PresentationLayout Component
+ *
+ * Demo presentation interface for interviews.
+ *
+ * Layout:
+ * - Left: Design Principles (collapsible sidebar)
+ * - Right: Live Demo (tabs for CLI, Dashboard, SDK)
+ *
+ * Design Principle: Consistency across surfaces.
+ * Design Principle: Progressive disclosure.
+ */
+import { useState } from 'react';
+import { Menu, X } from '@heroicons/react/solid';
+
+const DESIGN_PRINCIPLES = [
+  {
+    id: 'scannable',
+    title: 'Output scannable in 3 seconds',
+    description: 'Top-level verdict visible before scrolling. Users should understand the result instantly.',
+    example: 'Summary card at top of dashboard with counts for received/excluded/partial',
+  },
+  {
+    id: 'functional-colors',
+    title: 'Colors functional, not decorative',
+    description: 'Green = receive, Red = exclude, Yellow = partial. No accent colors for branding.',
+    example: 'Same colors used in CLI (ANSI), Dashboard (Tailwind), and SDK (data)',
+  },
+  {
+    id: 'exit-codes',
+    title: 'Exit codes are the real product',
+    description: 'Machines depend on numeric codes. Humans read text. Both served.',
+    example: 'Exit 0 = all clear, 1 = conflict, 2 = warning',
+  },
+  {
+    id: 'suggestions',
+    title: 'Suggestions beat diagnoses',
+    description: '"Did you mean X?" not "Error: invalid input"',
+    example: 'Flag ID validation suggests "dark-mode" when user types "DarkMode"',
+  },
+  {
+    id: 'consistency',
+    title: 'Consistency is hardest feature',
+    description: 'Same field names, colors, terminology across all surfaces.',
+    example: 'rollout_percentage in CLI, Dashboard, SDK — never rolloutPercent or percent_rollout',
+  },
+  {
+    id: 'transparent-reasoning',
+    title: 'Transparent reasoning beats black boxes',
+    description: 'Users always know why a decision was made.',
+    example: 'Decision trace shows which rules matched for each user',
+  },
+  {
+    id: 'role-division',
+    title: 'Design for explicit role division',
+    description: 'Three surfaces for three audiences (typing, clicking, calling).',
+    example: 'CLI for engineers, Dashboard for PMs, SDK for pipelines',
+  },
+  {
+    id: 'restraint',
+    title: 'Intentional restraint',
+    description: 'Show less by default. Reveal on demand.',
+    example: 'Collapsible decision nodes, --quiet flag, disabled buttons',
+  },
+  {
+    id: 'validate-first',
+    title: 'Validate before you compute',
+    description: 'Bad input caught early, never reaches API.',
+    example: 'Form validation in dashboard, argument parsing in CLI',
+  },
+  {
+    id: 'graceful-failure',
+    title: 'Graceful failure is a feature',
+    description: 'Every failure mode has a defined outcome.',
+    example: 'Timeouts, connection failures, validation errors all handled',
+  },
+];
+
+export default function PresentationLayout() {
+  const [activeSurface, setActiveSurface] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [selectedPrinciple, setSelectedPrinciple] = useState(null);
+
+  return (
+    <div className="h-screen flex">
+      {/* ─── Collapsible Sidebar (Left) ─── */}
+      <div
+        className={`${
+          sidebarOpen ? 'w-80' : 'w-0'
+        } bg-gray-900 text-white transition-all duration-300 overflow-hidden`}
+      >
+        <div className="p-4 h-full overflow-y-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="font-semibold">Design Principles</h2>
+            <button onClick={() => setSidebarOpen(false)}>
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            {DESIGN_PRINCIPLES.map((principle) => (
+              <button
+                key={principle.id}
+                onClick={() =>
+                  setSelectedPrinciple(
+                    selectedPrinciple === principle.id ? null : principle.id
+                  )
+                }
+                className={`w-full text-left p-3 rounded transition ${
+                  selectedPrinciple === principle.id
+                    ? 'bg-blue-600'
+                    : 'hover:bg-gray-800'
+                }`}
+              >
+                <div className="font-medium text-sm">{principle.title}</div>
+                {selectedPrinciple === principle.id && (
+                  <div className="mt-2">
+                    <p className="text-xs text-gray-300">{principle.description}</p>
+                    <p className="text-xs text-gray-400 mt-2">
+                      <strong>Example:</strong> {principle.example}
+                    </p>
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Main Content Area (Right) ─── */}
+      <div className="flex-1 flex flex-col">
+        {/* Toolbar */}
+        <div className="bg-gray-100 border-b p-4 flex justify-between items-center">
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-2 hover:bg-gray-200 rounded"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          <h1 className="font-semibold text-lg">Feature Flag Lifecycle Demo</h1>
+
+          {/* Surface Tabs */}
+          <div className="flex space-x-2">
+            <button
+              onClick={() => setActiveSurface('cli')}
+              className={`px-3 py-1 rounded transition ${
+                activeSurface === 'cli'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 hover:bg-gray-300'
+              }`}
+            >
+              CLI
+            </button>
+            <button
+              onClick={() => setActiveSurface('dashboard')}
+              className={`px-3 py-1 rounded transition ${
+                activeSurface === 'dashboard'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 hover:bg-gray-300'
+              }`}
+            >
+              Dashboard
+            </button>
+            <button
+              onClick={() => setActiveSurface('sdk')}
+              className={`px-3 py-1 rounded transition ${
+                activeSurface === 'sdk'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 hover:bg-gray-300'
+              }`}
+            >
+              SDK
+            </button>
+          </div>
+        </div>
+
+        {/* Live Demo Area */}
+        <div className="flex-1 p-6 bg-white overflow-y-auto">
+          {activeSurface === 'cli' && <CLIDemo />}
+          {activeSurface === 'dashboard' && <DashboardDemo />}
+          {activeSurface === 'sdk' && <SDKDemo />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── CLI Demo Tab ───
+function CLIDemo() {
+  return (
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold">Command Line Interface</h2>
+
+      <pre className="bg-gray-900 text-green-400 p-4 rounded overflow-x-auto">
+{`$ flagsim simulate --flag dark-mode --rollout 25
+
+FLAG SIMULATION RESULT
+============================================================
+
+Flag: dark-mode
+Evaluated: 2026-07-13T14:23:01Z
+
+SUMMARY
+----------------------------------------
+  Received:  25
+  Excluded:  12
+  Partial:   3
+  Total:     100
+
+Exit code: 0 — All checks passed.
+
+DECISION TRACE
+----------------------------------------
+  [RECEIVE] user_001
+    Reason: User matches 'early_adopter' segment and rollout percentage
+  [EXCLUDE] user_002
+    Reason: Internal domain excluded from production rollout
+  [PARTIAL] user_003
+    Reason: User matches some but not all targeting rules
+
+  ... and 97 more`}
+      </pre>
+
+      <div className="text-sm text-gray-600">
+        <p><strong>Key UX decisions:</strong></p>
+        <ul className="list-disc ml-4 space-y-1">
+          <li>Exit codes for CI/CD automation (0–6)</li>
+          <li>Colored output for instant scanning</li>
+          <li><code>--quiet</code> flag suppresses info messages (warnings always visible)</li>
+          <li><code>--format json</code> for machine-readable output</li>
+          <li>Suggestions when flag ID is invalid ("Did you mean X?")</li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+// ─── Dashboard Demo Tab ───
+function DashboardDemo() {
+  return (
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold">Dashboard (Product Manager Surface)</h2>
+
+      {/* Mock Flag Editor Preview */}
+      <div className="border rounded p-4">
+        <div className="font-medium mb-3">Flag Editor</div>
+        <div className="space-y-3">
+          <div>
+            <label className="text-sm font-medium">Flag ID</label>
+            <div className="px-3 py-2 border rounded font-mono text-sm bg-gray-50">dark-mode</div>
+          </div>
+          <div>
+            <label className="text-sm font-medium">Rollout Percentage</label>
+            <input type="range" min="0" max="100" defaultValue="25" className="w-full" readOnly />
+            <div className="text-right text-sm font-medium">25%</div>
+          </div>
+          <div>
+            <label className="text-sm font-medium">Environment</label>
+            <div className="px-3 py-2 border rounded text-sm bg-gray-50">staging</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mock Simulation Result Preview */}
+      <div className="border rounded p-4">
+        <div className="font-medium mb-3">Simulation Result</div>
+
+        {/* Summary Card */}
+        <div className="grid grid-cols-4 gap-2 mb-4">
+          <div className="bg-green-100 p-2 rounded text-center">
+            <div className="text-2xl font-bold text-green-600">25</div>
+            <div className="text-xs">Would Receive</div>
+          </div>
+          <div className="bg-red-100 p-2 rounded text-center">
+            <div className="text-2xl font-bold text-red-600">12</div>
+            <div className="text-xs">Excluded</div>
+          </div>
+          <div className="bg-yellow-100 p-2 rounded text-center">
+            <div className="text-2xl font-bold text-yellow-600">3</div>
+            <div className="text-xs">Partial</div>
+          </div>
+          <div className="bg-gray-100 p-2 rounded text-center">
+            <div className="text-2xl font-bold text-gray-600">100</div>
+            <div className="text-xs">Total</div>
+          </div>
+        </div>
+
+        {/* Decision Trace Preview */}
+        <div className="space-y-2">
+          <div className="font-medium text-sm">Audience Distribution</div>
+          {[
+            { user: 'user_001', decision: 'receive', bg: 'bg-green-50', border: 'border-green-500', badge: 'bg-green-200 text-green-700' },
+            { user: 'user_002', decision: 'exclude', bg: 'bg-red-50', border: 'border-red-500', badge: 'bg-red-200 text-red-700' },
+            { user: 'user_003', decision: 'partial', bg: 'bg-yellow-50', border: 'border-yellow-500', badge: 'bg-yellow-200 text-yellow-700' },
+          ].map((row) => (
+            <div key={row.user} className={`border-l-4 pl-3 py-2 rounded-r ${row.bg} ${row.border}`}>
+              <div className="flex justify-between items-center">
+                <div>
+                  <div className="font-medium text-sm">{row.user}</div>
+                  <div className="text-xs text-gray-500">segment:early_adopter</div>
+                </div>
+                <span className={`px-2 py-1 rounded text-xs font-medium ${row.badge}`}>
+                  {row.decision.toUpperCase()}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Export Buttons */}
+        <div className="flex space-x-2 mt-4">
+          <button className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm">
+            Copy Results
+          </button>
+          <button className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm">
+            Export PDF
+          </button>
+        </div>
+      </div>
+
+      <div className="text-sm text-gray-600">
+        <p><strong>Key UX decisions:</strong></p>
+        <ul className="list-disc ml-4 space-y-1">
+          <li>Summary at top — 3-second scan before scrolling</li>
+          <li>Progressive disclosure — expandable decision nodes</li>
+          <li>Color semantics match CLI exactly (green/red/yellow)</li>
+          <li>Copy to clipboard (plain text) and Export PDF for documentation</li>
+          <li>Rollout slider — visual, intuitive for non-technical users</li>
+          <li>Advanced settings collapsed by default</li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+// ─── SDK Demo Tab ───
+function SDKDemo() {
+  return (
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold">SDK (Pipeline Surface)</h2>
+
+      <pre className="bg-gray-900 text-green-400 p-4 rounded overflow-x-auto">
+{`import { FlagClient } from '@flagsim/sdk';
+
+const client = new FlagClient({
+  apiKey: process.env.FLAG_API_KEY,
+  timeoutMs: 5000,
+});
+
+async function validateBeforeDeploy() {
+  try {
+    const result = await client.simulate({
+      flag_id: 'dark-mode',
+      mock_users: mockUsers,
+      environment: 'production',
+    });
+
+    // Machine makes the decision
+    if (result.exit_code === 1) {
+      console.error(\`Deploy halted: \${result.summary.conflicted} conflicts\`);
+      process.exit(1);
+    }
+
+    // Warnings continue but alert
+    if (result.exit_code === 2) {
+      console.warn(\`Proceeding with \${result.summary.warned} partial matches\`);
+    }
+
+    console.log('Flag validated successfully');
+
+  } catch (error) {
+    // Error includes recovery suggestion
+    console.error(\`Pipeline failed: \${error.message}\`);
+    if (error.getFirstSuggestion?.()) {
+      console.error(\`Suggestion: \${error.getFirstSuggestion()}\`);
+    }
+
+    // Retryable errors auto-calculate backoff
+    if (error.isRetryable?.()) {
+      const delay = error.getRetryDelay(1); // 1000ms
+      console.log(\`Retrying in \${delay}ms...\`);
+    }
+
+    process.exit(1);
+  }
+}
+
+// Convenience method — no exit code memorization needed
+if (await client.isSafeToDeploy({...})) {
+  deploy();
+}`}
+      </pre>
+
+      <div className="text-sm text-gray-600">
+        <p><strong>Key UX decisions:</strong></p>
+        <ul className="list-disc ml-4 space-y-1">
+          <li>Async/await — clean, modern API for consuming code</li>
+          <li>AbortController with timeout — no hanging requests</li>
+          <li>Error objects include <code>.getFirstSuggestion()</code> — recovery hints for machines</li>
+          <li>Built-in retry logic with exponential backoff (<code>.isRetryable()</code>, <code>.getRetryDelay()</code>)</li>
+          <li><code>isSafeToDeploy()</code> convenience method — no need to memorize exit codes</li>
+          <li>No credentials in error objects — intentional restraint</li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+9.3 Presentation Layout Diagram
+┌────────────────┬──────────────────────────────────────────────────┐
+│                │  [☰]  Feature Flag Lifecycle Demo   [CLI][Dashboard][SDK] │
+│  Design        ├──────────────────────────────────────────────────┤
+│  Principles    │                                                  │
+│                │                                                  │
+│  ▸ Scannable   │   (Active tab content renders here)              │
+│  ▾ Colors      │                                                  │
+│    Green=recv  │   Example: Dashboard tab shows mock flag editor   │
+│    Red=excl    │   + simulation result with colored summary cards  │
+│    Yellow=part │   + decision trace tree with expandable nodes     │
+│  ▸ Exit codes  │                                                  │
+│  ▸ Suggestions │                                                  │
+│  ▸ Consistency │                                                  │
+│  ▸ Transparent │                                                  │
+│  ▸ Role div    │                                                  │
+│  ▸ Restraint   │                                                  │
+│  ▸ Validate    │                                                  │
+│  ▸ Graceful    │                                                  │
+│                │                                                  │
+│  [Close sidebar]│                                                 │
+└────────────────┴──────────────────────────────────────────────────┘
+
+Section 10: Deliverables Checklist
+10.1 Source Code
+#	Artifact	Location	Status
+1	Shared TypeScript types	shared/types.ts	✅ Spec'd
+2	Shared constants (colors, exit codes, patterns)	shared/constants.ts	✅ Spec'd
+3	CLI entry point (Commander.js)	cli/index.js	✅ Spec'd
+4	CLI output formatter	cli/utils/formatters.js	✅ Spec'd
+5	CLI simulator service	cli/services/simulator.js	✅ Spec'd
+6	Dashboard — Flag List page	dashboard/src/pages/FlagList.jsx	✅ Spec'd
+7	Dashboard — Flag Editor	dashboard/src/pages/FlagEditor.jsx	✅ Spec'd
+8	Dashboard — Simulation View	dashboard/src/pages/SimulationView.jsx	✅ Spec'd
+9	Dashboard — Routing	dashboard/src/App.jsx	✅ Spec'd
+10	Dashboard — API Integration Layer	dashboard/src/api/flags.js	✅ Spec'd
+11	Dashboard — Export Utility (PDF + Clipboard)	dashboard/src/utils/export.js	✅ Spec'd
+12	SDK — Client Class	sdk/lib/client.ts	✅ Spec'd
+13	SDK — Error Classes	sdk/lib/errors.ts	✅ Spec'd
+14	SDK — Public Exports	sdk/lib/index.ts	✅ Spec'd
+15	Presentation UI	presentation/src/PresentationLayout.jsx	✅ Spec'd
+16	Mock API Server	mock-api-server/index.js	⬜ Needed
+10.2 Tests
+#	Artifact	Location	Status
+17	CLI test suite	cli/tests/cli.test.js	✅ Spec'd
+18	Dashboard component tests	dashboard/src/__tests__/	✅ Spec'd
+19	SDK client tests	sdk/tests/client.test.ts	✅ Spec'd
+20	Integration tests (cross-surface)	tests/integration/	✅ Spec'd
+10.3 CI/CD & Infrastructure
+#	Artifact	Location	Status
+21	GitHub Actions workflow	.github/workflows/flag-validation.yml	✅ Spec'd
+22	Sample flag file	flags/dark-mode.json	✅ Spec'd
+23	Environment variables template	.env.example	✅ Spec'd
+10.4 Documentation
+#	Artifact	Purpose	Status
+24	README.md	Project overview, setup instructions, architecture diagram, quick start commands	⬜ Needed
+25	This specification document	Full technical spec	✅ Complete
+10.5 Mock Data
+#	Artifact	Location	Status
+26	Sample mock users dataset	data/mock-users.json	⬜ Needed
+27	Sample mock flags dataset	data/mock-flags.json	⬜ Needed
+10.6 Build & Run
+#	Artifact	Purpose	Status
+28	Root package.json	Workspace config, scripts to run all three surfaces	⬜ Needed
+29	docker-compose.yml (optional)	One-command startup for demo	⬜ Optional
+10.7 Not Included (Intentionally)
+Artifact	Why Excluded
+Authentication system	Out of UX scope. Assume OAuth exists.
+Database design	Backend responsibility. Demo uses mock data.
+Deployment configs (K8s, Terraform)	Ops responsibility, not product engineering.
+Mobile responsive styles	Dashboard targets desktop admins.
+Internationalization	Adds scope without proving the thesis.
+Formal threat model	Backend security architecture, not UX.
+10.8 Quick Start Commands (What README Will Document)
+# Clone and install
+git clone <repo-url>
+cd feature-flag-lifecycle-demo
+npm install
+
+# Start mock API server
+npm run api          # localhost:8080
+
+# Start CLI
+npm run cli -- simulate --flag dark-mode --rollout 25
+
+# Start dashboard
+npm run dashboard    # localhost:3000
+
+# Start presentation UI
+npm run present      # localhost:3001
+
+# Run all tests
+npm test
+
+# Run specific surface tests
+npm run test:cli
+npm run test:dashboard
+npm run test:sdk
+10.9 Delivery Estimate
+Phase	What	Time
+Phase 1	Shared types, constants, mock API, mock data	4 hours
+Phase 2	CLI (parser, simulator, formatter)	6 hours
+Phase 3	Dashboard (flag list, editor, simulation view, routing, API layer, export)	12 hours
+Phase 4	SDK (client, errors, exports, examples)	4 hours
+Phase 5	CI/CD workflow + integration tests	3 hours
+Phase 6	Presentation UI, README, polish, final testing	3 hours
+Total		~32 hours (3–4 days)
+
+Section 11: Design Rationale & Success Metrics
+11.1 Design Principles Index
+Every component in this project traces back to one or more of these principles. This table maps principles to where they appear in the codebase.
+Principle	Where It Appears	How
+Output scannable in 3 seconds	CLI summary table, Dashboard summary card	Top-level verdict visible before any scrolling
+Colors functional, not decorative	All surfaces	Green = receive, Red = exclude, Yellow = partial. No accent colors for branding.
+Exit codes are the real product	CLI, SDK, CI/CD	Machines read exit codes. Humans read output. Both served.
+Suggestions beat diagnoses	CLI error messages, Dashboard form validation, SDK error objects	"Did you mean X?" not "Error: invalid input"
+Consistency is the hardest feature	Shared types, color mappings, terminology	Same field names, same colors, same exit codes across all three surfaces
+Transparent reasoning beats black boxes	Decision trace tree, rule source links, webhook events with full context	User always knows why a decision was made
+Design for explicit role division	Three surfaces mapped to three audiences (human-typing, human-clicking, machine-calling)	Each surface optimized for its consumer, not a generic "one size fits all"
+Intentional restraint	Collapsible tree nodes, disabled save button, debounced validation, --quiet flag	Show less by default. Reveal on demand. Hide what shouldn't be seen.
+Validate before you compute	Flag editor live validation, form input validation, CLI argument checking	Bad input caught early, never reaches the API
+Graceful failure is a feature	404 redirect page, toast notifications, retry logic, timeout handling	Every failure mode has a defined, tested outcome
+11.2 Cross-Surface Consistency Matrix
+This is the core thesis of the demo. One design language, three surfaces.
+Concept	CLI	Dashboard	SDK
+Verdict display	Colored table rows	Colored badges (same hex)	exit_code field
+Color: receive	\u001b[32m (green)	bg-green-200 (Tailwind green)	N/A (data only)
+Color: exclude	\u001b[31m (red)	bg-red-200 (Tailwind red)	N/A (data only)
+Color: partial	\u001b[33m (yellow)	bg-yellow-200 (Tailwind yellow)	N/A (data only)
+Error terminology	"Flag not found"	"Flag not found"	code: 'FLAG_NOT_FOUND'
+Suggestion format	"Did you mean X?" inline	"Tip: Try X" below field	.getFirstSuggestion() method
+Summary fields	passed, conflicted, warned	summary.passed, .conflicted, .warned	result.summary.{passed, conflicted, warned}
+Timeout default	5000ms	Spinner after 5000ms	timeoutMs: 5000
+Retry behavior	Human re-runs command	Human clicks "Retry"	isRetryable() + getRetryDelay()
+Flag ID pattern	^[a-z0-9-]+$	^[a-z0-9-]+$	^[a-z0-9-]+$
+Why this matters: A product manager who uses the Dashboard in the morning and an engineer who uses the CLI in the afternoon don't have to relearn anything. Colors mean the same thing. Terminology is identical. Mental model transfers.
+11.3 Security-Aware UX Decisions
+These are UX-level choices — not backend architecture. They demonstrate that the design considers what shouldn't be shown, not just what should.
+Decision	Surface	Rationale
+API key in GitHub Secrets	CI/CD (Section 7)	Key never appears in code, commits, or logs. Pipeline reads from encrypted store.
+Error objects exclude credentials	SDK (Section 6)	FlagApiError contains code, message, and suggestion. Never includes request body or auth headers.
+Input validation before submission	Dashboard (Flag Editor)	Flag ID pattern enforced client-side. Invalid input never reaches API.
+Disabled save on invalid input	Dashboard (Flag Editor)	Broken configurations cannot be persisted. Prevents downstream impact.
+Dropdown for environment selection	Dashboard (Flag Editor)	No free-text environment input. Prevents typos and arbitrary values.
+Debounced validation	Dashboard (Flag Editor)	500ms delay prevents rapid-fire API calls from automated input.
+Rollout range enforced (0–100)	CLI and Dashboard	Both surfaces validate numeric range before processing.
+11.4 Success Metrics for This Demo
+Not business metrics. Demonstration metrics — what this project proves about the candidate.
+Metric	How It's Demonstrated	Why It Matters
+Cross-surface coherence	Same types, colors, terminology across CLI/Dashboard/SDK	Proves ability to design systems, not just screens
+Developer empathy	Exit codes, suggestions in errors, debounced validation	Shows understanding of developer workflows
+Progressive disclosure	Collapsible tree, optional fields, --quiet flag, advanced settings toggle	Demonstrates information architecture thinking
+Real-world integration	CI/CD pipeline with GitHub Actions	Shows awareness of deployment context
+Testability	Unit tests per surface + integration tests	Proves engineering discipline, not just design
+Role-based design	Three surfaces for three audiences	Demonstrates user research mindset
+Restraint	Disabled buttons, collapsed settings, no decorative elements	Shows maturity — knowing what to leave out
+Presentation-aware	Dedicated presentation UI with principle sidebar	Shows ability to communicate design decisions, not just make them
+11.5 What This Project Deliberately Doesn't Do
+Out of Scope	Why
+Authentication system	Not a UX problem. Assume OAuth exists.
+Database design	Backend responsibility. Demo uses mock data.
+Deployment infrastructure	Dockerfiles, Kubernetes, etc. are ops, not UX.
+Internationalization	Real feature, but adds scope without demonstrating UX thesis.
+Mobile responsive design	Dashboard targets desktop admins. Mobile adds scope without proving the core point.
+11.6 Design Philosophy Summary
+The goal of this project is to demonstrate that developer tooling can have coherent, humane design across every surface it touches. The CLI serves engineers who type. The Dashboard serves product managers who configure. The SDK serves pipelines that automate. Different interactions, same mental model. Same colors. Same terminology. Same exit codes. The hard part isn't building one good interface — it's building three that feel like they came from the same mind.
+
+SPECIFICATION COMPLETE.
+This document is ready for handoff to an AI coding tool. All code, types, tests, CI/CD configuration, and presentation UI are specified. No company names, trademarks, or filter-triggering language remain.
