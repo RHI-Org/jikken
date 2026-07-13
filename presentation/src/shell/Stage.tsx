@@ -69,7 +69,7 @@ export function Stage({
           gap: '1rem',
           padding: '0.7rem 1.1rem',
           borderBottom: '1px solid var(--portfolio-border)',
-          background: 'var(--portfolio-bg-card)',
+          background: 'var(--portfolio-bg-muted)',
           flexWrap: 'wrap',
         }}
       >

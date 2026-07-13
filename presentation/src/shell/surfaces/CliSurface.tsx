@@ -165,7 +165,7 @@ export function CliSurface({
         style={{ flex: 1, minHeight: 0, background: '#f5f5f4', padding: '0.6rem 0.4rem 0.4rem 0.6rem' }}
       />
       {/* Preset command chips — below the console, so the terminal is the focus */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem', padding: '0.75rem 0.9rem', borderTop: '1px solid var(--portfolio-border-muted)' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem', padding: '0.75rem 0.9rem', borderTop: '1px solid var(--portfolio-border-muted)', background: 'var(--portfolio-bg-muted)' }}>
         <span
           style={{
             fontSize: '0.62rem',

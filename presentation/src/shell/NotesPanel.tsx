@@ -34,7 +34,7 @@ export function EdgeTab({ onOpen }: { onOpen: () => void }) {
         border: '1px solid var(--portfolio-border)',
         borderLeft: 'none',
         borderRadius: '0 0.5rem 0.5rem 0',
-        background: 'var(--portfolio-bg-card)',
+        background: 'var(--portfolio-bg-muted)',
         color: 'var(--portfolio-text-secondary)',
         fontSize: '0.7rem',
         fontWeight: 'var(--font-weight-bold)',
@@ -71,7 +71,7 @@ export function NotesPanel({
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        background: 'var(--portfolio-bg-card)',
+        background: 'var(--portfolio-bg-muted)',
         borderRight: '1px solid var(--portfolio-border)',
       }}
     >
