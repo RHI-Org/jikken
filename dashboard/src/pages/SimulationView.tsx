@@ -9,7 +9,7 @@
  * Design Principle: Consistency — same colors as CLI.
  * Design Principle: Transparent reasoning — every decision explained.
  */
-import { ChevronDown, ChevronRight, Copy, Download } from 'lucide-react';
+import { ChevronDown, ChevronRight, Copy, Download, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -133,24 +133,30 @@ export default function SimulationView({ simulationResult: providedResult }: Sim
   const [result, setResult] = useState<SimulationResult | undefined>(providedResult);
   const [running, setRunning] = useState(false);
 
-  const runSimulation = () => {
-    if (!flagId) return;
+  const runSimulation = async (showFeedback = true) => {
+    if (!flagId || running) return;
     setRunning(true);
-    if (demoScenario) {
-      setResult(evaluateFlag(demoScenario.flag, demoScenario.users));
+    try {
+      if (demoScenario) {
+        // Keep the deterministic result, but make a manual rerun perceptible.
+        if (showFeedback) await new Promise((resolve) => window.setTimeout(resolve, 450));
+        setResult(evaluateFlag(demoScenario.flag, demoScenario.users));
+      } else {
+        const simulation = await flagStore.runSimulation(flagId);
+        setResult(simulation);
+      }
+      if (showFeedback) toast.success('Simulation refreshed');
+    } catch {
+      if (showFeedback) toast.error('Simulation failed');
+    } finally {
       setRunning(false);
-      return;
     }
-    flagStore
-      .runSimulation(flagId)
-      .then((sim) => setResult(sim))
-      .finally(() => setRunning(false));
   };
 
   useEffect(() => {
     if (providedResult) return;
     if (!flagId) return;
-    runSimulation();
+    void runSimulation(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flagId, scenarioParam]);
 
@@ -228,17 +234,22 @@ export default function SimulationView({ simulationResult: providedResult }: Sim
           <div>
             <h3 className="text-lg font-semibold">Simulation Summary</h3>
             <p className="text-xs text-gray-500 font-mono">{flag_id}</p>
+            <p className="mt-1 text-[11px] text-gray-400">
+              Last run {new Date(result.evaluated_at).toLocaleTimeString()}
+            </p>
           </div>
 
           {/* Export / Copy buttons */}
           <div className="flex space-x-2">
             <button
               type="button"
-              onClick={runSimulation}
-              className="flex items-center px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm text-gray-700"
+              onClick={() => void runSimulation(true)}
+              disabled={running}
+              className="flex items-center px-3 py-1 bg-gray-100 hover:bg-gray-200 disabled:cursor-wait disabled:opacity-60 rounded text-sm text-gray-700"
               title="Re-run simulation"
             >
-              Re-run simulation
+              <RefreshCw className={`mr-1.5 h-4 w-4 ${running ? 'animate-spin' : ''}`} aria-hidden="true" />
+              {running ? 'Running…' : 'Re-run simulation'}
             </button>
             <button
               type="button"
