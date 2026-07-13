@@ -57,7 +57,7 @@ function InfoTip({ label, text }: { label: string; text: string }) {
         onBlur={() => setOpen(false)}
         onMouseEnter={() => setOpen(true)}
         onMouseLeave={() => setOpen(false)}
-        style={{ display: 'grid', placeItems: 'center', width: '1.35rem', height: '1.35rem', padding: 0, border: '1px solid var(--portfolio-border)', borderRadius: '999px', background: 'var(--portfolio-bg-card)', color: 'var(--portfolio-text-muted)', cursor: 'help' }}
+        style={{ display: 'grid', placeItems: 'center', width: '1.35rem', height: '1.35rem', padding: 0, border: 0, borderRadius: '999px', background: 'transparent', color: 'var(--portfolio-text-muted)', cursor: 'help' }}
       >
         <Info size={12} aria-hidden="true" />
       </button>
