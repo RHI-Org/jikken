@@ -320,7 +320,7 @@ export default function SimulationView({ simulationResult: providedResult }: Sim
               <div
                 key={dec.user_id}
                 data-tutorial={dec.decision === 'exclude' && decisions.find((item) => item.decision === 'exclude')?.user_id === dec.user_id ? 'excluded-decision' : undefined}
-                className={`border-l-4 pl-4 pr-3 py-3 ${style.bg} ${style.border} rounded-r`}
+                className={`border-l-4 pl-4 pr-3 py-3 ${style.bg} ${style.border} rounded-lg`}
               >
                 <div
                   className="flex justify-between items-center cursor-pointer"
