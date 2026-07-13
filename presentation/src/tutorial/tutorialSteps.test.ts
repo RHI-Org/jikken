@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createJikkenTutorialSteps, TUTORIAL_EVENTS } from './tutorialSteps';
+import { createJikkenTutorialSteps } from './tutorialSteps';
 
 describe('Jikken tutorial contract', () => {
   it('defines a stable, unique sequence from welcome through completion', () => {
@@ -10,22 +10,17 @@ describe('Jikken tutorial contract', () => {
     expect(new Set(steps.map((step) => step.id)).size).toBe(steps.length);
   });
 
-  it('keeps interaction steps event-gated and dialogs manually advanceable', () => {
+  it('lets every step advance manually so the demo cannot deadlock', () => {
     const steps = createJikkenTutorialSteps();
-    const interactions = steps.slice(1, -1);
-
-    expect(interactions.every((step) => step.advanceOn && !step.allowNext)).toBe(true);
-    expect(steps[0].allowNext).toBe(true);
-    expect(steps.at(-1)?.allowNext).toBe(true);
+    expect(steps.every((step) => step.allowNext)).toBe(true);
   });
 
-  it('uses each tutorial event exactly once', () => {
-    const eventNames = createJikkenTutorialSteps()
-      .map((step) => step.advanceOn)
-      .filter((event): event is string => Boolean(event));
+  it('teaches the real CLI command instead of routing through command shortcuts', () => {
+    const steps = createJikkenTutorialSteps();
+    const cliStep = steps.find((step) => step.id === 'type-cli-command');
 
-    expect(eventNames).toEqual(Object.values(TUTORIAL_EVENTS));
-    expect(new Set(eventNames).size).toBe(eventNames.length);
+    expect(String(cliStep?.body)).toContain('jikken diff --feature dark-mode --scenario conflict');
+    expect(steps.some((step) => step.id === 'open-commands')).toBe(false);
   });
 
   it('prepares the deterministic demo when entering the welcome step', async () => {

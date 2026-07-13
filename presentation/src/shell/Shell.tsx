@@ -43,17 +43,30 @@ export function Shell() {
   const [activePrinciple, setActivePrinciple] = useState<Principle | null>(null);
   const [cliInject, setCliInject] = useState<CliInject | null>(null);
   const nonce = useRef(0);
+  const tutorialCliRan = useRef(false);
 
-  // A fresh walkthrough starts from a known state. Starting on a different
-  // feature makes "Choose Dark Mode" a real change event instead of a no-op.
+  // Keep the manual walkthrough deterministic while leaving command entry to
+  // the viewer. Later steps prepare their surface when Next is used.
   useEffect(() => {
-    if (!tutorial.active || tutorial.currentStep?.id !== 'welcome') return;
-    setPanelOpen(true);
-    setNotesTab('overview');
-    setSurface('cli');
-    setFeature('checkout-redesign');
-    setScenario(null);
-    setActivePrinciple(null);
+    if (!tutorial.active) return;
+    const step = tutorial.currentStep?.id;
+    if (step === 'welcome') {
+      tutorialCliRan.current = false;
+      setPanelOpen(true);
+      setNotesTab('overview');
+      setSurface('cli');
+      setFeature('dark-mode');
+      setScenario('conflict');
+      setActivePrinciple(null);
+    } else if (step === 'inspect-cli-result' && !tutorialCliRan.current) {
+      injectCli('jikken diff --feature dark-mode --scenario conflict');
+    } else if (step === 'open-history') {
+      setSurface('dashboard');
+    } else if (step === 'run-sdk') {
+      setSurface('sdk');
+    } else if (step === 'ci-verdict') {
+      setSurface('ci');
+    }
   }, [tutorial.active, tutorial.currentStep?.id, tutorial.state.session]);
 
   const injectCli = useCallback((command: string) => {
@@ -131,6 +144,8 @@ export function Shell() {
     (_r: SimulationResult, sc: string | null) => {
       const scenarioId = sc ?? scenario;
       if (!scenarioId) return; // nothing chosen / no scenario to attribute the run to
+      tutorialCliRan.current = true;
+      if (sc) setScenario(sc as ScenarioId);
       tutorial.emit(TUTORIAL_EVENTS.cliRunComplete);
       void supabase.functions
         .invoke('jikken-simulate', { body: { scenario: scenarioId, surface: 'cli' } })

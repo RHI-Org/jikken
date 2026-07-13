@@ -19,7 +19,7 @@ export interface TutorialPreparation {
   resetDemo?: () => void | Promise<void>;
 }
 
-/** The deterministic demo story: Dark Mode -> exclude employees -> deploy blocked. */
+/** The deterministic demo story: type a Dark Mode diff -> inspect it -> block deploy. */
 export function createJikkenTutorialSteps(
   preparation: TutorialPreparation = {},
 ): readonly TutorialStep[] {
@@ -34,36 +34,20 @@ export function createJikkenTutorialSteps(
       prepare: preparation.resetDemo,
     },
     {
-      id: 'open-commands',
-      anchor: 'commands-tab',
-      title: 'Start with the shared inputs',
-      body: 'Open Commands. Every Jikken surface uses the same feature and scenario.',
-      placement: 'right',
-      advanceOn: TUTORIAL_EVENTS.commandsOpened,
-    },
-    {
-      id: 'choose-feature',
-      anchor: 'feature-select',
-      title: 'Choose Dark Mode',
-      body: 'This is the feature whose proposed targeting change we want to inspect.',
-      placement: 'right',
-      advanceOn: TUTORIAL_EVENTS.darkModeSelected,
-    },
-    {
-      id: 'choose-scenario',
-      anchor: 'scenario-select',
-      title: 'Exclude employees',
-      body: 'Model a rule change that removes internal accounts from the audience.',
-      placement: 'right',
-      advanceOn: TUTORIAL_EVENTS.excludeEmployeesSelected,
-    },
-    {
-      id: 'run-cli',
+      id: 'type-cli-command',
       anchor: 'cli-output',
-      title: 'Compare the proposed change',
-      body: 'Jikken is comparing the proposal with the live audience and finding who loses access.',
+      title: 'Run the check in the CLI',
+      body: 'Click the terminal and type: jikken diff --feature dark-mode --scenario conflict — then press Enter. Or click Next and the demo will run it for you.',
       placement: 'left',
-      advanceOn: TUTORIAL_EVENTS.cliRunComplete,
+      allowNext: true,
+    },
+    {
+      id: 'inspect-cli-result',
+      anchor: 'cli-output',
+      title: 'See who would lose access',
+      body: 'The diff catches three employees who have Dark Mode today but would be excluded by the proposed rule.',
+      placement: 'left',
+      allowNext: true,
     },
     {
       id: 'open-dashboard',
@@ -71,7 +55,7 @@ export function createJikkenTutorialSteps(
       title: 'Open the Dashboard',
       body: 'The same simulation becomes a reviewable record for product and governance teams.',
       placement: 'bottom',
-      advanceOn: TUTORIAL_EVENTS.dashboardOpened,
+      allowNext: true,
     },
     {
       id: 'open-history',
@@ -79,7 +63,7 @@ export function createJikkenTutorialSteps(
       title: 'Review the audit trail',
       body: 'History preserves the input, impact, and verdict instead of leaving them in terminal output.',
       placement: 'left',
-      advanceOn: TUTORIAL_EVENTS.historyOpened,
+      allowNext: true,
     },
     {
       id: 'open-sdk',
@@ -87,7 +71,7 @@ export function createJikkenTutorialSteps(
       title: 'Use the same contract in code',
       body: 'Open the SDK surface to see how an automated integration asks the same question.',
       placement: 'bottom',
-      advanceOn: TUTORIAL_EVENTS.sdkOpened,
+      allowNext: true,
     },
     {
       id: 'run-sdk',
@@ -95,7 +79,7 @@ export function createJikkenTutorialSteps(
       title: 'Run the SDK check',
       body: 'Integrations receive the same affected users, verdict, and machine-readable result.',
       placement: 'left',
-      advanceOn: TUTORIAL_EVENTS.sdkRunComplete,
+      allowNext: true,
     },
     {
       id: 'open-ci',
@@ -103,7 +87,7 @@ export function createJikkenTutorialSteps(
       title: 'Send it to the CI gate',
       body: 'The pipeline turns that shared result into an enforceable deployment decision.',
       placement: 'bottom',
-      advanceOn: TUTORIAL_EVENTS.ciOpened,
+      allowNext: true,
     },
     {
       id: 'ci-verdict',
@@ -111,7 +95,7 @@ export function createJikkenTutorialSteps(
       title: 'Deployment blocked',
       body: 'Exit 1 stops the rollout before three employees lose access. The risky change never ships.',
       placement: 'left',
-      advanceOn: TUTORIAL_EVENTS.ciVerdictVisible,
+      allowNext: true,
     },
     {
       id: 'complete',

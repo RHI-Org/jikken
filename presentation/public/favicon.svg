@@ -1,14 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Jikken decision gate">
   <rect width="64" height="64" rx="14" fill="#1c1917"/>
-  <text
-    x="32"
-    y="34"
-    text-anchor="middle"
-    dominant-baseline="central"
-    font-family="'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace"
-    font-weight="700"
-    font-size="34"
-    letter-spacing="-1.5"
-    fill="#fafaf9"
-  >JK</text>
+
+  <!-- One proposed change enters the decision point. -->
+  <circle cx="14" cy="32" r="4" fill="#fafaf9"/>
+  <rect x="17" y="30" width="12" height="4" rx="2" fill="#fafaf9"/>
+
+  <!-- The same evaluation can allow a safe change or halt a risky one. -->
+  <polygon points="27,29 37,18 48,18 48,22 40,22 30,35" fill="#fafaf9"/>
+  <polygon points="27,29 31,29 40,42 46,42 46,46 37,46 27,35" fill="#fafaf9"/>
+  <circle cx="51" cy="20" r="5" fill="#16a34a"/>
+  <rect x="47.5" y="37" width="5" height="14" rx="2.5" fill="#dc2626"/>
 </svg>
