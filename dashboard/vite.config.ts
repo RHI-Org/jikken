@@ -4,6 +4,9 @@ import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig(() => ({
+  // Served under /dashboard/ in the combined jk.experienceplus.ai deployment
+  // (set by the root vercel-build); '/' for standalone dev.
+  base: process.env.DASHBOARD_BASE || '/',
   server: {
     host: 'localhost',
     port: 8091,

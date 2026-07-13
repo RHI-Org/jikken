@@ -16,6 +16,8 @@
     "cli": "npm run start --workspace cli --",
     "build": "npm run build --workspaces --if-present",
     "build:present": "npm run build --workspace presentation",
+    "build:dashboard": "DASHBOARD_BASE=/dashboard/ npm run build --workspace dashboard",
+    "vercel-build": "npm run build:present && npm run build:dashboard && node scripts/assemble-dist.mjs",
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test:integration": "vitest run tests/integration"

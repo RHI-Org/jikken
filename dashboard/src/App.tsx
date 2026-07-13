@@ -61,7 +61,7 @@ function NotFoundPage() {
 
 export default function App() {
   return (
-    <Router>
+    <Router basename={import.meta.env.BASE_URL}>
       <div className="min-h-screen bg-gray-50">
         <NavBar />
         <Toaster position="top-right" />
