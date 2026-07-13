@@ -40,7 +40,7 @@ function runExpectFailure(args: string): FailureResult {
 describe('simulate scenarios', () => {
   it('outputs the simulation header and summary for the all-clear scenario', () => {
     const output = run('simulate --scenario all-clear');
-    expect(output).toMatch(/FLAG SIMULATION RESULT/);
+    expect(output).toMatch(/Flag simulation result/);
     expect(output).toMatch(/Included/);
   });
 
@@ -63,14 +63,14 @@ describe('simulate scenarios', () => {
 describe('diff command', () => {
   it('reports the change impact and gained access for the all-clear scenario (exit 0)', () => {
     const output = run('diff --scenario all-clear');
-    expect(output).toMatch(/CHANGE IMPACT/);
-    expect(output).toMatch(/GAINED ACCESS/);
+    expect(output).toMatch(/Change impact/);
+    expect(output).toMatch(/Gained access/);
   });
 
   it('exits 1 and reports lost access for the conflict scenario', () => {
     const result = runExpectFailure('diff --scenario conflict');
     expect(result.status).toBe(1);
-    expect(result.stdout).toContain('LOST ACCESS (3)');
+    expect(result.stdout).toContain('Lost access (3)');
   });
 
   it('produces machine-parseable JSON with lost users for the conflict scenario', () => {
@@ -96,7 +96,7 @@ describe('output format', () => {
 
   it('omits the decision trace with --quiet', () => {
     const output = run('simulate --scenario all-clear --quiet');
-    expect(output).not.toContain('DECISION TRACE');
+    expect(output).not.toContain('Decision trace');
   });
 });
 

@@ -19,20 +19,20 @@ export function formatOutput(
     return JSON.stringify(result, null, 2);
   }
 
-  const HEADER = "\u001b[1m\u001b[38;5;232m"; // bold dark — section headers
+  const HEADER = "\u001b[38;5;240m";            // subdued grey — section headers
   const LABEL  = "\u001b[38;5;244m";           // mid grey — field labels
   const FAINT  = "\u001b[38;5;250m";           // faint grey — separator rules
   const VALUE  = "\u001b[38;5;238m";           // near-black — values
 
   let output = '\n';
-  output += `${HEADER}FLAG SIMULATION RESULT${ANSI_RESET}\n`;
-  output += `${FAINT}${'='.repeat(60)}${ANSI_RESET}\n`;
+  output += `${HEADER}Flag simulation result${ANSI_RESET}\n`;
+  output += `${FAINT}${'─'.repeat(32)}${ANSI_RESET}\n`;
   output += '\n';
   output += `${LABEL}Flag:${ANSI_RESET} ${VALUE}${result.flag_id}${ANSI_RESET}\n`;
   output += `${LABEL}Evaluated:${ANSI_RESET} ${VALUE}${result.evaluated_at}${ANSI_RESET}\n`;
   output += '\n';
-  output += `${HEADER}SUMMARY${ANSI_RESET}\n`;
-  output += `${FAINT}${'-'.repeat(40)}${ANSI_RESET}\n`;
+  output += `${HEADER}Summary${ANSI_RESET}\n`;
+  output += `${FAINT}${'─'.repeat(24)}${ANSI_RESET}\n`;
   output += `  ${LABEL}Included:${ANSI_RESET}  ${COLORS.RECEIVE.ansi}${result.summary.passed}${ANSI_RESET}\n`;
   output += `  ${LABEL}Excluded:${ANSI_RESET}  ${COLORS.EXCLUDE.ansi}${result.summary.conflicted}${ANSI_RESET}\n`;
   output += `  ${LABEL}Needs review:${ANSI_RESET} ${COLORS.PARTIAL.ansi}${result.summary.warned}${ANSI_RESET}\n`;
@@ -42,8 +42,8 @@ export function formatOutput(
 
   if (!quiet) {
     output += '\n';
-    output += `${HEADER}DECISION TRACE${ANSI_RESET}\n`;
-    output += `${FAINT}${'-'.repeat(40)}${ANSI_RESET}\n`;
+    output += `${HEADER}Decision trace${ANSI_RESET}\n`;
+    output += `${FAINT}${'─'.repeat(24)}${ANSI_RESET}\n`;
 
     const decisionsToDisplay = result.decisions.slice(0, 5);
     for (const d of decisionsToDisplay) {
@@ -73,22 +73,22 @@ export function formatDiff(diff: SimulationDiff, format: 'text' | 'json', quiet:
     return JSON.stringify(diff, null, 2);
   }
 
-  const HEADER = "\u001b[1m\u001b[38;5;232m";
+  const HEADER = "\u001b[38;5;240m";
   const LABEL = "\u001b[38;5;244m";
   const FAINT = "\u001b[38;5;250m";
   const VALUE = "\u001b[38;5;238m";
 
   let out = "\n";
-  out += `${HEADER}CHANGE IMPACT${ANSI_RESET}\n`;
-  out += `${FAINT}${"=".repeat(60)}${ANSI_RESET}\n\n`;
+  out += `${HEADER}Change impact${ANSI_RESET}\n`;
+  out += `${FAINT}${"─".repeat(32)}${ANSI_RESET}\n\n`;
   out += `${LABEL}Flag:${ANSI_RESET} ${VALUE}${diff.flag_id}${ANSI_RESET}\n`;
 
   const netSign = diff.net_receivers >= 0 ? "+" : "";
   const netColor = diff.net_receivers >= 0 ? COLORS.RECEIVE.ansi : COLORS.EXCLUDE.ansi;
   out += `${LABEL}Receiving:${ANSI_RESET} ${VALUE}${diff.before.summary.passed} -> ${diff.after.summary.passed}${ANSI_RESET} ${netColor}(${netSign}${diff.net_receivers})${ANSI_RESET}\n\n`;
 
-  out += `${HEADER}GAINED ACCESS (${diff.gained.length})${ANSI_RESET}\n`;
-  out += `${FAINT}${"-".repeat(40)}${ANSI_RESET}\n`;
+  out += `${HEADER}Gained access (${diff.gained.length})${ANSI_RESET}\n`;
+  out += `${FAINT}${"─".repeat(24)}${ANSI_RESET}\n`;
   if (diff.gained.length === 0) {
     out += `${LABEL}  (none)${ANSI_RESET}\n`;
   } else if (!quiet) {
@@ -98,8 +98,8 @@ export function formatDiff(diff: SimulationDiff, format: 'text' | 'json', quiet:
   }
 
   out += "\n";
-  out += `${HEADER}LOST ACCESS (${diff.lost.length})${ANSI_RESET}\n`;
-  out += `${FAINT}${"-".repeat(40)}${ANSI_RESET}\n`;
+  out += `${HEADER}Lost access (${diff.lost.length})${ANSI_RESET}\n`;
+  out += `${FAINT}${"─".repeat(24)}${ANSI_RESET}\n`;
   if (diff.lost.length === 0) {
     out += `${LABEL}  (none)${ANSI_RESET}\n`;
   } else if (!quiet) {

@@ -5,7 +5,7 @@
  * command shortcut in the terminal.
  */
 import { useState } from 'react';
-import { ArrowRight, Info } from 'lucide-react';
+import { ArrowRight, Check, Copy, Info } from 'lucide-react';
 import { SCENARIO_IDS, SCENARIO_NAMES, type FeatureDef, type FeatureId, type ScenarioId } from '@jikken/shared';
 import { PRESET_COMMANDS } from '../cli-runtime';
 
@@ -70,6 +70,30 @@ function InfoTip({ label, text }: { label: string; text: string }) {
   );
 }
 
+function CopyButton({ label, text, disabled = false }: { label: string; text: string; disabled?: boolean }) {
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    if (disabled) return;
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1400);
+  };
+
+  return (
+    <button
+      type="button"
+      aria-label={copied ? 'Copied to clipboard' : label}
+      title={copied ? 'Copied' : label}
+      disabled={disabled}
+      onClick={copy}
+      style={{ display: 'grid', placeItems: 'center', width: '1.35rem', height: '1.35rem', flexShrink: 0, padding: 0, border: 0, background: 'transparent', color: copied ? 'var(--portfolio-text-primary)' : 'var(--portfolio-text-muted)', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.35 : 1 }}
+    >
+      {copied ? <Check size={13} aria-hidden="true" /> : <Copy size={13} aria-hidden="true" />}
+    </button>
+  );
+}
+
 export function CommandsTab({
   features,
   feature,
@@ -105,50 +129,54 @@ export function CommandsTab({
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
-          <label style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-              <span style={MICRO_LABEL}>Feature</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+            <label htmlFor="feature-menu" style={MICRO_LABEL}>Feature</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <select
+                id="feature-menu"
+                data-tutorial="feature-select"
+                value={feature}
+                onChange={(e) => onFeatureChange(e.target.value as FeatureId)}
+                aria-label="Choose a feature"
+                title={featureDef.description}
+                style={{ ...SELECT_STYLE, minWidth: 0, flex: 1 }}
+              >
+                {features.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.label}
+                  </option>
+                ))}
+              </select>
+              <CopyButton label="Copy feature CLI option" text={`--feature ${feature}`} />
               <InfoTip label="About the Feature menu" text="Choose the product capability controlled by the flag. Each feature carries its own audience attributes and scenarios." />
-            </span>
-            <select
-              data-tutorial="feature-select"
-              value={feature}
-              onChange={(e) => onFeatureChange(e.target.value as FeatureId)}
-              aria-label="Choose a feature"
-              title={featureDef.description}
-              style={SELECT_STYLE}
-            >
-              {features.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.label}
-                </option>
-              ))}
-            </select>
-          </label>
+            </div>
+          </div>
 
-          <label style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-              <span style={MICRO_LABEL}>Scenario</span>
-              <InfoTip label="About the Scenario menu" text={`Choose the proposed targeting change to evaluate. Menu names map directly to CLI values: ${scenarioMap}.`} />
-            </span>
-            <select
-              data-tutorial="scenario-select"
-              value={scenario ?? ''}
-              onChange={(e) => e.target.value && onScenarioChange(e.target.value as ScenarioId)}
-              aria-label="Choose a scenario"
-              title={scenario ? featureDef.situations[scenario].description : 'Pick a scenario to begin'}
-              style={{ ...SELECT_STYLE, color: scenario ? 'var(--portfolio-text-primary)' : 'var(--portfolio-text-muted)' }}
-            >
-              <option value="" disabled>
-                Pick a scenario…
-              </option>
-              {SCENARIO_IDS.map((id) => (
-                <option key={id} value={id}>
-                  {SCENARIO_NAMES[id]}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+            <label htmlFor="scenario-menu" style={MICRO_LABEL}>Scenario</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <select
+                id="scenario-menu"
+                data-tutorial="scenario-select"
+                value={scenario ?? ''}
+                onChange={(e) => e.target.value && onScenarioChange(e.target.value as ScenarioId)}
+                aria-label="Choose a scenario"
+                title={scenario ? featureDef.situations[scenario].description : 'Pick a scenario to begin'}
+                style={{ ...SELECT_STYLE, minWidth: 0, flex: 1, color: scenario ? 'var(--portfolio-text-primary)' : 'var(--portfolio-text-muted)' }}
+              >
+                <option value="" disabled>
+                  Pick a scenario…
                 </option>
-              ))}
-            </select>
-          </label>
+                {SCENARIO_IDS.map((id) => (
+                  <option key={id} value={id}>
+                    {SCENARIO_NAMES[id]}
+                  </option>
+                ))}
+              </select>
+              <CopyButton label="Copy scenario CLI option" text={scenario ? `--scenario ${scenario}` : ''} disabled={!scenario} />
+              <InfoTip label="About the Scenario menu" text={`Choose the proposed targeting change to evaluate. Menu names map directly to CLI values: ${scenarioMap}.`} />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -167,17 +195,20 @@ export function CommandsTab({
               <div style={{ ...MICRO_LABEL, marginBottom: '0.4rem' }}>{group.label}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                 {PRESET_COMMANDS.filter((command) => command.group === group.id).map((c) => (
-                  <div key={c.label} style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.25rem 0.35rem 0.25rem 0.7rem', borderRadius: '0.5rem', border: '1px solid var(--portfolio-border)', background: 'var(--portfolio-bg-card)' }}>
-                    <button
-                      data-tutorial={c.command.includes('diff') && c.command.includes('conflict') ? 'run-conflict-command' : undefined}
-                      onClick={() => onRunCommand(c.command)}
-                      style={{ minWidth: 0, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.7rem', padding: '0.4rem 0', border: 0, background: 'none', cursor: 'pointer', textAlign: 'left' }}
-                    >
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.76rem', color: 'var(--portfolio-text-primary)', lineHeight: 1.3, wordBreak: 'break-word' }}>
-                        {c.label}
-                      </span>
-                      <ArrowRight size={14} style={{ flexShrink: 0, color: 'var(--portfolio-text-faint)' }} />
-                    </button>
+                  <div key={c.label} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <div style={{ minWidth: 0, flex: 1, padding: '0.25rem 0.35rem 0.25rem 0.7rem', borderRadius: '0.5rem', border: '1px solid var(--portfolio-border)', background: 'var(--portfolio-bg-card)' }}>
+                      <button
+                        data-tutorial={c.command.includes('diff') && c.command.includes('conflict') ? 'run-conflict-command' : undefined}
+                        onClick={() => onRunCommand(c.command)}
+                        style={{ width: '100%', minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.7rem', padding: '0.4rem 0', border: 0, background: 'none', cursor: 'pointer', textAlign: 'left' }}
+                      >
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.76rem', color: 'var(--portfolio-text-primary)', lineHeight: 1.3, wordBreak: 'break-word' }}>
+                          {c.label}
+                        </span>
+                        <ArrowRight size={14} style={{ flexShrink: 0, color: 'var(--portfolio-text-faint)' }} />
+                      </button>
+                    </div>
+                    <CopyButton label={`Copy ${c.label} command`} text={c.command} />
                     <InfoTip label={`About ${c.label}`} text={c.description} />
                   </div>
                 ))}
