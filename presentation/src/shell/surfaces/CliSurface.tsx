@@ -155,7 +155,7 @@ export function CliSurface({
   // shortcuts now live in the Commands tab (left panel), not a bottom bar.
   return (
     <div style={{ height: '100%', minHeight: 0, padding: '2rem', boxSizing: 'border-box' }}>
-      <TerminalWindow title="jikken — zsh">
+      <TerminalWindow title="jikken — zsh" titleBarBg="#e5e5e5">
         <div
           ref={hostRef}
           onClick={() => termRef.current?.focus()}

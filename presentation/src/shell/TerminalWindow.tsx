@@ -20,9 +20,15 @@ export interface TerminalWindowProps {
    * plays a browser rather than a terminal or editor.
    */
   variant?: 'title' | 'url';
+  /**
+   * Override for the title bar's background. Defaults to the stone
+   * --portfolio-bg-muted token; pass a plain CSS color to break from the
+   * stone palette for a specific window (e.g. the CLI's neutral grey bar).
+   */
+  titleBarBg?: string;
 }
 
-export function TerminalWindow({ title, children, footer, style, variant = 'title' }: TerminalWindowProps) {
+export function TerminalWindow({ title, children, footer, style, variant = 'title', titleBarBg }: TerminalWindowProps) {
   return (
     <div
       style={{
@@ -46,7 +52,7 @@ export function TerminalWindow({ title, children, footer, style, variant = 'titl
           gap: '0.5rem',
           padding: '0.55rem 0.85rem',
           borderBottom: '1px solid var(--portfolio-border)',
-          background: 'var(--portfolio-bg-muted)',
+          background: titleBarBg ?? 'var(--portfolio-bg-muted)',
           flexShrink: 0,
         }}
       >
