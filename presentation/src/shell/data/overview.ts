@@ -23,8 +23,8 @@ export const PRODUCT_SECTIONS: OverviewSection[] = [
 // A short, ordered guide to operating the application.
 export const HOWTO: HowToStep[] = [
   {
-    title: 'Pick a situation',
-    body: 'Open the Commands tab and choose a feature and situation. This sets the deterministic input shared by every surface.',
+    title: 'Pick a scenario',
+    body: 'Open the Commands tab and choose a feature and scenario. This sets the deterministic input shared by every surface.',
   },
   {
     title: 'Switch surfaces',
@@ -36,7 +36,7 @@ export const HOWTO: HowToStep[] = [
   },
   {
     title: 'Watch governance work',
-    body: 'Open the CI gate with a risky situation selected. The same check the PM ran blocks the deploy — that is the governance layer, live.',
+    body: 'Open the CI gate with a risky scenario selected. The same check the PM ran blocks the deploy — that is the governance layer, live.',
   },
   {
     title: 'Explore the guided details',

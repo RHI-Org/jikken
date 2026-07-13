@@ -46,7 +46,7 @@ function NoSituationYet({
 }) {
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.1rem', padding: '2rem' }}>
-      <span style={{ color: 'var(--portfolio-text-muted)', fontSize: '0.85rem' }}>Pick a situation to begin</span>
+      <span style={{ color: 'var(--portfolio-text-muted)', fontSize: '0.85rem' }}>Pick a scenario to begin</span>
 
       <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem' }}>
         <span style={MICRO_LABEL}>Feature</span>
@@ -75,7 +75,7 @@ function NoSituationYet({
       </label>
 
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-        <span style={MICRO_LABEL}>Situation</span>
+        <span style={MICRO_LABEL}>Scenario</span>
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem', maxWidth: '26rem' }}>
           {SCENARIO_IDS.map((id) => (
             <button

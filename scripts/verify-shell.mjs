@@ -19,14 +19,14 @@ await page.goto(`${BASE}/preview`, { waitUntil: 'networkidle' });
 await page.waitForTimeout(800);
 await page.screenshot({ path: `${OUT}/01-initial.png` });
 
-// Open the Commands tab — Feature/Situation selection lives here now, above
+// Open the Commands tab — Feature/Scenario selection lives here now, above
 // the command shortcuts, not in the stage's top bar.
 await page.getByRole('button', { name: 'Commands', exact: true }).click();
 await page.waitForTimeout(300);
 
-// Pick a situation — the shared deterministic input. On the CLI tab this
+// Pick a scenario — the shared deterministic input. On the CLI tab this
 // injects `jikken diff --scenario <id>` and runs it.
-await page.getByLabel('Choose a situation').selectOption({ label: 'Exclude employees' });
+await page.getByLabel('Choose a scenario').selectOption({ label: 'Exclude employees' });
 await page.waitForTimeout(600);
 await page.screenshot({ path: `${OUT}/02-situation-selected.png` });
 

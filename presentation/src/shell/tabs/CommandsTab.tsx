@@ -63,7 +63,7 @@ export function CommandsTab({
         </div>
         <p style={{ margin: '0.5rem 0 0.8rem', fontSize: '0.82rem', lineHeight: 1.6, color: 'var(--portfolio-text-secondary)' }}>
           A <strong>feature</strong> is the product surface a flag gates; a{' '}
-          <strong>situation</strong> is the targeting change being made to it. Pick
+          <strong>scenario</strong> is the targeting change being made to it. Pick
           both and every surface — CLI, Dashboard, SDK, CI gate — evaluates the
           exact same input.
         </p>
@@ -87,16 +87,16 @@ export function CommandsTab({
           </label>
 
           <label style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-            <span style={MICRO_LABEL}>Situation</span>
+            <span style={MICRO_LABEL}>Scenario</span>
             <select
               value={scenario ?? ''}
               onChange={(e) => e.target.value && onScenarioChange(e.target.value as ScenarioId)}
-              aria-label="Choose a situation"
-              title={scenario ? featureDef.situations[scenario].description : 'Pick a situation to begin'}
+              aria-label="Choose a scenario"
+              title={scenario ? featureDef.situations[scenario].description : 'Pick a scenario to begin'}
               style={{ ...SELECT_STYLE, color: scenario ? 'var(--portfolio-text-primary)' : 'var(--portfolio-text-muted)' }}
             >
               <option value="" disabled>
-                Pick a situation…
+                Pick a scenario…
               </option>
               {SCENARIO_IDS.map((id) => (
                 <option key={id} value={id}>
