@@ -77,12 +77,18 @@ function highlightAnchor(anchor: TutorialAnchor): void {
 
   const previousOutline = element.style.outline;
   const previousOutlineOffset = element.style.outlineOffset;
+  const previousBoxShadow = element.style.boxShadow;
+  const previousTransition = element.style.transition;
   element.style.outline = '3px solid #2563eb';
-  element.style.outlineOffset = '3px';
+  element.style.outlineOffset = '4px';
+  element.style.boxShadow = '0 0 0 7px rgba(37, 99, 235, 0.18), 0 12px 30px rgba(37, 99, 235, 0.16)';
+  element.style.transition = 'outline-color 160ms ease, box-shadow 160ms ease';
   element.scrollIntoView({ behavior: 'smooth', block: 'center' });
   clearHighlight = () => {
     element.style.outline = previousOutline;
     element.style.outlineOffset = previousOutlineOffset;
+    element.style.boxShadow = previousBoxShadow;
+    element.style.transition = previousTransition;
     clearHighlight = null;
   };
 }

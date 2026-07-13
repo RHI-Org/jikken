@@ -271,7 +271,7 @@ export default function SimulationView({ simulationResult: providedResult }: Sim
             <div className="text-sm text-gray-600">Excluded</div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-yellow-600">{summary.warned}</div>
+            <div className="text-2xl font-bold" style={{ color: COLORS.PARTIAL.hex }}>{summary.warned}</div>
             <div className="text-sm text-gray-600">Needs Review</div>
           </div>
           <div>

@@ -74,11 +74,11 @@ export const COLORS = {
     hex: '#b91c1c', // Tailwind red-700
   },
   PARTIAL: {
-    bg: 'bg-yellow-200',
+    bg: 'bg-yellow-100',
     border: 'border-yellow-500',
-    text: 'text-yellow-700',
+    text: 'text-yellow-600',
     ansi: '\u001b[33m',
-    hex: '#a16207', // Tailwind yellow-700
+    hex: '#ca8a04', // Tailwind yellow-600
   },
 } as const;
 

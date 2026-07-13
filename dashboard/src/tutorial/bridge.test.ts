@@ -66,6 +66,7 @@ describe('dashboard tutorial bridge', () => {
     row.dataset.tutorial = TUTORIAL_ANCHORS.latestHistoryRow;
     row.style.outline = '1px dashed purple';
     row.style.outlineOffset = '1px';
+    row.style.boxShadow = '1px 1px black';
     document.body.append(row);
 
     const cleanup = connectTutorialBridge(vi.fn());
@@ -75,11 +76,13 @@ describe('dashboard tutorial bridge', () => {
     });
 
     expect(row.style.outline).toBe('3px solid #2563eb');
-    expect(row.style.outlineOffset).toBe('3px');
+    expect(row.style.outlineOffset).toBe('4px');
+    expect(row.style.boxShadow).toContain('rgba(37, 99, 235, 0.18)');
     expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' });
 
     cleanup();
     expect(row.style.outline).toBe('1px dashed purple');
     expect(row.style.outlineOffset).toBe('1px');
+    expect(row.style.boxShadow).toBe('1px 1px black');
   });
 });

@@ -46,10 +46,12 @@ export function DashboardSurface() {
     // Navigation and iframe rendering are asynchronous. Repeating this small,
     // idempotent command makes the target appear as soon as its route mounts.
     post(message);
-    tutorialTimers.current = [
-      window.setTimeout(() => post(message), 180),
-      window.setTimeout(() => post(message), 600),
-    ];
+    // The iframe's load event can fire just before its React bridge mounts, and
+    // the simulation card appears after its first result render. Retry the
+    // idempotent focus command long enough to cover both transitions.
+    tutorialTimers.current = [150, 450, 900, 1600].map((delay) =>
+      window.setTimeout(() => post(message), delay),
+    );
   }, [dashboardOrigin, tutorial.currentStep?.id]);
 
   useEffect(() => {
