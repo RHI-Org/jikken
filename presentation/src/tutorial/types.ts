@@ -13,6 +13,8 @@ export interface TutorialStep {
   /** Show a manual forward button. Defaults to false for event-gated steps. */
   allowNext?: boolean;
   body: ReactNode;
+  /** Optional command/value exposed through a copy button in the callout. */
+  copyText?: string;
   id: string;
   nextLabel?: string;
   placement?: TutorialPlacement;

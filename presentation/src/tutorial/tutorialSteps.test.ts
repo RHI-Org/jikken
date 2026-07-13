@@ -20,6 +20,7 @@ describe('Jikken tutorial contract', () => {
     const cliStep = steps.find((step) => step.id === 'type-cli-command');
 
     expect(String(cliStep?.body)).toContain('jikken diff --feature dark-mode --scenario conflict');
+    expect(cliStep?.copyText).toBe('jikken diff --feature dark-mode --scenario conflict');
     expect(steps.some((step) => step.id === 'open-commands')).toBe(false);
   });
 

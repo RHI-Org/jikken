@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { Check, Copy } from 'lucide-react';
 import { useTutorial } from './TutorialProvider';
 import type { TutorialPlacement } from './types';
 
@@ -62,6 +63,7 @@ export function TutorialOverlay() {
     useTutorial();
   const [anchorBox, setAnchorBox] = useState<Box | null>(null);
   const [calloutBox, setCalloutBox] = useState<Box>(EMPTY_BOX);
+  const [copied, setCopied] = useState(false);
   const calloutRef = useRef<HTMLDivElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
   const centered = !currentStep?.anchor || currentStep.placement === 'center';
@@ -81,6 +83,8 @@ export function TutorialOverlay() {
     const callout = calloutRef.current;
     if (callout) setCalloutBox(boxFromRect(callout.getBoundingClientRect()));
   }, [active, currentStep?.id, measure]);
+
+  useEffect(() => setCopied(false), [currentStep?.id]);
 
   useEffect(() => {
     if (!active) return;
@@ -214,6 +218,26 @@ export function TutorialOverlay() {
         <div id={`tutorial-body-${currentStep.id}`} style={{ color: 'var(--portfolio-text-secondary, #44403c)', fontSize: 14, lineHeight: 1.55 }}>
           {currentStep.body}
         </div>
+        {currentStep.copyText && (
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(currentStep.copyText!);
+                setCopied(true);
+              } catch {
+                setCopied(false);
+              }
+            }}
+            aria-label={copied ? 'Command copied' : 'Copy command to clipboard'}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginTop: 12, padding: '0.6rem 0.7rem', border: '1px solid var(--portfolio-border, #d6d3d1)', borderRadius: 6, background: 'var(--portfolio-bg-card-alt, #fafaf9)', color: 'var(--portfolio-text-primary, #1c1917)', cursor: 'pointer', textAlign: 'left' }}
+          >
+            <code style={{ minWidth: 0, overflow: 'hidden', fontFamily: 'var(--font-mono, monospace)', fontSize: 11, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {currentStep.copyText}
+            </code>
+            {copied ? <Check size={15} aria-hidden="true" /> : <Copy size={15} aria-hidden="true" />}
+          </button>
+        )}
         {!currentStep.allowNext && currentStep.anchor && !anchorBox && (
           <p style={{ color: 'var(--portfolio-text-subtle, #78716c)', fontSize: 12, margin: '10px 0 0' }}>
             Getting this part of the demo ready…

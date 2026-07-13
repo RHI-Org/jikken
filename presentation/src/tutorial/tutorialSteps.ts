@@ -38,6 +38,7 @@ export function createJikkenTutorialSteps(
       anchor: 'cli-output',
       title: 'Run the check in the CLI',
       body: 'Click the terminal and type: jikken diff --feature dark-mode --scenario conflict — then press Enter. Or click Next and the demo will run it for you.',
+      copyText: 'jikken diff --feature dark-mode --scenario conflict',
       placement: 'left',
       allowNext: true,
     },
