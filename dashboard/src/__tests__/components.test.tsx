@@ -3,7 +3,7 @@
  *
  * Tests UI behavior, validation, and state management.
  */
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { SimulationResult } from '@jikken/shared';
@@ -110,10 +110,14 @@ describe('SimulationView', () => {
   });
 
   it('renders summary counts correctly', () => {
-    renderWithRouter(<SimulationView simulationResult={mockResult} />);
+    const { container } = renderWithRouter(<SimulationView simulationResult={mockResult} />);
+    const summary = container.querySelector('[data-tutorial="simulation-summary"]');
 
-    expect(screen.getAllByText('25')).toHaveLength(2); // passed + total both happen to be 25
-    expect(screen.getByText('Included')).toBeInTheDocument();
+    expect(summary).not.toBeNull();
+    expect(within(summary as HTMLElement).getAllByText('25')).toHaveLength(2); // passed + total both happen to be 25
+    expect(within(summary as HTMLElement).getByText('Included')).toBeInTheDocument();
+    expect(screen.getByText('Decision mix')).toBeInTheDocument();
+    expect(screen.getByText('Governance signal')).toBeInTheDocument();
   });
 
   it('expands decision on click', () => {

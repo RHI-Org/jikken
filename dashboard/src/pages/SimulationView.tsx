@@ -28,6 +28,98 @@ const styleMap = {
   partial: COLORS.PARTIAL,
 } as const;
 
+function AudienceCharts({ summary }: { summary: SimulationResult['summary'] }) {
+  const total = Math.max(summary.total, 1);
+  const segments = [
+    { label: 'Included', value: summary.passed, color: COLORS.RECEIVE.hex },
+    { label: 'Excluded', value: summary.conflicted, color: COLORS.EXCLUDE.hex },
+    { label: 'Needs Review', value: summary.warned, color: COLORS.PARTIAL.hex },
+  ];
+  const radius = 42;
+  const circumference = 2 * Math.PI * radius;
+  let offset = 0;
+  const includedPercent = Math.round((summary.passed / total) * 100);
+  const heldPercent = Math.round(((summary.conflicted + summary.warned) / total) * 100);
+
+  return (
+    <div className="grid gap-4 md:grid-cols-2" aria-label="Audience charts">
+      <section className="rounded-lg bg-white p-4 shadow" aria-labelledby="decision-mix-title">
+        <h3 id="decision-mix-title" className="text-sm font-semibold text-gray-900">Decision mix</h3>
+        <p className="mt-1 text-xs text-gray-500">How the evaluated audience is classified.</p>
+        <div className="mt-4 flex items-center gap-5">
+          <div className="relative h-32 w-32 shrink-0">
+            <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90" role="img" aria-label={`${summary.passed} included, ${summary.conflicted} excluded, ${summary.warned} need review`}>
+              <circle cx="50" cy="50" r={radius} fill="none" stroke="#e5e7eb" strokeWidth="12" />
+              {segments.map((segment) => {
+                const length = (segment.value / total) * circumference;
+                const circle = (
+                  <circle
+                    key={segment.label}
+                    cx="50"
+                    cy="50"
+                    r={radius}
+                    fill="none"
+                    stroke={segment.color}
+                    strokeWidth="12"
+                    strokeDasharray={`${length} ${circumference - length}`}
+                    strokeDashoffset={-offset}
+                  />
+                );
+                offset += length;
+                return circle;
+              })}
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-2xl font-semibold text-gray-900">{summary.total}</span>
+              <span className="text-[10px] uppercase tracking-wide text-gray-500">users</span>
+            </div>
+          </div>
+          <div className="min-w-0 flex-1 space-y-2">
+            {segments.map((segment) => (
+              <div key={segment.label} className="flex items-center justify-between gap-3 text-xs">
+                <span className="flex min-w-0 items-center gap-2 text-gray-600">
+                  <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ backgroundColor: segment.color }} />
+                  {segment.label}
+                </span>
+                <span className="font-mono font-semibold text-gray-900">{segment.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-lg bg-white p-4 shadow" aria-labelledby="eligibility-title">
+        <h3 id="eligibility-title" className="text-sm font-semibold text-gray-900">Governance signal</h3>
+        <p className="mt-1 text-xs text-gray-500">Who can proceed versus who is held by policy.</p>
+        <div className="mt-6 space-y-5">
+          <div>
+            <div className="mb-1.5 flex justify-between text-xs">
+              <span className="text-gray-600">Eligible</span>
+              <span className="font-mono font-semibold text-gray-900">{includedPercent}%</span>
+            </div>
+            <div className="h-3 overflow-hidden rounded-full bg-gray-100">
+              <div className="h-full rounded-full" style={{ width: `${includedPercent}%`, backgroundColor: COLORS.RECEIVE.hex }} />
+            </div>
+          </div>
+          <div>
+            <div className="mb-1.5 flex justify-between text-xs">
+              <span className="text-gray-600">Held by governance</span>
+              <span className="font-mono font-semibold text-gray-900">{heldPercent}%</span>
+            </div>
+            <div className="flex h-3 overflow-hidden rounded-full bg-gray-100">
+              <div className="h-full" style={{ width: `${(summary.conflicted / total) * 100}%`, backgroundColor: COLORS.EXCLUDE.hex }} />
+              <div className="h-full" style={{ width: `${(summary.warned / total) * 100}%`, backgroundColor: COLORS.PARTIAL.hex }} />
+            </div>
+          </div>
+          <p className="rounded bg-gray-50 p-2.5 text-xs leading-relaxed text-gray-600">
+            Excluded users are blocked. Needs Review users remain ineligible until targeting is approved.
+          </p>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 export default function SimulationView({ simulationResult: providedResult }: SimulationViewProps) {
   const params = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
@@ -188,6 +280,8 @@ export default function SimulationView({ simulationResult: providedResult }: Sim
           </div>
         </div>
       </div>
+
+      <AudienceCharts summary={summary} />
 
       {/* Decision Trace Tree */}
       <div>

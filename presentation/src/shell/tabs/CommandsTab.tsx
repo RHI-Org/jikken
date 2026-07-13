@@ -147,7 +147,7 @@ export function CommandsTab({
                   </option>
                 ))}
               </select>
-              <CopyButton label="Copy feature CLI option" text={`--feature ${feature}`} />
+              <CopyButton label="Copy feature simulation command" text={`jikken simulate --flag ${feature}`} />
               <InfoTip label="About the Feature menu" text="Choose the product capability controlled by the flag. Each feature carries its own audience attributes and scenarios." />
             </div>
           </div>
@@ -173,7 +173,7 @@ export function CommandsTab({
                   </option>
                 ))}
               </select>
-              <CopyButton label="Copy scenario CLI option" text={scenario ? `--scenario ${scenario}` : ''} disabled={!scenario} />
+              <CopyButton label="Copy scenario simulation command" text={scenario ? `jikken simulate --feature ${feature} --scenario ${scenario}` : ''} disabled={!scenario} />
               <InfoTip label="About the Scenario menu" text={`Choose the proposed targeting change to evaluate. Menu names map directly to CLI values: ${scenarioMap}.`} />
             </div>
           </div>
