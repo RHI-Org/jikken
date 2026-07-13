@@ -14,6 +14,9 @@ interface Box {
 const EMPTY_BOX: Box = { height: 0, left: 0, top: 0, width: 0 };
 const CALLOUT_GAP = 16;
 const VIEWPORT_GAP = 16;
+const ACCENT = '#2563eb';
+const ACCENT_DARK = '#1d4ed8';
+const ACCENT_SOFT = '#dbeafe';
 
 function findAnchor(anchor: string): HTMLElement | null {
   const escaped = typeof CSS !== 'undefined' && CSS.escape
@@ -160,7 +163,7 @@ export function TutorialOverlay() {
         <div
           aria-hidden="true"
           style={{
-            border: '2px solid var(--stone-50, #fafaf9)',
+            border: `2px solid ${ACCENT}`,
             borderRadius: 8,
             boxShadow: '0 0 0 9999px rgba(12, 10, 9, 0.72)',
             height: anchorBox.height + 12,
@@ -184,7 +187,8 @@ export function TutorialOverlay() {
         role={centered ? 'dialog' : 'group'}
         style={{
           background: 'var(--portfolio-bg-card, #f5f5f4)',
-          border: '1px solid var(--portfolio-border, #d6d3d1)',
+          border: `1px solid ${ACCENT_SOFT}`,
+          borderTop: `3px solid ${ACCENT}`,
           borderRadius: 10,
           boxShadow: '0 18px 48px rgba(12, 10, 9, 0.28)',
           boxSizing: 'border-box',
@@ -200,7 +204,7 @@ export function TutorialOverlay() {
         }}
       >
         <div style={{ alignItems: 'center', display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-          <span style={{ color: 'var(--portfolio-text-subtle, #78716c)', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+          <span style={{ color: ACCENT_DARK, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
             {currentIndex + 1} of {totalSteps}
           </span>
           <button
@@ -230,7 +234,7 @@ export function TutorialOverlay() {
               }
             }}
             aria-label={copied ? 'Command copied' : 'Copy command to clipboard'}
-            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginTop: 12, padding: '0.6rem 0.7rem', border: '1px solid var(--portfolio-border, #d6d3d1)', borderRadius: 6, background: 'var(--portfolio-bg-card-alt, #fafaf9)', color: 'var(--portfolio-text-primary, #1c1917)', cursor: 'pointer', textAlign: 'left' }}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginTop: 12, padding: '0.6rem 0.7rem', border: `1px solid ${copied ? ACCENT : ACCENT_SOFT}`, borderRadius: 6, background: copied ? '#eff6ff' : 'var(--portfolio-bg-card-alt, #fafaf9)', color: copied ? ACCENT_DARK : 'var(--portfolio-text-primary, #1c1917)', cursor: 'pointer', textAlign: 'left' }}
           >
             <code style={{ minWidth: 0, overflow: 'hidden', fontFamily: 'var(--font-mono, monospace)', fontSize: 11, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {currentStep.copyText}
@@ -253,7 +257,7 @@ export function TutorialOverlay() {
             <button
               autoFocus={centered}
               onClick={lastStep ? finish : next}
-              style={{ background: 'var(--portfolio-btn-bg, #1c1917)', border: 0, borderRadius: 6, color: 'var(--portfolio-btn-text, #fff)', cursor: 'pointer', fontWeight: 600, padding: '8px 12px' }}
+              style={{ background: ACCENT, border: 0, borderRadius: 6, boxShadow: '0 1px 2px rgba(37, 99, 235, 0.3)', color: '#fff', cursor: 'pointer', fontWeight: 600, padding: '8px 12px' }}
               type="button"
             >
               {currentStep.nextLabel ?? (lastStep ? 'Finish' : 'Next')}
