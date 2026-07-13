@@ -22,17 +22,26 @@ import { COLORS, evaluateFlag, SCENARIOS, SCENARIO_IDS } from '../../shared/src/
 const ROOT = join(__dirname, '..', '..');
 
 describe('color parity (metric #1)', () => {
-  it('shared hex values are the exact Tailwind colors the Dashboard renders', () => {
-    expect(COLORS.RECEIVE.hex).toBe(twColors.green[700]);
-    expect(COLORS.EXCLUDE.hex).toBe(twColors.red[700]);
-    expect(COLORS.PARTIAL.hex).toBe(twColors.yellow[700]);
-  });
+  // The thesis fixes the HUE (green = receive, red = exclude, yellow =
+  // partial) but not the shade — that's a design decision that lives in
+  // shared/constants.ts alone. Derive the shade from the Tailwind class so
+  // class ↔ hex parity is enforced without pinning the shade here too.
+  const palette = twColors as unknown as Record<string, Record<string, string>>;
+  const CASES = [
+    { name: 'RECEIVE', entry: COLORS.RECEIVE, hue: 'green' },
+    { name: 'EXCLUDE', entry: COLORS.EXCLUDE, hue: 'red' },
+    { name: 'PARTIAL', entry: COLORS.PARTIAL, hue: 'yellow' },
+  ] as const;
 
-  it('Tailwind class names in COLORS agree with their hex shade', () => {
-    expect(COLORS.RECEIVE.text).toBe('text-green-700');
-    expect(COLORS.EXCLUDE.text).toBe('text-red-700');
-    expect(COLORS.PARTIAL.text).toBe('text-yellow-700');
-  });
+  for (const { name, entry, hue } of CASES) {
+    it(`${name}: semantic hue is ${hue}, and hex is exactly the Tailwind value behind its class`, () => {
+      const match = entry.text.match(/^text-([a-z]+)-(\d{2,3})$/);
+      expect(match, `${name}.text must be a Tailwind text-<hue>-<shade> class`).not.toBeNull();
+      const [, twHue, shade] = match!;
+      expect(twHue).toBe(hue);
+      expect(entry.hex).toBe(palette[twHue][shade]);
+    });
+  }
 });
 
 describe('exit-code parity across CLI process and engine (metric #3)', () => {

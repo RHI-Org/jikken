@@ -15,6 +15,13 @@ import type { AudienceRule, Environment, FlagConfig, MockUser } from './types.ts
 
 export type ScenarioId = 'all-clear' | 'conflict' | 'warning';
 
+/** Canonical scenario names shared by menus, commands, and demo surfaces. */
+export const SCENARIO_NAMES: Record<ScenarioId, string> = {
+  'all-clear': 'All clear',
+  conflict: 'Conflict',
+  warning: 'Warning',
+};
+
 export interface Scenario {
   id: ScenarioId;
   /** Product feature the flag gates — same for every scenario. */
