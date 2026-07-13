@@ -5,7 +5,7 @@ import type { OverviewSection, OverviewStat, HowToStep } from '../types';
 
 // The product, stated first: who it's for and what it does for them.
 export const INTRO =
-  'Jikken shows a product manager what a targeting change actually does to real users — who gains access, and who loses it — before it ships. No engineering ticket, no guesswork. And if a change would cut off users it should not, the same check can halt the rollout in CI, before it reaches anyone. Self-serve, but never ungoverned.';
+  'Jikken lets a non-technical teammate — usually a product manager — preview what happens when you turn a feature flag on, off, or narrow who gets it. Before anything ships, it estimates the impact on real users: who gains access, and who loses it. No engineering ticket, no guesswork. And if a change would cut off users it should not, the same check can halt the rollout in CI, before it reaches anyone. Self-serve, but never ungoverned.';
 
 // The product problem/approach — the front-door story (persona + governance),
 // distinct from the craft thesis (cross-surface coherence) in the Design tab.

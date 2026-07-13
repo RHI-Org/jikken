@@ -25,13 +25,17 @@ await page.getByLabel('Choose a situation').selectOption({ label: 'Exclude emplo
 await page.waitForTimeout(600);
 await page.screenshot({ path: `${OUT}/02-situation-selected.png` });
 
-// Click a Quickstart chip → CLI runs the engine and prints the conflict report
+// Open the Commands tab and run a command shortcut → CLI runs the engine and
+// prints the conflict report (shortcuts moved here from the terminal footer)
+await page.getByRole('button', { name: 'Commands', exact: true }).click();
+await page.waitForTimeout(300);
 await page.getByRole('button', { name: 'diff --scenario conflict', exact: true }).first().click();
 await page.waitForTimeout(600);
 await page.screenshot({ path: `${OUT}/03-cli-conflict.png` });
 
-// Switch to Principles tab and click principle #2 (Colors → dashboard + pin)
-await page.getByRole('button', { name: 'Principles (10)' }).click();
+// Open the Details tab (Design + Principles + Tech merged) and click principle
+// #2 (Colors → dashboard + pin)
+await page.getByRole('button', { name: 'Details', exact: true }).click();
 await page.waitForTimeout(300);
 await page.getByRole('button', { name: /Colors functional/ }).click();
 await page.waitForTimeout(600);
@@ -47,8 +51,8 @@ await page.getByRole('button', { name: 'SDK', exact: true }).click();
 await page.waitForTimeout(400);
 await page.screenshot({ path: `${OUT}/06-sdk.png` });
 
-// Design tab + hand-off
-await page.getByRole('button', { name: 'Design', exact: true }).click();
+// Hand-off (in the Details tab's Design section)
+await page.getByRole('button', { name: 'Details', exact: true }).click();
 await page.waitForTimeout(300);
 await page.getByRole('button', { name: /The hand-off/ }).click();
 await page.waitForTimeout(2200); // choreography: cli run then auto-switch to dashboard

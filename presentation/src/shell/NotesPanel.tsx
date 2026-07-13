@@ -8,16 +8,34 @@ import { OverviewTab } from './tabs/OverviewTab';
 import { DesignTab } from './tabs/DesignTab';
 import { PrinciplesTab } from './tabs/PrinciplesTab';
 import { TechTab } from './tabs/TechTab';
+import { CommandsTab } from './tabs/CommandsTab';
 import type { Principle } from './types';
 
-export type NotesTab = 'overview' | 'design' | 'principles' | 'tech';
+export type NotesTab = 'overview' | 'details' | 'commands';
 
 const TABS: { id: NotesTab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
-  { id: 'design', label: 'Design' },
-  { id: 'principles', label: 'Principles (10)' },
-  { id: 'tech', label: 'Tech' },
+  { id: 'details', label: 'Details' },
+  { id: 'commands', label: 'Commands' },
 ];
+
+// Section header inside the merged Details tab (Design / Principles / Tech).
+function DetailsSection({ label }: { label: string }) {
+  return (
+    <div
+      style={{
+        fontSize: '0.62rem',
+        fontWeight: 'var(--font-weight-bold)',
+        letterSpacing: '0.1em',
+        textTransform: 'uppercase',
+        color: 'var(--portfolio-text-primary)',
+        paddingBottom: '0.2rem',
+      }}
+    >
+      {label}
+    </div>
+  );
+}
 
 export function EdgeTab({ onOpen }: { onOpen: () => void }) {
   return (
@@ -55,6 +73,7 @@ export function NotesPanel({
   activePrinciple,
   onSelectPrinciple,
   onHandoff,
+  onRunCommand,
 }: {
   tab: NotesTab;
   onTabChange: (t: NotesTab) => void;
@@ -62,6 +81,7 @@ export function NotesPanel({
   activePrinciple: number | null;
   onSelectPrinciple: (p: Principle) => void;
   onHandoff: () => void;
+  onRunCommand: (command: string) => void;
 }) {
   return (
     <aside
@@ -82,7 +102,7 @@ export function NotesPanel({
             Jikken
           </div>
           <div style={{ marginTop: '0.3rem', fontSize: '0.78rem', color: 'var(--portfolio-text-muted)' }}>
-            Let PMs ship features. Keep governance.
+            Preview who a feature reaches — before it ships.
           </div>
         </div>
         <button
@@ -132,11 +152,23 @@ export function NotesPanel({
       {/* Body */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '1.3rem 1.4rem 2rem' }}>
         {tab === 'overview' && <OverviewTab />}
-        {tab === 'design' && <DesignTab onHandoff={onHandoff} />}
-        {tab === 'principles' && (
-          <PrinciplesTab activeNumber={activePrinciple} onSelect={onSelectPrinciple} />
+        {tab === 'details' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.6rem' }}>
+            <section>
+              <DetailsSection label="Design" />
+              <DesignTab onHandoff={onHandoff} />
+            </section>
+            <section>
+              <DetailsSection label="Principles (10)" />
+              <PrinciplesTab activeNumber={activePrinciple} onSelect={onSelectPrinciple} />
+            </section>
+            <section>
+              <DetailsSection label="Tech" />
+              <TechTab />
+            </section>
+          </div>
         )}
-        {tab === 'tech' && <TechTab />}
+        {tab === 'commands' && <CommandsTab onRunCommand={onRunCommand} />}
       </div>
     </aside>
   );

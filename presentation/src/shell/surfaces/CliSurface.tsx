@@ -150,60 +150,12 @@ export function CliSurface({
     (term as unknown as { _runLine: (l: string) => void })._runLine(inject.command);
   }, [inject]);
 
-  const sendChip = (command: string) => {
-    const term = termRef.current;
-    if (!term) return;
-    term.focus();
-    term.write(colorizeCommand(command));
-    (term as unknown as { _runLine: (l: string) => void })._runLine(command);
-  };
-
-  // Quickstart controls — the preset command chips, now living in the window's
-  // footer chrome (the frame carries the border + muted fill, so this row is
-  // just the label + chips).
-  const quickstart = (
-    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem', padding: '0.7rem 0.9rem' }}>
-      <span
-        style={{
-          fontSize: '0.62rem',
-          fontWeight: 'var(--font-weight-bold)',
-          letterSpacing: '0.08em',
-          textTransform: 'uppercase',
-          color: 'var(--portfolio-text-faint)',
-          marginRight: '0.15rem',
-        }}
-      >
-        Quickstart
-      </span>
-      {PRESET_COMMANDS.map((c) => (
-        <button
-          key={c.label}
-          onClick={() => sendChip(c.command)}
-          style={{
-            // Shared chip base (matches the Situation row in Stage); momentary,
-            // so no sticky/active fill — just the outlined base shape.
-            padding: '0.3rem 0.7rem',
-            borderRadius: '999px',
-            border: '1px solid var(--portfolio-border)',
-            background: 'var(--portfolio-bg-card)',
-            color: 'var(--portfolio-text-secondary)',
-            fontSize: '0.72rem',
-            fontFamily: 'var(--font-mono)',
-            lineHeight: 1.2,
-            cursor: 'pointer',
-          }}
-        >
-          {c.label}
-        </button>
-      ))}
-    </div>
-  );
-
   // The window floats on the stage with breathing room on every side, so it
-  // reads as a real terminal app rather than a full-bleed console.
+  // reads as a real terminal app rather than a full-bleed console. Command
+  // shortcuts now live in the Commands tab (left panel), not a bottom bar.
   return (
     <div style={{ height: '100%', minHeight: 0, padding: '2rem', boxSizing: 'border-box' }}>
-      <TerminalWindow title="jikken — zsh" footer={quickstart}>
+      <TerminalWindow title="jikken — zsh">
         <div
           ref={hostRef}
           onClick={() => termRef.current?.focus()}

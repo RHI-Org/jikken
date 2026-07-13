@@ -80,6 +80,16 @@ export function Shell() {
     setActivePrinciple(null);
   }, []);
 
+  // Command shortcut (from the Commands tab): switch to the CLI and run it.
+  const runCommandShortcut = useCallback(
+    (command: string) => {
+      setActivePrinciple(null);
+      setSurface('cli');
+      injectCli(command);
+    },
+    [injectCli],
+  );
+
   // ★ The hand-off centerpiece: run the scenario in the CLI, then auto-switch
   // to the Dashboard where the run lands in history (Realtime pulse arrives
   // once the dashboard's Supabase data layer is wired).
@@ -114,6 +124,7 @@ export function Shell() {
           activePrinciple={activePrinciple?.number ?? null}
           onSelectPrinciple={selectPrinciple}
           onHandoff={handoff}
+          onRunCommand={runCommandShortcut}
         />
       ) : (
         <EdgeTab onOpen={() => setPanelOpen(true)} />
