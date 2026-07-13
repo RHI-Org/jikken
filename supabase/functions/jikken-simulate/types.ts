@@ -27,8 +27,20 @@ export interface FlagConfig {
 }
 
 export interface AudienceRule {
-  /** The category of the rule */
-  type: 'segment' | 'country' | 'email_domain' | 'user_id';
+  /**
+   * The category of the rule. The first four target identity/geography; the
+   * financial + demographic types (plan_tier / income_band / age_band / region)
+   * let a rule gate on who a user *is* commercially, not just where they are.
+   */
+  type:
+    | 'segment'
+    | 'country'
+    | 'email_domain'
+    | 'user_id'
+    | 'plan_tier'
+    | 'income_band'
+    | 'age_band'
+    | 'region';
   /** The comparison logic to apply */
   operator: 'equals' | 'not_equals' | 'contains' | 'in_list';
   /** The value or list of values to compare against */
@@ -53,6 +65,14 @@ export interface MockUser {
   country?: string;
   /** User's assigned segment */
   segment?: string;
+  /** Commercial plan the user is on (financial targeting). */
+  plan_tier?: 'free' | 'pro' | 'enterprise';
+  /** Coarse income band (financial targeting). */
+  income_band?: 'low' | 'mid' | 'high';
+  /** Coarse age band (demographic targeting). */
+  age_band?: '18-24' | '25-34' | '35-49' | '50+';
+  /** Sales/marketing region (demographic + geographic targeting). */
+  region?: 'NA' | 'EU' | 'APAC' | 'LATAM';
   /** Additional key-value metadata for the user */
   attributes?: Record<string, string>;
 }

@@ -7,7 +7,7 @@
  * ★ hand-off — commands every surface coherently.
  */
 import { useCallback, useRef, useState } from 'react';
-import type { ScenarioId, SimulationResult } from '@jikken/shared';
+import type { FeatureId, ScenarioId, SimulationResult } from '@jikken/shared';
 import { NotesPanel, EdgeTab, type NotesTab } from './NotesPanel';
 import { Stage } from './Stage';
 import type { CliInject } from './surfaces/CliSurface';
@@ -18,6 +18,7 @@ export function Shell() {
   const [panelOpen, setPanelOpen] = useState(true);
   const [notesTab, setNotesTab] = useState<NotesTab>('overview');
   const [surface, setSurface] = useState<Surface>('cli');
+  const [feature, setFeature] = useState<FeatureId>('dark-mode');
   const [scenario, setScenario] = useState<ScenarioId | null>(null);
   const [activePrinciple, setActivePrinciple] = useState<Principle | null>(null);
   const [cliInject, setCliInject] = useState<CliInject | null>(null);
@@ -34,9 +35,20 @@ export function Shell() {
     (s: ScenarioId) => {
       setScenario(s);
       setActivePrinciple(null);
-      if (surface === 'cli') injectCli(`jikken diff --scenario ${s}`);
+      if (surface === 'cli') injectCli(`jikken diff --feature ${feature} --scenario ${s}`);
     },
-    [surface, injectCli],
+    [surface, feature, injectCli],
+  );
+
+  // Feature picker: the second dimension. Switching feature re-runs the current
+  // situation against the new feature so the CLI stays in sync with both menus.
+  const changeFeature = useCallback(
+    (f: FeatureId) => {
+      setFeature(f);
+      setActivePrinciple(null);
+      if (surface === 'cli' && scenario) injectCli(`jikken diff --feature ${f} --scenario ${scenario}`);
+    },
+    [surface, scenario, injectCli],
   );
 
   // A principle click commands the stage: switch to its surface, drop its pin.
@@ -57,9 +69,9 @@ export function Shell() {
     if (!scenario) return; // hand-off needs a chosen situation to replay
     setActivePrinciple(null);
     setSurface('cli');
-    injectCli(`jikken diff --scenario ${scenario}`);
+    injectCli(`jikken diff --feature ${feature} --scenario ${scenario}`);
     window.setTimeout(() => setSurface('dashboard'), 1600);
-  }, [scenario, injectCli]);
+  }, [feature, scenario, injectCli]);
 
   // Best-effort audit persistence for CLI-tab runs (forward-compatible with
   // the Dashboard's Realtime history; silently ignored if not yet deployed).
@@ -92,6 +104,8 @@ export function Shell() {
       <Stage
         surface={surface}
         onSurfaceChange={changeSurface}
+        feature={feature}
+        onFeatureChange={changeFeature}
         scenario={scenario}
         onScenarioChange={changeScenario}
         cliInject={cliInject}

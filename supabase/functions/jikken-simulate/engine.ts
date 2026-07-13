@@ -47,6 +47,14 @@ function userValueFor(rule: AudienceRule, user: MockUser): string | undefined {
       return user.email?.split('@')[1];
     case 'user_id':
       return user.user_id;
+    case 'plan_tier':
+      return user.plan_tier;
+    case 'income_band':
+      return user.income_band;
+    case 'age_band':
+      return user.age_band;
+    case 'region':
+      return user.region;
   }
 }
 

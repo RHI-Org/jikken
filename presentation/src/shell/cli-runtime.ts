@@ -8,13 +8,18 @@ import {
   ANSI_RESET,
   COLORS,
   EXIT_CODES,
+  FEATURE_IDS,
   PATTERNS,
   SCENARIOS,
   SCENARIO_IDS,
   diffSimulations,
   evaluateFlag,
+  getScenario,
+  isFeatureId,
+  type FeatureId,
   type FlagConfig,
   type MockUser,
+  type Scenario,
   type ScenarioId,
   type SimulationDiff,
   type SimulationResult,
@@ -73,6 +78,25 @@ function isScenarioId(v: string): v is ScenarioId {
   return (SCENARIO_IDS as readonly string[]).includes(v);
 }
 
+/**
+ * Resolve a (feature × situation) pair from parsed opts. `--feature` is
+ * optional and defaults to `dark-mode`, so the historical `--scenario <id>`
+ * form (and every existing test) keeps working unchanged.
+ */
+function resolveScenario(
+  opts: Record<string, string | true>,
+): { scenario: Scenario; situation: ScenarioId } | { error: string } {
+  const situation = typeof opts.scenario === 'string' ? opts.scenario : undefined;
+  if (!situation || !isScenarioId(situation)) {
+    return { error: err(`Unknown scenario '${situation ?? ''}'. Valid scenarios: ${SCENARIO_IDS.join(', ')}.`) };
+  }
+  const feature = typeof opts.feature === 'string' ? opts.feature : 'dark-mode';
+  if (!isFeatureId(feature)) {
+    return { error: err(`Unknown feature '${feature}'. Valid features: ${FEATURE_IDS.join(', ')}.`) };
+  }
+  return { scenario: getScenario(feature as FeatureId, situation), situation };
+}
+
 /** Minimal flag builder for --flag (no filesystem in the browser). */
 function buildFlagConfig(flagId: string, rollout: number): FlagConfig {
   const ts = '2026-07-13T10:00:00Z';
@@ -113,16 +137,12 @@ function parseArgs(line: string): { cmd: string; opts: Record<string, string | t
 function resolveInput(opts: Record<string, string | true>):
   | { flag: FlagConfig; users: MockUser[]; scenario: ScenarioId | null }
   | { error: string; exitCode: number } {
-  const scenario = typeof opts.scenario === 'string' ? opts.scenario : undefined;
-  if (scenario) {
-    if (!isScenarioId(scenario)) {
-      return {
-        error: err(`Unknown scenario '${scenario}'. Valid scenarios: ${SCENARIO_IDS.join(', ')}.`),
-        exitCode: EXIT_CODES.INVALID_INPUT,
-      };
+  if (typeof opts.scenario === 'string') {
+    const resolved = resolveScenario(opts);
+    if ('error' in resolved) {
+      return { error: resolved.error, exitCode: EXIT_CODES.INVALID_INPUT };
     }
-    const s = SCENARIOS[scenario];
-    return { flag: s.flag, users: s.users, scenario };
+    return { flag: resolved.scenario.flag, users: resolved.scenario.users, scenario: resolved.situation };
   }
 
   const flagId = typeof opts.flag === 'string' ? opts.flag : undefined;
@@ -194,8 +214,7 @@ export function runCommand(line: string): RunOutput {
     }
     // A diff needs a baseline to compare against, so --scenario is required here
     // (a bare --flag has nothing to diff from).
-    const scenario = typeof opts.scenario === 'string' ? opts.scenario : undefined;
-    if (!scenario) {
+    if (typeof opts.scenario !== 'string') {
       return {
         text: err('Missing required option --scenario <id> for diff (a diff needs a baseline to compare against).'),
         exitCode: EXIT_CODES.INVALID_INPUT,
@@ -203,18 +222,14 @@ export function runCommand(line: string): RunOutput {
         scenario: null,
       };
     }
-    if (!isScenarioId(scenario)) {
-      return {
-        text: err(`Unknown scenario '${scenario}'. Valid scenarios: ${SCENARIO_IDS.join(', ')}.`),
-        exitCode: EXIT_CODES.INVALID_INPUT,
-        result: null,
-        scenario: null,
-      };
+    const resolved = resolveScenario(opts);
+    if ('error' in resolved) {
+      return { text: resolved.error, exitCode: EXIT_CODES.INVALID_INPUT, result: null, scenario: null };
     }
-    const s = SCENARIOS[scenario];
+    const s = resolved.scenario;
     const diff: SimulationDiff = diffSimulations(s.baseline, s.flag, s.users);
     const output = crlf(formatDiff(diff, format as 'text' | 'json', Boolean(opts.quiet)));
-    return { text: output + '\r\n', exitCode: diff.exit_code, result: diff.after, scenario };
+    return { text: output + '\r\n', exitCode: diff.exit_code, result: diff.after, scenario: resolved.situation };
   }
 
   if (cmd !== 'simulate' && cmd !== 'validate') {

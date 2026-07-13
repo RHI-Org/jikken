@@ -5,7 +5,7 @@
  * real and interactive, with a numbered pin overlay when a principle is
  * selected from the notes panel.
  */
-import { SCENARIOS, SCENARIO_IDS, type ScenarioId, type SimulationResult } from '@jikken/shared';
+import { FEATURES, SCENARIO_IDS, type FeatureId, type ScenarioId, type SimulationResult } from '@jikken/shared';
 import { CliSurface, type CliInject } from './surfaces/CliSurface';
 import { SdkSurface } from './surfaces/SdkSurface';
 import { DashboardSurface } from './surfaces/DashboardSurface';
@@ -17,20 +17,7 @@ const SURFACES: { id: Surface; label: string }[] = [
   { id: 'sdk', label: 'SDK' },
 ];
 
-// Shared chip base — the single visual family for the Situation row (here) and
-// the "Try a command" run row (CliSurface). Situation chips are sticky (the
-// active one is filled); the run-row chips reuse the same base but are momentary.
-const CHIP_BASE = {
-  padding: '0.3rem 0.7rem',
-  borderRadius: '999px',
-  border: '1px solid var(--portfolio-border)',
-  fontSize: '0.72rem',
-  fontFamily: 'var(--font-mono)',
-  lineHeight: 1.2,
-  cursor: 'pointer',
-} as const;
-
-// Reused micro-label pattern (matches CliSurface's "Try a command").
+// Reused micro-label pattern (matches CliSurface's "Quickstart" label).
 const MICRO_LABEL = {
   fontSize: '0.62rem',
   fontWeight: 'var(--font-weight-bold)',
@@ -42,6 +29,8 @@ const MICRO_LABEL = {
 export function Stage({
   surface,
   onSurfaceChange,
+  feature,
+  onFeatureChange,
   scenario,
   onScenarioChange,
   cliInject,
@@ -50,6 +39,8 @@ export function Stage({
 }: {
   surface: Surface;
   onSurfaceChange: (s: Surface) => void;
+  feature: FeatureId;
+  onFeatureChange: (f: FeatureId) => void;
   scenario: ScenarioId | null;
   onScenarioChange: (s: ScenarioId) => void;
   cliInject: CliInject | null;
@@ -57,6 +48,9 @@ export function Stage({
   activePrinciple: Principle | null;
 }) {
   const showPin = activePrinciple !== null && activePrinciple.surface === surface;
+  // The selected feature drives the Situation menu's labels/descriptions, since
+  // each feature frames the same three archetypes in its own domain language.
+  const featureDef = FEATURES.find((f) => f.id === feature) ?? FEATURES[0];
 
   return (
     <div style={{ flex: 1, minWidth: 0, height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--portfolio-page-bg)' }}>
@@ -76,21 +70,37 @@ export function Stage({
         {/* Situation controls — the feature is fixed (a permanent, selected-looking
             chip); the situation is a compact dropdown so the bar doesn't crowd. */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
-          {/* Feature — permanently selected, non-interactive chip */}
+          {/* Feature — dropdown selector (the product surface the flag gates) */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <span style={MICRO_LABEL}>Feature</span>
             <span
+              title="The product surface the flag gates. Each feature targets on different attributes — identity, plan, or demographics."
+              style={{ ...MICRO_LABEL, cursor: 'help' }}
+            >
+              Feature
+            </span>
+            <select
+              value={feature}
+              onChange={(e) => onFeatureChange(e.target.value as FeatureId)}
+              aria-label="Choose a feature"
+              title={featureDef.description}
               style={{
-                ...CHIP_BASE,
-                cursor: 'default',
-                background: 'var(--portfolio-text-primary)',
-                color: '#fff',
-                borderColor: 'var(--portfolio-text-primary)',
+                padding: '0.32rem 0.55rem',
+                borderRadius: '0.4rem',
+                border: '1px solid var(--portfolio-border)',
+                background: 'var(--portfolio-bg-card)',
+                color: 'var(--portfolio-text-primary)',
+                fontSize: '0.72rem',
+                fontFamily: 'var(--font-mono)',
                 fontWeight: 'var(--font-weight-semibold)',
+                cursor: 'pointer',
               }}
             >
-              {SCENARIOS[SCENARIO_IDS[0]].feature}
-            </span>
+              {FEATURES.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Situation — dropdown selector (placeholder shows until one is picked) */}
@@ -105,7 +115,7 @@ export function Stage({
               value={scenario ?? ''}
               onChange={(e) => e.target.value && onScenarioChange(e.target.value as ScenarioId)}
               aria-label="Choose a situation"
-              title={scenario ? SCENARIOS[scenario].description : 'Pick a situation to begin'}
+              title={scenario ? featureDef.situations[scenario].description : 'Pick a situation to begin'}
               style={{
                 padding: '0.32rem 0.55rem',
                 borderRadius: '0.4rem',
@@ -123,7 +133,7 @@ export function Stage({
               </option>
               {SCENARIO_IDS.map((id) => (
                 <option key={id} value={id}>
-                  {SCENARIOS[id].label}
+                  {featureDef.situations[id].label}
                 </option>
               ))}
             </select>

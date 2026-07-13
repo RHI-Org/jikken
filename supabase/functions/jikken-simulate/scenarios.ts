@@ -11,7 +11,7 @@
  * in code (not JSON files) so it imports identically in browser, Node, and Deno.
  */
 
-import type { FlagConfig, MockUser } from './types.ts';
+import type { AudienceRule, Environment, FlagConfig, MockUser } from './types.ts';
 
 export type ScenarioId = 'all-clear' | 'conflict' | 'warning';
 
@@ -178,3 +178,220 @@ export const SCENARIOS: Record<ScenarioId, Scenario> = {
 };
 
 export const SCENARIO_IDS = Object.keys(SCENARIOS) as ScenarioId[];
+
+// ── Feature catalog ────────────────────────────────────────────────────────
+//
+// "Feature" and "Situation" are two independent dimensions the presentation
+// exposes as two menus. A Situation is one of the three outcome archetypes
+// (all-clear / conflict / warning); a Feature is a product surface a flag
+// gates. The bundled "Dark Mode" feature is the SCENARIOS above (identity /
+// geography targeting). The two features below add FINANCIAL and DEMOGRAPHIC
+// targeting — plan_tier, region, income_band, age_band — so the gained/lost
+// diff reads like a real commercial decision, not just a country filter.
+//
+// Every feature carries its own small population and flag configs, tuned so
+// its three situations provably evaluate to exit 0 / 1 / 2 (asserted by
+// scripts/verify-catalog.mjs). The catalog is the exact shape the Phase-2
+// Supabase table mirrors, with this bundled data as the offline fallback.
+
+/** A situation is one of the three outcome archetypes. */
+export type SituationId = ScenarioId;
+export const SITUATION_IDS = SCENARIO_IDS;
+
+export type FeatureId = 'dark-mode' | 'checkout-redesign' | 'premium-tier';
+
+export interface FeatureDef {
+  id: FeatureId;
+  /** Display name shown in the Feature menu. */
+  label: string;
+  /** One-line summary of what the flag gates. */
+  description: string;
+  /** The three outcome archetypes for this feature. */
+  situations: Record<SituationId, Scenario>;
+}
+
+/** Terse FlagConfig builder — the new features share a lot of boilerplate. */
+function flag(
+  id: string,
+  name: string,
+  rollout: number,
+  rules: AudienceRule[],
+  environment: Environment = 'staging',
+): FlagConfig {
+  return {
+    id,
+    name,
+    description: `Gates ${name}`,
+    enabled: true,
+    rollout_percentage: rollout,
+    audience_rules: rules,
+    environment,
+    created_at: T0,
+    updated_at: T0,
+  };
+}
+
+// ── Checkout Redesign — financial targeting (plan_tier) + region ────────────
+const checkoutUsers: MockUser[] = [
+  user(1, { plan_tier: 'free', region: 'NA' }),
+  user(2, { plan_tier: 'free', region: 'EU' }),
+  user(3, { plan_tier: 'pro', region: 'NA' }),
+  user(4, { plan_tier: 'pro', region: 'EU' }),
+  user(5, { plan_tier: 'pro', region: 'APAC' }),
+  user(6, { plan_tier: 'enterprise', region: 'NA' }),
+  user(7, { plan_tier: 'enterprise', region: 'LATAM' }),
+  user(8, { plan_tier: 'free', region: 'NA' }),
+];
+
+const CHECKOUT: Record<SituationId, Scenario> = {
+  'all-clear': {
+    id: 'all-clear',
+    feature: 'Checkout Redesign',
+    label: 'Full rollout',
+    description: 'Take the new checkout from a 30% test to everyone — purely additive (exit 0).',
+    baseline: flag('checkout-redesign', 'Checkout Redesign', 30, []),
+    flag: flag('checkout-redesign', 'Checkout Redesign', 100, []),
+    story: {
+      title: 'Ship to everyone',
+      summary: 'The new checkout is live for 30% of users. This change takes it to 100%.',
+      caught: 'Additive — users gain the new checkout, none lose it. Safe to ship.',
+    },
+    users: checkoutUsers,
+  },
+  conflict: {
+    id: 'conflict',
+    feature: 'Checkout Redesign',
+    label: 'Paid customers only',
+    description: 'Add a rule that excludes free-tier users — those users lose the checkout they have (exit 1).',
+    baseline: flag('checkout-redesign', 'Checkout Redesign', 100, []),
+    flag: flag('checkout-redesign', 'Checkout Redesign', 100, [
+      { type: 'plan_tier', operator: 'not_equals', value: 'free' },
+    ]),
+    story: {
+      title: 'Limit to paying customers',
+      summary: 'The new checkout is live for everyone. This change limits it to pro and enterprise plans.',
+      caught: 'Free-tier users who use the new checkout today would lose it. CI blocks the deploy until you confirm.',
+    },
+    users: checkoutUsers,
+  },
+  warning: {
+    id: 'warning',
+    feature: 'Checkout Redesign',
+    label: 'Paid customers in NA / EU',
+    description: 'Layer a region rule on top of the paid rule — users matching only one rule drop to partial (exit 2).',
+    baseline: flag('checkout-redesign', 'Checkout Redesign', 100, [
+      { type: 'plan_tier', operator: 'in_list', value: ['pro', 'enterprise'] },
+    ]),
+    flag: flag('checkout-redesign', 'Checkout Redesign', 100, [
+      { type: 'plan_tier', operator: 'in_list', value: ['pro', 'enterprise'] },
+      { type: 'region', operator: 'in_list', value: ['NA', 'EU'] },
+    ]),
+    story: {
+      title: 'Add a region requirement',
+      summary: 'The new checkout is live for all paid customers. This change also requires region NA or EU.',
+      caught: 'Paid customers in APAC and LATAM would drop from full access to partial. Proceed with caution.',
+    },
+    users: checkoutUsers,
+  },
+};
+
+// ── Premium Tier — demographic targeting (income_band + age_band) ───────────
+const premiumUsers: MockUser[] = [
+  user(1, { income_band: 'low', age_band: '25-34' }),
+  user(2, { income_band: 'low', age_band: '25-34' }),
+  user(3, { income_band: 'mid', age_band: '25-34' }),
+  user(4, { income_band: 'mid', age_band: '35-49' }),
+  user(5, { income_band: 'high', age_band: '35-49' }),
+  user(6, { income_band: 'high', age_band: '50+' }),
+  user(7, { income_band: 'mid', age_band: '18-24' }),
+  user(8, { income_band: 'low', age_band: '35-49' }),
+];
+
+const PREMIUM: Record<SituationId, Scenario> = {
+  'all-clear': {
+    id: 'all-clear',
+    feature: 'Premium Tier',
+    label: 'Full rollout',
+    description: 'Take the premium upsell from a 50% test to everyone — purely additive (exit 0).',
+    baseline: flag('premium-tier', 'Premium Tier Upsell', 50, []),
+    flag: flag('premium-tier', 'Premium Tier Upsell', 100, []),
+    story: {
+      title: 'Ship to everyone',
+      summary: 'The premium upsell is live for 50% of users. This change takes it to 100%.',
+      caught: 'Additive — users gain the upsell, none lose it. Safe to ship.',
+    },
+    users: premiumUsers,
+  },
+  conflict: {
+    id: 'conflict',
+    feature: 'Premium Tier',
+    label: 'High-income only',
+    description: 'Restrict the upsell to high-income users — everyone else loses it (exit 1).',
+    baseline: flag('premium-tier', 'Premium Tier Upsell', 100, []),
+    flag: flag('premium-tier', 'Premium Tier Upsell', 100, [
+      { type: 'income_band', operator: 'equals', value: 'high' },
+    ]),
+    story: {
+      title: 'Target high-income users',
+      summary: 'The premium upsell is live for everyone. This change restricts it to high-income users.',
+      caught: 'Low- and mid-income users who see the upsell today would lose it. CI blocks the deploy until you confirm.',
+    },
+    users: premiumUsers,
+  },
+  warning: {
+    id: 'warning',
+    feature: 'Premium Tier',
+    label: 'Paid income, prime age',
+    description: 'Layer an age rule on top of the income rule — users matching only one rule drop to partial (exit 2).',
+    baseline: flag('premium-tier', 'Premium Tier Upsell', 100, [
+      { type: 'income_band', operator: 'in_list', value: ['mid', 'high'] },
+    ]),
+    flag: flag('premium-tier', 'Premium Tier Upsell', 100, [
+      { type: 'income_band', operator: 'in_list', value: ['mid', 'high'] },
+      { type: 'age_band', operator: 'in_list', value: ['25-34', '35-49'] },
+    ]),
+    story: {
+      title: 'Add an age requirement',
+      summary: 'The premium upsell is live for all mid- and high-income users. This change also requires a prime age band.',
+      caught: 'Users outside the 25–49 age bands would drop from full access to partial. Proceed with caution.',
+    },
+    users: premiumUsers,
+  },
+};
+
+export const FEATURES: FeatureDef[] = [
+  {
+    id: 'dark-mode',
+    label: 'Dark Mode',
+    description: 'A UI theme flag — identity and geography targeting.',
+    situations: SCENARIOS,
+  },
+  {
+    id: 'checkout-redesign',
+    label: 'Checkout Redesign',
+    description: 'A revenue surface — financial targeting by plan and region.',
+    situations: CHECKOUT,
+  },
+  {
+    id: 'premium-tier',
+    label: 'Premium Tier',
+    description: 'An upsell surface — demographic targeting by income and age.',
+    situations: PREMIUM,
+  },
+];
+
+export const FEATURE_IDS = FEATURES.map((f) => f.id) as FeatureId[];
+
+const FEATURES_BY_ID: Record<FeatureId, FeatureDef> = Object.fromEntries(
+  FEATURES.map((f) => [f.id, f]),
+) as Record<FeatureId, FeatureDef>;
+
+/** Resolve one (feature × situation) pair to its Scenario. */
+export function getScenario(featureId: FeatureId, situationId: SituationId): Scenario {
+  return FEATURES_BY_ID[featureId].situations[situationId];
+}
+
+/** True if the string is a known feature id. */
+export function isFeatureId(v: string): v is FeatureId {
+  return (FEATURE_IDS as readonly string[]).includes(v);
+}
