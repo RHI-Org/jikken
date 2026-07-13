@@ -119,13 +119,22 @@ export function TutorialProvider({
   useEffect(() => {
     if (state.status !== 'running') return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return;
-      event.preventDefault();
-      skip();
+      const target = event.target as HTMLElement | null;
+      const isFormControl = target?.matches('input, textarea, select, [contenteditable="true"]');
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        skip();
+      } else if (!isFormControl && event.key === 'ArrowRight' && steps[state.currentIndex]?.allowNext === true) {
+        event.preventDefault();
+        advance();
+      } else if (!isFormControl && event.key === 'ArrowLeft' && state.currentIndex > 0) {
+        event.preventDefault();
+        back();
+      }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [skip, state.status]);
+  }, [advance, back, skip, state.currentIndex, state.status, steps]);
 
   const value = useMemo<TutorialContextValue>(
     () => ({

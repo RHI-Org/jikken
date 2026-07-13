@@ -10,7 +10,8 @@ import type { FlagConfig, SimulationResult } from '@jikken/shared';
 import FlagEditor from '../pages/FlagEditor';
 import SimulationView from '../pages/SimulationView';
 import { filterFlags } from '../pages/FlagList';
-import { filterSimulations } from '../pages/HistoryPage';
+import HistoryPage, { filterSimulations } from '../pages/HistoryPage';
+import { flagStore } from '@/store/flagStore';
 
 vi.mock('jspdf', () => ({
   default: vi.fn().mockImplementation(() => ({
@@ -30,6 +31,7 @@ vi.mock('@/store/flagStore', () => ({
     deleteFlag: vi.fn().mockResolvedValue(undefined),
     runSimulation: vi.fn().mockResolvedValue(null),
     listSimulations: vi.fn().mockResolvedValue([]),
+    subscribeSimulations: vi.fn(() => () => {}),
   },
 }));
 
@@ -189,5 +191,19 @@ describe('dashboard search', () => {
     expect(filterSimulations([mockResult], 'dark-mode')).toHaveLength(1);
     expect(filterSimulations([{ ...mockResult, result: 'warning' }], 'needs review')).toHaveLength(1);
     expect(filterSimulations([mockResult], 'missing')).toHaveLength(0);
+  });
+});
+
+describe('HistoryPage', () => {
+  it('expands a simulation row to show metadata and decisions', async () => {
+    vi.mocked(flagStore.listSimulations).mockResolvedValueOnce([mockResult]);
+    renderWithRouter(<HistoryPage />);
+
+    fireEvent.click(await screen.findByText('sim_123'));
+
+    expect(screen.getByText('Exit code')).toBeInTheDocument();
+    expect(screen.getByText('4.2 ms')).toBeInTheDocument();
+    expect(screen.getByText('Decision details')).toBeInTheDocument();
+    expect(screen.getByText('User matches segment and rollout')).toBeInTheDocument();
   });
 });

@@ -9,11 +9,11 @@
  * Design Principle: Consistency — same result colors as CLI and SimulationView.
  * Design Principle: Transparent reasoning — the audit trail is always visible.
  */
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, Search, X } from 'lucide-react';
 import type { SimulationResult } from '@jikken/shared';
-import { COLORS } from '@jikken/shared';
+import { COLORS, DECISION_LABELS } from '@jikken/shared';
 import { flagStore } from '@/store/flagStore';
 import {
   emitTutorialEvent,
@@ -44,6 +44,7 @@ export default function HistoryPage() {
   const [sims, setSims] = useState<SimulationResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   // simulation_ids that just arrived via Realtime — drives the pulse class.
   const [pulsing, setPulsing] = useState<Set<string>>(new Set());
   const pulseTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
@@ -92,6 +93,22 @@ export default function HistoryPage() {
 
   const filteredSims = filterSimulations(sims, query);
 
+  const toggleExpanded = (simulationId: string, isTutorialRow: boolean) => {
+    setExpanded((current) => {
+      const next = new Set(current);
+      if (next.has(simulationId)) next.delete(simulationId);
+      else next.add(simulationId);
+      return next;
+    });
+    if (isTutorialRow) {
+      emitTutorialEvent({
+        type: 'jikken:tutorial:event',
+        event: 'user-action',
+        anchor: TUTORIAL_ANCHORS.latestHistoryRow,
+      });
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-2xl font-semibold mb-6">Simulation History</h1>
@@ -139,38 +156,78 @@ export default function HistoryPage() {
               {filteredSims.map((sim, index) => {
                 const style = RESULT_STYLE[sim.result];
                 const isPulsing = pulsing.has(sim.simulation_id);
+                const isExpanded = expanded.has(sim.simulation_id);
                 return (
-                  <tr
-                    key={sim.simulation_id}
-                    className={isPulsing ? 'jk-row-pulse' : undefined}
-                    data-tutorial={index === 0 ? TUTORIAL_ANCHORS.latestHistoryRow : undefined}
-                    onClick={index === 0 ? () => emitTutorialEvent({
-                      type: 'jikken:tutorial:event',
-                      event: 'user-action',
-                      anchor: TUTORIAL_ANCHORS.latestHistoryRow,
-                    }) : undefined}
-                  >
-                    <td className="px-4 py-2 font-mono text-xs text-gray-600">{sim.simulation_id}</td>
-                    <td className="px-4 py-2">
-                      <Link
-                        to={`/flags/simulate/${sim.flag_id}`}
-                        className="text-blue-600 hover:text-blue-800 font-mono"
-                      >
-                        {sim.flag_id}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-2 whitespace-nowrap">
-                      <span className={`inline-flex whitespace-nowrap px-2 py-1 rounded text-xs font-medium ${style.bg} ${style.text}`}>
-                        {style.label}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2 text-gray-600">
-                      {sim.summary.passed} / {sim.summary.conflicted} / {sim.summary.warned}
-                    </td>
-                    <td className="px-4 py-2 text-gray-500">
-                      {new Date(sim.evaluated_at).toLocaleString()}
-                    </td>
-                  </tr>
+                  <Fragment key={sim.simulation_id}>
+                    <tr
+                      className={`${isPulsing ? 'jk-row-pulse ' : ''}cursor-pointer outline-none hover:bg-gray-50 focus-visible:bg-blue-50`}
+                      data-tutorial={index === 0 ? TUTORIAL_ANCHORS.latestHistoryRow : undefined}
+                      onClick={() => toggleExpanded(sim.simulation_id, index === 0)}
+                      onKeyDown={(event) => {
+                        if (event.key !== 'Enter' && event.key !== ' ') return;
+                        event.preventDefault();
+                        toggleExpanded(sim.simulation_id, index === 0);
+                      }}
+                      tabIndex={0}
+                      aria-expanded={isExpanded}
+                    >
+                      <td className="px-4 py-2 font-mono text-xs text-gray-600">{sim.simulation_id}</td>
+                      <td className="px-4 py-2">
+                        <Link
+                          to={`/flags/simulate/${sim.flag_id}`}
+                          onClick={(event) => event.stopPropagation()}
+                          className="text-blue-600 hover:text-blue-800 font-mono"
+                        >
+                          {sim.flag_id}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap">
+                        <span className={`inline-flex whitespace-nowrap px-2 py-1 rounded text-xs font-medium ${style.bg} ${style.text}`}>
+                          {style.label}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2 text-gray-600">
+                        {sim.summary.passed} / {sim.summary.conflicted} / {sim.summary.warned}
+                      </td>
+                      <td className="px-4 py-2 text-gray-500">
+                        <div className="flex items-center justify-between gap-3 whitespace-nowrap">
+                          {new Date(sim.evaluated_at).toLocaleString()}
+                          {isExpanded ? <ChevronDown className="h-4 w-4 shrink-0" aria-hidden="true" /> : <ChevronRight className="h-4 w-4 shrink-0" aria-hidden="true" />}
+                        </div>
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <tr className="bg-gray-50/80">
+                        <td colSpan={5} className="px-4 pb-4 pt-2">
+                          <div className="rounded-lg border border-gray-200 bg-white p-4">
+                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                              <div><div className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Exit code</div><div className="mt-1 font-mono text-sm text-gray-800">{sim.exit_code}</div></div>
+                              <div><div className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Latency</div><div className="mt-1 font-mono text-sm text-gray-800">{sim.total_latency_ms.toFixed(1)} ms</div></div>
+                              <div><div className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Audience</div><div className="mt-1 font-mono text-sm text-gray-800">{sim.summary.total} users</div></div>
+                              <div><div className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Evaluated</div><div className="mt-1 break-all font-mono text-xs text-gray-800">{sim.evaluated_at}</div></div>
+                            </div>
+                            <div className="mt-4 border-t border-gray-100 pt-3">
+                              <div className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-gray-400">Decision details</div>
+                              {sim.decisions.length === 0 ? (
+                                <p className="text-xs text-gray-500">No per-user decisions were recorded.</p>
+                              ) : (
+                                <div className="space-y-2">
+                                  {sim.decisions.slice(0, 5).map((decision) => (
+                                    <div key={decision.user_id} className="grid gap-1 text-xs sm:grid-cols-[7rem_7rem_1fr] sm:gap-3">
+                                      <span className="font-mono text-gray-700">{decision.user_id}</span>
+                                      <span className={`font-semibold ${decision.decision === 'receive' ? COLORS.RECEIVE.text : decision.decision === 'exclude' ? COLORS.EXCLUDE.text : COLORS.PARTIAL.text}`}>{DECISION_LABELS[decision.decision]}</span>
+                                      <span className="text-gray-500">{decision.reason}</span>
+                                    </div>
+                                  ))}
+                                  {sim.decisions.length > 5 && <p className="text-xs text-gray-400">+ {sim.decisions.length - 5} more decisions</p>}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 );
               })}
             </tbody>
