@@ -25,10 +25,10 @@ import { formatDiff, formatOutput } from '@jikken/cli-formatter';
 // COLORS.RECEIVE/EXCLUDE/PARTIAL stay reserved for semantic states; these tones
 // only shape the non-semantic chrome: banners, prompt, help, echoed commands.
 // Tuned for the light stone console (bg stone-100): dark-on-light greys.
-const C_HEADER = '\x1b[1m\x1b[38;5;236m'; // bold dark header
+const C_HEADER = '\x1b[1m\x1b[38;5;232m'; // bold dark header
 const C_LABEL = '\x1b[38;5;244m'; // mid-grey label
 const C_FAINT = '\x1b[38;5;250m'; // faint separator (light)
-const C_CMD = '\x1b[1m\x1b[38;5;236m'; // command keyword (bold dark)
+const C_CMD = '\x1b[1m\x1b[38;5;232m'; // command keyword (bold dark)
 const C_FLAG = '\x1b[38;5;244m'; // --flags (mid grey)
 
 const CMD_KEYWORDS = new Set(['jikken', 'simulate', 'diff', 'validate', 'help']);

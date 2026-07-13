@@ -1,11 +1,10 @@
 /**
- * Right stage — the live demo. Top bar: scenario picker (sets the engine seed
- * so all surfaces reflect the same deterministic run) + restart, and the
+ * Right stage — the live demo. Top bar: a fixed feature chip + a situation
+ * dropdown (sets the same deterministic input across every surface), and the
  * CLI / Dashboard / SDK surface switcher. Below: the active surface renders
  * real and interactive, with a numbered pin overlay when a principle is
  * selected from the notes panel.
  */
-import { RotateCw } from 'lucide-react';
 import { SCENARIOS, SCENARIO_IDS, type ScenarioId, type SimulationResult } from '@jikken/shared';
 import { CliSurface, type CliInject } from './surfaces/CliSurface';
 import { SdkSurface } from './surfaces/SdkSurface';
@@ -45,21 +44,17 @@ export function Stage({
   onSurfaceChange,
   scenario,
   onScenarioChange,
-  onRestart,
   cliInject,
   onCliResult,
   activePrinciple,
-  restartNonce,
 }: {
   surface: Surface;
   onSurfaceChange: (s: Surface) => void;
   scenario: ScenarioId | null;
   onScenarioChange: (s: ScenarioId) => void;
-  onRestart: () => void;
   cliInject: CliInject | null;
   onCliResult: (r: SimulationResult, scenario: string | null) => void;
   activePrinciple: Principle | null;
-  restartNonce: number;
 }) {
   const showPin = activePrinciple !== null && activePrinciple.surface === surface;
 
@@ -78,59 +73,61 @@ export function Stage({
           flexWrap: 'wrap',
         }}
       >
-        {/* Situation row — sticky/selectable chips (one per scenario) */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <span
-            title="The shared situation. Sets the same deterministic input for the CLI, Dashboard, and SDK at once."
-            style={{ ...MICRO_LABEL, cursor: 'help' }}
-          >
-            Situation
-          </span>
-          {SCENARIO_IDS.map((id) => {
-            const active = id === scenario;
-            return (
-              <button
-                key={id}
-                onClick={() => onScenarioChange(id)}
-                title={SCENARIOS[id].description}
-                style={{
-                  ...CHIP_BASE,
-                  background: active ? 'var(--portfolio-text-primary)' : 'transparent',
-                  color: active ? '#fff' : 'var(--portfolio-text-secondary)',
-                  borderColor: active ? 'var(--portfolio-text-primary)' : 'var(--portfolio-border)',
-                  fontWeight: active ? 'var(--font-weight-semibold)' : 'var(--font-weight-regular)',
-                }}
-              >
-                {SCENARIOS[id].label}
-              </button>
-            );
-          })}
-          <span style={{ fontSize: '0.7rem', color: 'var(--portfolio-text-muted)', marginLeft: '0.15rem' }}>
-            Feature: {SCENARIOS[SCENARIO_IDS[0]].feature}
-          </span>
-          {scenario === null && (
-            <span style={{ fontSize: '0.7rem', color: 'var(--portfolio-text-faint)', fontStyle: 'italic' }}>
-              Pick a situation to begin
+        {/* Situation controls — the feature is fixed (a permanent, selected-looking
+            chip); the situation is a compact dropdown so the bar doesn't crowd. */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
+          {/* Feature — permanently selected, non-interactive chip */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <span style={MICRO_LABEL}>Feature</span>
+            <span
+              style={{
+                ...CHIP_BASE,
+                cursor: 'default',
+                background: 'var(--portfolio-text-primary)',
+                color: '#fff',
+                borderColor: 'var(--portfolio-text-primary)',
+                fontWeight: 'var(--font-weight-semibold)',
+              }}
+            >
+              {SCENARIOS[SCENARIO_IDS[0]].feature}
             </span>
-          )}
-          <button
-            onClick={onRestart}
-            disabled={scenario === null}
-            aria-label="Replay the current surface"
-            title={scenario === null ? 'Pick a situation first' : 'Replay this surface'}
-            style={{
-              display: 'flex',
-              padding: '0.35rem',
-              borderRadius: '0.4rem',
-              border: '1px solid var(--portfolio-border)',
-              background: 'transparent',
-              color: 'var(--portfolio-text-muted)',
-              cursor: scenario === null ? 'not-allowed' : 'pointer',
-              opacity: scenario === null ? 0.4 : 1,
-            }}
-          >
-            <RotateCw size={13} />
-          </button>
+          </div>
+
+          {/* Situation — dropdown selector (placeholder shows until one is picked) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <span
+              title="The shared situation. Sets the same deterministic input for the CLI, Dashboard, and SDK at once."
+              style={{ ...MICRO_LABEL, cursor: 'help' }}
+            >
+              Situation
+            </span>
+            <select
+              value={scenario ?? ''}
+              onChange={(e) => e.target.value && onScenarioChange(e.target.value as ScenarioId)}
+              aria-label="Choose a situation"
+              title={scenario ? SCENARIOS[scenario].description : 'Pick a situation to begin'}
+              style={{
+                padding: '0.32rem 0.55rem',
+                borderRadius: '0.4rem',
+                border: '1px solid var(--portfolio-border)',
+                background: 'var(--portfolio-bg-card)',
+                color: scenario ? 'var(--portfolio-text-primary)' : 'var(--portfolio-text-muted)',
+                fontSize: '0.72rem',
+                fontFamily: 'var(--font-mono)',
+                fontWeight: scenario ? 'var(--font-weight-semibold)' : 'var(--font-weight-regular)',
+                cursor: 'pointer',
+              }}
+            >
+              <option value="" disabled>
+                Pick a situation…
+              </option>
+              {SCENARIO_IDS.map((id) => (
+                <option key={id} value={id}>
+                  {SCENARIOS[id].label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Surface switcher */}
@@ -168,7 +165,7 @@ export function Stage({
         </div>
         {surface === 'dashboard' && (
           <div style={{ position: 'absolute', inset: 0 }}>
-            <DashboardSurface key={restartNonce} />
+            <DashboardSurface />
           </div>
         )}
         {surface === 'sdk' && (
@@ -178,7 +175,7 @@ export function Stage({
                 Pick a situation to begin
               </div>
             ) : (
-              <SdkSurface key={restartNonce} scenario={scenario} />
+              <SdkSurface scenario={scenario} />
             )}
           </div>
         )}

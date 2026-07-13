@@ -19,10 +19,10 @@ export function formatOutput(
     return JSON.stringify(result, null, 2);
   }
 
-  const HEADER = "\u001b[1m\u001b[38;5;236m"; // bold dark — section headers
+  const HEADER = "\u001b[1m\u001b[38;5;232m"; // bold dark — section headers
   const LABEL  = "\u001b[38;5;244m";           // mid grey — field labels
   const FAINT  = "\u001b[38;5;250m";           // faint grey — separator rules
-  const VALUE  = "\u001b[38;5;235m";           // near-black — values
+  const VALUE  = "\u001b[38;5;238m";           // near-black — values
 
   let output = '\n';
   output += `${HEADER}FLAG SIMULATION RESULT${ANSI_RESET}\n`;
@@ -73,10 +73,10 @@ export function formatDiff(diff: SimulationDiff, format: 'text' | 'json', quiet:
     return JSON.stringify(diff, null, 2);
   }
 
-  const HEADER = "\u001b[1m\u001b[38;5;236m";
+  const HEADER = "\u001b[1m\u001b[38;5;232m";
   const LABEL = "\u001b[38;5;244m";
   const FAINT = "\u001b[38;5;250m";
-  const VALUE = "\u001b[38;5;235m";
+  const VALUE = "\u001b[38;5;238m";
 
   let out = "\n";
   out += `${HEADER}CHANGE IMPACT${ANSI_RESET}\n`;
