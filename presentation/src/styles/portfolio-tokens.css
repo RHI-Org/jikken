@@ -1,0 +1,67 @@
+/**
+ * Vendored from folio/src/index.css (stone scale + --portfolio-* semantic
+ * layer + IBM Plex type scale). jikken is a separate build, so these are
+ * copied values, not an import — re-copy here if the canonical file changes.
+ */
+
+:root {
+  --stone-950: #0c0a09;
+  --stone-900: #1c1917;
+  --stone-800: #292524;
+  --stone-700: #44403c;
+  --stone-600: #57534e;
+  --stone-500: #78716c;
+  --stone-400: #a8a29e;
+  --stone-300: #d6d3d1;
+  --stone-200: #e7e5e4;
+  --stone-100: #f5f5f4;
+  --stone-50: #fafaf9;
+
+  --portfolio-page-bg: var(--stone-50);
+  --portfolio-bg: var(--stone-100);
+  --portfolio-bg-card: var(--stone-100);
+  --portfolio-bg-card-alt: var(--stone-50);
+  --portfolio-bg-muted: var(--stone-200);
+  --portfolio-text-primary: var(--stone-900);
+  --portfolio-text-secondary: var(--stone-700);
+  --portfolio-text-muted: var(--stone-600);
+  --portfolio-text-subtle: var(--stone-500);
+  --portfolio-text-faint: var(--stone-400);
+  --portfolio-border: var(--stone-300);
+  --portfolio-border-muted: var(--stone-200);
+  --portfolio-btn-bg: var(--stone-900);
+  --portfolio-btn-text: #ffffff;
+  --portfolio-btn-hover: var(--stone-800);
+
+  --font-serif: 'IBM Plex Serif', Georgia, 'Times New Roman', serif;
+  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+}
+
+:root[data-theme='dark'] {
+  --portfolio-page-bg: var(--stone-100);
+  --portfolio-bg: var(--stone-200);
+  --portfolio-bg-card: var(--stone-100);
+  --portfolio-text-primary: var(--stone-900);
+  --portfolio-text-secondary: var(--stone-700);
+  --portfolio-text-muted: var(--stone-600);
+  --portfolio-border: var(--stone-300);
+  --portfolio-btn-bg: var(--stone-300);
+  --portfolio-btn-text: var(--stone-900);
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background-color: var(--portfolio-page-bg);
+  color: var(--portfolio-text-primary);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

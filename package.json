@@ -1,0 +1,13 @@
+{
+  "name": "jikken",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "workspaces": [
+    "presentation"
+  ],
+  "scripts": {
+    "present": "npm run dev --workspace presentation",
+    "build:present": "npm run build --workspace presentation"
+  }
+}
