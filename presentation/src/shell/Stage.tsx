@@ -138,7 +138,7 @@ export function Stage({
         style={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'flex-end',
+          justifyContent: 'space-between',
           gap: '1rem',
           padding: '0.7rem 1.1rem',
           borderBottom: '1px solid var(--portfolio-border)',
@@ -146,6 +146,18 @@ export function Stage({
           flexWrap: 'wrap',
         }}
       >
+        <span
+          style={{
+            fontSize: '0.62rem',
+            fontWeight: 'var(--font-weight-bold)',
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            color: 'var(--portfolio-text-faint)',
+          }}
+        >
+          Product Demo
+        </span>
+
         {/* Surface switcher */}
         <div style={{ display: 'flex', gap: '1rem' }}>
           {SURFACES.map((s) => {
