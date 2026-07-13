@@ -23,8 +23,8 @@ export const PRODUCT_SECTIONS: OverviewSection[] = [
 // A short, ordered guide to operating the application.
 export const HOWTO: HowToStep[] = [
   {
-    title: 'Pick a scenario',
-    body: 'Choose all-clear, conflict, or warning in the top bar. This sets the deterministic input shared by every surface.',
+    title: 'Pick a situation',
+    body: 'Choose a situation from the dropdown in the top bar. This sets the deterministic input shared by every surface.',
   },
   {
     title: 'Switch surfaces',

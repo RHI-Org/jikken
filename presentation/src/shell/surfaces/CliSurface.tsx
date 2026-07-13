@@ -11,6 +11,7 @@ import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
 import { COLORS, type SimulationResult } from '@jikken/shared';
 import { runCommand, colorizeCommand, PRESET_COMMANDS } from '../cli-runtime';
+import { TerminalWindow } from '../TerminalWindow';
 
 const PROMPT = '\x1b[1m\x1b[38;5;232mjikken\x1b[0m \x1b[38;5;244m$\x1b[0m ';
 
@@ -157,49 +158,58 @@ export function CliSurface({
     (term as unknown as { _runLine: (l: string) => void })._runLine(command);
   };
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
-      <div
-        ref={hostRef}
-        onClick={() => termRef.current?.focus()}
-        style={{ flex: 1, minHeight: 0, background: '#f5f5f4', padding: '0.6rem 0.4rem 0.4rem 0.6rem' }}
-      />
-      {/* Preset command chips — below the console, so the terminal is the focus */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem', padding: '0.75rem 0.9rem', borderTop: '1px solid var(--portfolio-border-muted)', background: 'var(--portfolio-bg-muted)' }}>
-        <span
+  // Quickstart controls — the preset command chips, now living in the window's
+  // footer chrome (the frame carries the border + muted fill, so this row is
+  // just the label + chips).
+  const quickstart = (
+    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem', padding: '0.7rem 0.9rem' }}>
+      <span
+        style={{
+          fontSize: '0.62rem',
+          fontWeight: 'var(--font-weight-bold)',
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+          color: 'var(--portfolio-text-faint)',
+          marginRight: '0.15rem',
+        }}
+      >
+        Quickstart
+      </span>
+      {PRESET_COMMANDS.map((c) => (
+        <button
+          key={c.label}
+          onClick={() => sendChip(c.command)}
           style={{
-            fontSize: '0.62rem',
-            fontWeight: 'var(--font-weight-bold)',
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            color: 'var(--portfolio-text-faint)',
-            marginRight: '0.15rem',
+            // Shared chip base (matches the Situation row in Stage); momentary,
+            // so no sticky/active fill — just the outlined base shape.
+            padding: '0.3rem 0.7rem',
+            borderRadius: '999px',
+            border: '1px solid var(--portfolio-border)',
+            background: 'var(--portfolio-bg-card)',
+            color: 'var(--portfolio-text-secondary)',
+            fontSize: '0.72rem',
+            fontFamily: 'var(--font-mono)',
+            lineHeight: 1.2,
+            cursor: 'pointer',
           }}
         >
-          Try a command
-        </span>
-        {PRESET_COMMANDS.map((c) => (
-          <button
-            key={c.label}
-            onClick={() => sendChip(c.command)}
-            style={{
-              // Shared chip base (matches the Situation row in Stage); momentary,
-              // so no sticky/active fill — just the outlined base shape.
-              padding: '0.3rem 0.7rem',
-              borderRadius: '999px',
-              border: '1px solid var(--portfolio-border)',
-              background: 'var(--portfolio-bg-card)',
-              color: 'var(--portfolio-text-secondary)',
-              fontSize: '0.72rem',
-              fontFamily: 'var(--font-mono)',
-              lineHeight: 1.2,
-              cursor: 'pointer',
-            }}
-          >
-            {c.label}
-          </button>
-        ))}
-      </div>
+          {c.label}
+        </button>
+      ))}
+    </div>
+  );
+
+  // The window floats on the stage with breathing room on every side, so it
+  // reads as a real terminal app rather than a full-bleed console.
+  return (
+    <div style={{ height: '100%', minHeight: 0, padding: '1.1rem', boxSizing: 'border-box' }}>
+      <TerminalWindow title="jikken — zsh" footer={quickstart}>
+        <div
+          ref={hostRef}
+          onClick={() => termRef.current?.focus()}
+          style={{ flex: 1, minHeight: 0, background: '#f5f5f4', padding: '0.6rem 0.4rem 0.4rem 0.6rem' }}
+        />
+      </TerminalWindow>
     </div>
   );
 }
