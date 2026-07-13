@@ -3,7 +3,7 @@
  * the shared-language approach, and the live cross-surface hand-off.
  */
 import { useState } from 'react';
-import { ChevronRight, Sparkles } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { STATS, SECTIONS, HANDOFF } from '../data/overview';
 
 const microLabel: React.CSSProperties = {
@@ -48,11 +48,10 @@ export function DesignTab({ onHandoff }: { onHandoff: () => void }) {
 
       <button
         onClick={onHandoff}
-        style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', padding: '0.85rem', borderRadius: '0.6rem', border: '1px solid var(--portfolio-text-primary)', background: 'var(--portfolio-text-primary)', color: '#fff', cursor: 'pointer', textAlign: 'left' }}
+        style={{ display: 'flex', alignItems: 'flex-start', padding: '0.85rem', borderRadius: '0.6rem', border: '1px solid var(--portfolio-text-primary)', background: 'var(--portfolio-text-primary)', color: '#fff', cursor: 'pointer', textAlign: 'left' }}
       >
-        <Sparkles size={16} style={{ flexShrink: 0, marginTop: '0.1rem' }} />
         <span>
-          <span style={{ fontWeight: 'var(--font-weight-bold)', fontSize: '0.85rem' }}>★ {HANDOFF.label}</span>
+          <span style={{ fontWeight: 'var(--font-weight-bold)', fontSize: '0.85rem' }}>{HANDOFF.label}</span>
           <span style={{ display: 'block', marginTop: '0.3rem', fontSize: '0.78rem', lineHeight: 1.55, opacity: 0.85 }}>{HANDOFF.body}</span>
         </span>
       </button>

@@ -281,7 +281,7 @@ export function runCommand(line: string): RunOutput {
       text = `${COLORS.EXCLUDE.ansi}[FAIL]${ANSI_RESET} Conflict detected. Deployment halted.\r\n`;
       exitCode = EXIT_CODES.CONFLICT;
     } else if (result.exit_code === EXIT_CODES.WARNING && opts.strict) {
-      text = `${COLORS.PARTIAL.ansi}[WARN]${ANSI_RESET} Partial matches detected. --strict mode halting.\r\n`;
+      text = `${COLORS.PARTIAL.ansi}[REVIEW]${ANSI_RESET} Some targeting rules matched, but users are not eligible. --strict mode halting.\r\n`;
       exitCode = EXIT_CODES.WARNING;
     } else {
       text = `${COLORS.RECEIVE.ansi}[OK]${ANSI_RESET} Flag validated. Ready for deployment.\r\n`;
@@ -299,16 +299,16 @@ export function runCommand(line: string): RunOutput {
  * own capabilities — a real command, JSON output for machines, the CI
  * validation gate, an error with a "did you mean?" suggestion, and help. They
  * are deliberately NOT scenario switchers: the scenario (the shared situation
- * across all three surfaces) is chosen once in the top bar, not down here.
+ * across all four surfaces) is chosen once in the top bar, not down here.
  */
 export type PresetCommandGroup = 'workflow' | 'output' | 'guidance';
 
-export const PRESET_COMMANDS: { label: string; command: string; group: PresetCommandGroup }[] = [
-  { label: 'diff --scenario conflict', command: 'jikken diff --scenario conflict', group: 'workflow' },
-  { label: 'simulate --flag dark-mode', command: 'jikken simulate --flag dark-mode --rollout 25', group: 'workflow' },
-  { label: 'validate --strict', command: 'jikken validate --scenario conflict --strict', group: 'workflow' },
-  { label: '--format json', command: 'jikken simulate --flag dark-mode --rollout 25 --format json', group: 'output' },
-  { label: '--quiet', command: 'jikken simulate --flag dark-mode --rollout 25 --quiet', group: 'output' },
-  { label: '"did you mean?"', command: 'jikken simulate --flag "Dark Mode!"', group: 'guidance' },
-  { label: 'help', command: 'help', group: 'guidance' },
+export const PRESET_COMMANDS: { label: string; command: string; group: PresetCommandGroup; description: string }[] = [
+  { label: 'diff --scenario conflict', command: 'jikken diff --scenario conflict', group: 'workflow', description: 'Run the “Exclude employees” scenario: compare its proposed targeting change with what is live and show who gains or loses access.' },
+  { label: 'simulate --flag dark-mode', command: 'jikken simulate --flag dark-mode --rollout 25', group: 'workflow', description: 'Evaluate a flag against the deterministic sample population at a 25% rollout.' },
+  { label: 'validate --scenario warning --strict', command: 'jikken validate --scenario warning --strict', group: 'workflow', description: 'Run the “Early adopters in US / CA” scenario and apply CI policy, halting when its targeting needs review.' },
+  { label: '--format json', command: 'jikken simulate --flag dark-mode --rollout 25 --format json', group: 'output', description: 'Return the simulation as structured JSON for scripts, SDKs, and pipelines.' },
+  { label: '--quiet', command: 'jikken simulate --flag dark-mode --rollout 25 --quiet', group: 'output', description: 'Show only the summary and exit code, omitting the per-user decision trace.' },
+  { label: '"did you mean?"', command: 'jikken simulate --flag "Dark Mode!"', group: 'guidance', description: 'Demonstrate actionable validation that suggests a corrected flag ID.' },
+  { label: 'help', command: 'help', group: 'guidance', description: 'List available commands, options, scenarios, and terminal utilities.' },
 ];

@@ -14,7 +14,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import type { SimulationResult } from '@jikken/shared';
-import { COLORS, SCENARIOS, evaluateFlag, type ScenarioId } from '@jikken/shared';
+import { COLORS, DECISION_LABELS, SCENARIOS, evaluateFlag, type ScenarioId } from '@jikken/shared';
 import { flagStore } from '@/store/flagStore';
 import { exportToPDF, formatResultForClipboard } from '@/utils/export';
 
@@ -172,7 +172,7 @@ export default function SimulationView({ simulationResult: providedResult }: Sim
         <div className="grid grid-cols-4 gap-4 text-center">
           <div>
             <div className="text-2xl font-bold text-green-600">{summary.passed}</div>
-            <div className="text-sm text-gray-600">Would Receive</div>
+            <div className="text-sm text-gray-600">Included</div>
           </div>
           <div>
             <div className="text-2xl font-bold text-red-600">{summary.conflicted}</div>
@@ -180,7 +180,7 @@ export default function SimulationView({ simulationResult: providedResult }: Sim
           </div>
           <div>
             <div className="text-2xl font-bold text-yellow-600">{summary.warned}</div>
-            <div className="text-sm text-gray-600">Partial Match</div>
+            <div className="text-sm text-gray-600">Needs Review</div>
           </div>
           <div>
             <div className="text-2xl font-bold text-gray-600">{summary.total}</div>
@@ -216,7 +216,7 @@ export default function SimulationView({ simulationResult: providedResult }: Sim
 
                   <div className="flex items-center space-x-2">
                     <span className={`px-2 py-1 rounded text-xs font-medium ${style.bg} ${style.text}`}>
-                      {dec.decision.toUpperCase()}
+                      {DECISION_LABELS[dec.decision]}
                     </span>
                     {isExpanded ? (
                       <ChevronDown className="w-4 h-4 text-gray-400" />

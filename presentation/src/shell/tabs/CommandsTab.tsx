@@ -4,7 +4,8 @@
  * themselves: choosing the shared input (Feature × Situation), and running a
  * command shortcut in the terminal.
  */
-import { ArrowRight } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowRight, Info } from 'lucide-react';
 import { SCENARIO_IDS, type FeatureDef, type FeatureId, type ScenarioId } from '@jikken/shared';
 import { PRESET_COMMANDS } from '../cli-runtime';
 
@@ -43,6 +44,32 @@ const MICRO_LABEL = {
   color: 'var(--portfolio-text-faint)',
 } as const;
 
+function InfoTip({ label, text }: { label: string; text: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span style={{ position: 'relative', display: 'inline-flex', flexShrink: 0 }}>
+      <button
+        type="button"
+        aria-label={label}
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setOpen(false)}
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+        style={{ display: 'grid', placeItems: 'center', width: '1.35rem', height: '1.35rem', padding: 0, border: '1px solid var(--portfolio-border)', borderRadius: '999px', background: 'var(--portfolio-bg-card)', color: 'var(--portfolio-text-muted)', cursor: 'help' }}
+      >
+        <Info size={12} aria-hidden="true" />
+      </button>
+      {open && (
+        <span role="tooltip" style={{ position: 'absolute', right: 0, bottom: 'calc(100% + 0.45rem)', zIndex: 30, width: '15rem', padding: '0.55rem 0.65rem', borderRadius: '0.4rem', background: 'var(--portfolio-text-primary)', color: 'var(--portfolio-btn-text)', boxShadow: '0 8px 24px rgba(28,25,23,0.2)', fontSize: '0.7rem', fontWeight: 'var(--font-weight-regular)', lineHeight: 1.45, letterSpacing: 0, textTransform: 'none' }}>
+          {text}
+        </span>
+      )}
+    </span>
+  );
+}
+
 export function CommandsTab({
   features,
   feature,
@@ -59,6 +86,9 @@ export function CommandsTab({
   onRunCommand: (command: string) => void;
 }) {
   const featureDef = features.find((f) => f.id === feature) ?? features[0];
+  const scenarioMap = SCENARIO_IDS.map(
+    (id) => `${featureDef.situations[id].label} = --scenario ${id}`,
+  ).join('; ');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.6rem' }}>
@@ -76,7 +106,10 @@ export function CommandsTab({
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
           <label style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-            <span style={MICRO_LABEL}>Feature</span>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+              <span style={MICRO_LABEL}>Feature</span>
+              <InfoTip label="About the Feature menu" text="Choose the product capability controlled by the flag. Each feature carries its own audience attributes and scenarios." />
+            </span>
             <select
               data-tutorial="feature-select"
               value={feature}
@@ -94,7 +127,10 @@ export function CommandsTab({
           </label>
 
           <label style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-            <span style={MICRO_LABEL}>Scenario</span>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+              <span style={MICRO_LABEL}>Scenario</span>
+              <InfoTip label="About the Scenario menu" text={`Choose the proposed targeting change to evaluate. Menu names map directly to CLI values: ${scenarioMap}.`} />
+            </span>
             <select
               data-tutorial="scenario-select"
               value={scenario ?? ''}
@@ -108,7 +144,7 @@ export function CommandsTab({
               </option>
               {SCENARIO_IDS.map((id) => (
                 <option key={id} value={id}>
-                  {featureDef.situations[id].label}
+                  {featureDef.situations[id].label} — --scenario {id}
                 </option>
               ))}
             </select>
@@ -131,36 +167,19 @@ export function CommandsTab({
               <div style={{ ...MICRO_LABEL, marginBottom: '0.4rem' }}>{group.label}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                 {PRESET_COMMANDS.filter((command) => command.group === group.id).map((c) => (
-                  <button
-                    key={c.label}
-                    data-tutorial={c.command.includes('diff') && c.command.includes('conflict') ? 'run-conflict-command' : undefined}
-                    onClick={() => onRunCommand(c.command)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '0.7rem',
-                      textAlign: 'left',
-                      padding: '0.65rem 0.7rem',
-                      borderRadius: '0.5rem',
-                      border: '1px solid var(--portfolio-border)',
-                      background: 'var(--portfolio-bg-card)',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <span
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.76rem',
-                  color: 'var(--portfolio-text-primary)',
-                  lineHeight: 1.3,
-                  wordBreak: 'break-word',
-                }}
+                  <div key={c.label} style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.25rem 0.35rem 0.25rem 0.7rem', borderRadius: '0.5rem', border: '1px solid var(--portfolio-border)', background: 'var(--portfolio-bg-card)' }}>
+                    <button
+                      data-tutorial={c.command.includes('diff') && c.command.includes('conflict') ? 'run-conflict-command' : undefined}
+                      onClick={() => onRunCommand(c.command)}
+                      style={{ minWidth: 0, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.7rem', padding: '0.4rem 0', border: 0, background: 'none', cursor: 'pointer', textAlign: 'left' }}
                     >
-                      {c.label}
-                    </span>
-                    <ArrowRight size={14} style={{ flexShrink: 0, color: 'var(--portfolio-text-faint)' }} />
-                  </button>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.76rem', color: 'var(--portfolio-text-primary)', lineHeight: 1.3, wordBreak: 'break-word' }}>
+                        {c.label}
+                      </span>
+                      <ArrowRight size={14} style={{ flexShrink: 0, color: 'var(--portfolio-text-faint)' }} />
+                    </button>
+                    <InfoTip label={`About ${c.label}`} text={c.description} />
+                  </div>
                 ))}
               </div>
             </div>

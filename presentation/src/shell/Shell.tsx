@@ -4,7 +4,7 @@
  * stage (CLI / Dashboard / SDK) driven by the notes.
  *
  * Owns the cross-surface state so one intent — a scenario, a principle, the
- * ★ hand-off — commands every surface coherently.
+ * hand-off — commands every surface coherently.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FeatureDef, FeatureId, ScenarioId, SimulationResult } from '@jikken/shared';
@@ -127,7 +127,7 @@ export function Shell() {
     [injectCli],
   );
 
-  // ★ The hand-off centerpiece: run the scenario in the CLI, then auto-switch
+  // The hand-off centerpiece: run the scenario in the CLI, then auto-switch
   // to the CI gate, where the same engine run either ships the change or
   // visibly blocks the deploy — the governance layer as the demo's climax.
   const handoff = useCallback(() => {

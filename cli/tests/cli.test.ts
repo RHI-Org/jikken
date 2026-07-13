@@ -41,7 +41,7 @@ describe('simulate scenarios', () => {
   it('outputs the simulation header and summary for the all-clear scenario', () => {
     const output = run('simulate --scenario all-clear');
     expect(output).toMatch(/FLAG SIMULATION RESULT/);
-    expect(output).toMatch(/Received/);
+    expect(output).toMatch(/Included/);
   });
 
   it('exits 0 for the all-clear scenario', () => {

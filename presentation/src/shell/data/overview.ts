@@ -40,7 +40,7 @@ export const HOWTO: HowToStep[] = [
   },
   {
     title: 'Explore the guided details',
-    body: 'Open Details for the product rationale, or its Principles list to jump directly to a specific behavior on the live stage.',
+    body: 'Open UX for the product rationale, or its Principles list to jump directly to a specific behavior on the live stage.',
   },
 ];
 
@@ -54,11 +54,11 @@ export const STATS: OverviewStat[] = [
 export const SECTIONS: OverviewSection[] = [
   {
     label: "THE PROBLEM",
-    body: "Most dev tools feel like three different products. The CLI, the dashboard, and the SDK use different words for the same thing, different colors for the same state, different rules for the same input. People relearn the tool on every surface.",
+    body: "Most dev tools feel like four different products. The CLI, Dashboard, SDK, and CI gate use different words for the same thing, different colors for the same state, and different rules for the same input. People relearn the tool on every surface.",
   },
   {
     label: "THE APPROACH",
-    body: "One source of truth — types, colors, terminology, exit codes — imported by all three surfaces. Green means receive on the CLI and on the dashboard. \"Excluded\" means the same thing everywhere. Learn it once, know it everywhere.",
+    body: "One source of truth — types, colors, terminology, exit codes — imported by all four surfaces. Green means included in the CLI and Dashboard; the SDK and CI gate enforce the same decision. \"Excluded\" and \"Needs Review\" mean the same thing everywhere. Learn it once, know it everywhere.",
   },
 ];
 

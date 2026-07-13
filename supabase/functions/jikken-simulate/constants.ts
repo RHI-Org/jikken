@@ -29,12 +29,19 @@ export type ExitCode = (typeof EXIT_CODES)[keyof typeof EXIT_CODES];
 export const EXIT_CODE_MESSAGES: Record<ExitCode, string> = {
   [EXIT_CODES.ALL_CLEAR]: 'All checks passed.',
   [EXIT_CODES.CONFLICT]: 'Conflicts detected. Fix before deploying.',
-  [EXIT_CODES.WARNING]: 'Partial matches. Proceed with caution.',
+  [EXIT_CODES.WARNING]: 'Needs review. Some targeting rules matched; users are not eligible yet.',
   [EXIT_CODES.INVALID_INPUT]: 'Invalid input. Check flag ID and rules.',
   [EXIT_CODES.CONNECTION_FAILURE]: 'Service unavailable. Retry later.',
   [EXIT_CODES.DEPRECATED]: 'Flag uses deprecated config pattern.',
   [EXIT_CODES.QUOTA_EXCEEDED]: 'Rate limit exceeded. Wait and retry.',
 };
+
+/** Human-facing labels; wire values remain receive/exclude/partial. */
+export const DECISION_LABELS = {
+  receive: 'INCLUDED',
+  exclude: 'EXCLUDED',
+  partial: 'NEEDS REVIEW',
+} as const;
 
 /**
  * Severity levels for messages.

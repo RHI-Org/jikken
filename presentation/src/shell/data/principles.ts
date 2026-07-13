@@ -19,7 +19,7 @@ export const PRINCIPLES: Principle[] = [
   {
     number: 2,
     title: 'Colors functional, not decorative',
-    why: 'Green = receive, red = exclude, yellow = partial. Same hex on every surface.',
+    why: 'Green = included, red = excluded, yellow = needs review. Same hex on every surface.',
     surface: 'dashboard',
     pin: { x: 30, y: 34 },
   },
@@ -40,7 +40,7 @@ export const PRINCIPLES: Principle[] = [
   {
     number: 5,
     title: 'Consistency is the hardest feature',
-    why: 'Same field names, colors, and exit codes across all three surfaces.',
+    why: 'Same field names, colors, and exit codes across all four surfaces.',
     surface: 'sdk',
     pin: { x: 50, y: 55 },
   },

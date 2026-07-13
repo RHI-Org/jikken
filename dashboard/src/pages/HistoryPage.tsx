@@ -22,7 +22,7 @@ import {
 const RESULT_STYLE: Record<SimulationResult['result'], { bg: string; text: string; label: string }> = {
   all_clear: { bg: COLORS.RECEIVE.bg, text: COLORS.RECEIVE.text, label: 'ALL CLEAR' },
   conflict: { bg: COLORS.EXCLUDE.bg, text: COLORS.EXCLUDE.text, label: 'CONFLICT' },
-  warning: { bg: COLORS.PARTIAL.bg, text: COLORS.PARTIAL.text, label: 'WARNING' },
+  warning: { bg: COLORS.PARTIAL.bg, text: COLORS.PARTIAL.text, label: 'NEEDS REVIEW' },
 };
 
 export default function HistoryPage() {
@@ -90,7 +90,7 @@ export default function HistoryPage() {
                 <th className="px-4 py-2">Simulation</th>
                 <th className="px-4 py-2">Flag</th>
                 <th className="px-4 py-2">Result</th>
-                <th className="px-4 py-2">Passed / Conflicted / Warned</th>
+                <th className="px-4 py-2">Included / Excluded / Needs Review</th>
                 <th className="px-4 py-2">Evaluated At</th>
               </tr>
             </thead>

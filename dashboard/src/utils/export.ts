@@ -2,7 +2,7 @@
  * Export Utility — PDF Generation. Generates a report suitable for documentation or stakeholder review. Design Principle: Transparent reasoning — every decision documented.
  */
 import jsPDF from 'jspdf';
-import type { SimulationResult, FlagDecision } from '@jikken/shared';
+import { DECISION_LABELS, type SimulationResult, type FlagDecision } from '@jikken/shared';
 
 export function exportToPDF(params: {
   title: string;
@@ -23,7 +23,7 @@ export function exportToPDF(params: {
   doc.text('Summary', 14, 60);
   doc.setFontSize(11);
   doc.text(
-    `${summary.passed} Received  |  ${summary.conflicted} Excluded  |  ${summary.warned} Partial  |  ${summary.total} Total`,
+    `${summary.passed} Included  |  ${summary.conflicted} Excluded  |  ${summary.warned} Needs Review  |  ${summary.total} Total`,
     14, 67
   );
   let yPos = 80;
@@ -41,7 +41,7 @@ export function exportToPDF(params: {
       : decision.decision === 'exclude' ? [255, 0, 0]
       : [200, 150, 0];
     doc.setTextColor(color[0], color[1], color[2]);
-    doc.text(`[${decision.decision.toUpperCase()}] ${decision.user_id}`, 14, yPos);
+    doc.text(`[${DECISION_LABELS[decision.decision]}] ${decision.user_id}`, 14, yPos);
     doc.setTextColor(0, 0, 0);
     yPos += 7;
     doc.text(`  Reason: ${decision.reason.substring(0, 70)}`, 18, yPos);
@@ -60,10 +60,10 @@ export function formatResultForClipboard(result: SimulationResult): string {
   text += `Flag: ${result.flag_id}\n`;
   text += `Simulation ID: ${result.simulation_id}\n`;
   text += `Evaluated: ${result.evaluated_at}\n`;
-  text += `Result: ${result.summary.passed} received, ${result.summary.conflicted} excluded, ${result.summary.warned} partial\n\n`;
+  text += `Result: ${result.summary.passed} included, ${result.summary.conflicted} excluded, ${result.summary.warned} need review\n\n`;
   text += `Decisions:\n`;
   result.decisions.forEach((d) => {
-    text += `  ${d.decision.toUpperCase()}: ${d.user_id}\n`;
+    text += `  ${DECISION_LABELS[d.decision]}: ${d.user_id}\n`;
     text += `    Reason: ${d.reason}\n\n`;
   });
   return text;

@@ -189,7 +189,7 @@ program
     }
 
     if (result.exit_code === EXIT_CODES.WARNING && options.strict) {
-      console.error(`${COLORS.PARTIAL.ansi}[WARN]${ANSI_RESET} Partial matches detected. --strict mode halting.`);
+      console.error(`${COLORS.PARTIAL.ansi}[REVIEW]${ANSI_RESET} Some targeting rules matched, but users are not eligible. --strict mode halting.`);
       process.exit(EXIT_CODES.WARNING);
     }
 

@@ -68,7 +68,7 @@ export function CiSurface({ scenario }: { scenario: Scenario }) {
     outcome === 'fail'
       ? `${diff.lost.length} user${diff.lost.length === 1 ? '' : 's'} would lose access`
       : outcome === 'warn'
-        ? `${diff.after.summary.warned} users drop to partial access`
+        ? `${diff.after.summary.warned} users need review and are not eligible yet`
         : `${diff.gained.length} users gain access, nobody loses it`;
 
   const steps: { name: string; tone: 'ok' | 'warn' | 'fail' | 'blocked'; right: string; detail?: string }[] = [
@@ -97,8 +97,8 @@ export function CiSurface({ scenario }: { scenario: Scenario }) {
       : outcome === 'warn'
         ? {
             bg: COLORS.PARTIAL.hex,
-            title: 'Shipped, with a caution on record.',
-            body: `${diff.after.summary.warned} users drop to partial access. The gate flags it and lets the team decide.`,
+            title: 'Held for review.',
+            body: `${diff.after.summary.warned} users match only some targeting rules and are not eligible yet. The gate records the ambiguity for review.`,
           }
         : {
             bg: '#1c1917',

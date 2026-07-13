@@ -8,7 +8,7 @@
  * Design Principle: Colors functional, not decorative.
  */
 import type { SimulationResult, SimulationDiff } from '@jikken/shared';
-import { ANSI_RESET, COLORS, EXIT_CODE_MESSAGES } from '@jikken/shared';
+import { ANSI_RESET, COLORS, DECISION_LABELS, EXIT_CODE_MESSAGES } from '@jikken/shared';
 
 export function formatOutput(
   result: SimulationResult,
@@ -33,9 +33,9 @@ export function formatOutput(
   output += '\n';
   output += `${HEADER}SUMMARY${ANSI_RESET}\n`;
   output += `${FAINT}${'-'.repeat(40)}${ANSI_RESET}\n`;
-  output += `  ${LABEL}Received:${ANSI_RESET}  ${COLORS.RECEIVE.ansi}${result.summary.passed}${ANSI_RESET}\n`;
+  output += `  ${LABEL}Included:${ANSI_RESET}  ${COLORS.RECEIVE.ansi}${result.summary.passed}${ANSI_RESET}\n`;
   output += `  ${LABEL}Excluded:${ANSI_RESET}  ${COLORS.EXCLUDE.ansi}${result.summary.conflicted}${ANSI_RESET}\n`;
-  output += `  ${LABEL}Partial:${ANSI_RESET}   ${COLORS.PARTIAL.ansi}${result.summary.warned}${ANSI_RESET}\n`;
+  output += `  ${LABEL}Needs review:${ANSI_RESET} ${COLORS.PARTIAL.ansi}${result.summary.warned}${ANSI_RESET}\n`;
   output += `  ${LABEL}Total:${ANSI_RESET}     ${VALUE}${result.summary.total}${ANSI_RESET}\n`;
   output += '\n';
   output += `${LABEL}Exit code:${ANSI_RESET} ${VALUE}${result.exit_code} — ${EXIT_CODE_MESSAGES[result.exit_code as keyof typeof EXIT_CODE_MESSAGES]}${ANSI_RESET}\n`;
@@ -54,7 +54,7 @@ export function formatOutput(
             ? COLORS.EXCLUDE
             : COLORS.PARTIAL;
 
-      output += `  ${color.ansi}[${d.decision.toUpperCase()}]${ANSI_RESET} ${VALUE}${d.user_id}${ANSI_RESET}\n`;
+      output += `  ${color.ansi}[${DECISION_LABELS[d.decision]}]${ANSI_RESET} ${VALUE}${d.user_id}${ANSI_RESET}\n`;
       output += `    ${LABEL}Reason:${ANSI_RESET} ${d.reason}\n`;
     }
 

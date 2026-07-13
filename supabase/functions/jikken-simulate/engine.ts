@@ -107,7 +107,7 @@ function decideUser(config: FlagConfig, user: MockUser): FlagDecision {
     };
   }
 
-  // Partial: matches some but not all rules.
+  // Needs review: matches some but not all rules (not eligible yet).
   if (rules.length > 1 && matched.length < rules.length) {
     return {
       user_id: user.user_id,

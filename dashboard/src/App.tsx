@@ -64,6 +64,7 @@ function TopBar() {
 function SideNav() {
   const location = useLocation();
   const isActive = (prefix: string) => location.pathname.startsWith(prefix);
+  const flagsActive = location.pathname === '/' || (isActive('/flags') && !isActive('/flags/history'));
 
   const linkClass = (active: boolean) =>
     `block px-3 py-2 rounded-md text-sm font-medium ${
@@ -74,7 +75,7 @@ function SideNav() {
     <aside className="w-48 shrink-0 bg-white border-r border-gray-200 px-3 py-5">
       <div className="px-3 pb-3 text-[0.65rem] font-semibold uppercase tracking-wider text-gray-400">Workspace</div>
       <nav className="flex flex-col gap-1" aria-label="Dashboard navigation">
-        <Link to="/flags" className={linkClass(isActive('/flags') && !isActive('/flags/history'))}>
+        <Link to="/flags" className={linkClass(flagsActive)}>
           Flags
         </Link>
         <Link

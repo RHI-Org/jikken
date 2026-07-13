@@ -142,7 +142,7 @@ export const SCENARIOS: Record<ScenarioId, Scenario> = {
     id: 'warning',
     feature: 'Dark Mode',
     label: 'Early adopters in US / CA',
-    description: 'Targets early adopters in the US and Canada — users matching only one rule partially match (exit 2).',
+    description: 'Targets early adopters in the US and Canada — users matching only one rule need review and are not eligible yet (exit 2).',
     baseline: {
       id: 'dark-mode',
       name: 'Dark Mode Toggle',
@@ -171,7 +171,7 @@ export const SCENARIOS: Record<ScenarioId, Scenario> = {
     story: {
       title: 'Restrict to US / CA',
       summary: 'Dark Mode is live for all early adopters. This change also requires country US or CA.',
-      caught: 'Early adopters in Germany and France would lose full access (they drop to partial). Proceed with caution.',
+      caught: 'Early adopters in Germany and France match only some rules, so they are not eligible until the targeting is reviewed.',
     },
     users: MOCK_USERS,
   },
@@ -278,7 +278,7 @@ const CHECKOUT: Record<SituationId, Scenario> = {
     id: 'warning',
     feature: 'Checkout Redesign',
     label: 'Paid customers in NA / EU',
-    description: 'Layer a region rule on top of the paid rule — users matching only one rule drop to partial (exit 2).',
+    description: 'Layer a region rule on top of the paid rule — users matching only one rule need review and are not eligible yet (exit 2).',
     baseline: flag('checkout-redesign', 'Checkout Redesign', 100, [
       { type: 'plan_tier', operator: 'in_list', value: ['pro', 'enterprise'] },
     ]),
@@ -289,7 +289,7 @@ const CHECKOUT: Record<SituationId, Scenario> = {
     story: {
       title: 'Add a region requirement',
       summary: 'The new checkout is live for all paid customers. This change also requires region NA or EU.',
-      caught: 'Paid customers in APAC and LATAM would drop from full access to partial. Proceed with caution.',
+      caught: 'Paid customers in APAC and LATAM match only some rules, so they are not eligible until the targeting is reviewed.',
     },
     users: checkoutUsers,
   },
@@ -342,7 +342,7 @@ const PREMIUM: Record<SituationId, Scenario> = {
     id: 'warning',
     feature: 'Premium Tier',
     label: 'Paid income, prime age',
-    description: 'Layer an age rule on top of the income rule — users matching only one rule drop to partial (exit 2).',
+    description: 'Layer an age rule on top of the income rule — users matching only one rule need review and are not eligible yet (exit 2).',
     baseline: flag('premium-tier', 'Premium Tier Upsell', 100, [
       { type: 'income_band', operator: 'in_list', value: ['mid', 'high'] },
     ]),
@@ -353,7 +353,7 @@ const PREMIUM: Record<SituationId, Scenario> = {
     story: {
       title: 'Add an age requirement',
       summary: 'The premium upsell is live for all mid- and high-income users. This change also requires a prime age band.',
-      caught: 'Users outside the 25–49 age bands would drop from full access to partial. Proceed with caution.',
+      caught: 'Users outside the 25–49 age bands match only some rules, so they are not eligible until the targeting is reviewed.',
     },
     users: premiumUsers,
   },

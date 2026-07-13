@@ -113,7 +113,7 @@ describe('SimulationView', () => {
     renderWithRouter(<SimulationView simulationResult={mockResult} />);
 
     expect(screen.getAllByText('25')).toHaveLength(2); // passed + total both happen to be 25
-    expect(screen.getByText('Would Receive')).toBeInTheDocument();
+    expect(screen.getByText('Included')).toBeInTheDocument();
   });
 
   it('expands decision on click', () => {

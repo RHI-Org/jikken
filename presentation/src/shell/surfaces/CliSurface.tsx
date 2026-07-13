@@ -152,7 +152,7 @@ export function CliSurface({
     }
   }, []);
 
-  // ── React to injected commands (chips, scenario picker, ★ hand-off) ──
+  // ── React to injected commands (chips, scenario picker, hand-off) ──
   useEffect(() => {
     if (!inject || !termRef.current) return;
     const term = termRef.current;
