@@ -4,6 +4,7 @@
  * to re-open — the Retailor standalone pattern, not a floating hamburger.
  */
 import { PanelLeftClose } from 'lucide-react';
+import type { FeatureDef, FeatureId, ScenarioId } from '@jikken/shared';
 import { OverviewTab } from './tabs/OverviewTab';
 import { DesignTab } from './tabs/DesignTab';
 import { PrinciplesTab } from './tabs/PrinciplesTab';
@@ -74,6 +75,11 @@ export function NotesPanel({
   onSelectPrinciple,
   onHandoff,
   onRunCommand,
+  features,
+  feature,
+  onFeatureChange,
+  scenario,
+  onScenarioChange,
 }: {
   tab: NotesTab;
   onTabChange: (t: NotesTab) => void;
@@ -82,6 +88,11 @@ export function NotesPanel({
   onSelectPrinciple: (p: Principle) => void;
   onHandoff: () => void;
   onRunCommand: (command: string) => void;
+  features: FeatureDef[];
+  feature: FeatureId;
+  onFeatureChange: (f: FeatureId) => void;
+  scenario: ScenarioId | null;
+  onScenarioChange: (s: ScenarioId) => void;
 }) {
   return (
     <aside
@@ -168,7 +179,16 @@ export function NotesPanel({
             </section>
           </div>
         )}
-        {tab === 'commands' && <CommandsTab onRunCommand={onRunCommand} />}
+        {tab === 'commands' && (
+          <CommandsTab
+            features={features}
+            feature={feature}
+            onFeatureChange={onFeatureChange}
+            scenario={scenario}
+            onScenarioChange={onScenarioChange}
+            onRunCommand={onRunCommand}
+          />
+        )}
       </div>
     </aside>
   );

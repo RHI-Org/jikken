@@ -125,6 +125,11 @@ export function Shell() {
           onSelectPrinciple={selectPrinciple}
           onHandoff={handoff}
           onRunCommand={runCommandShortcut}
+          features={catalog}
+          feature={feature}
+          onFeatureChange={changeFeature}
+          scenario={scenario}
+          onScenarioChange={changeScenario}
         />
       ) : (
         <EdgeTab onOpen={() => setPanelOpen(true)} />
@@ -135,9 +140,7 @@ export function Shell() {
         onSurfaceChange={changeSurface}
         features={catalog}
         feature={feature}
-        onFeatureChange={changeFeature}
         scenario={scenario}
-        onScenarioChange={changeScenario}
         cliInject={cliInject}
         onCliResult={onCliResult}
         activePrinciple={activePrinciple}

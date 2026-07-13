@@ -1,15 +1,16 @@
 /**
- * Right stage — the live demo. Top bar: a fixed feature chip + a situation
- * dropdown (sets the same deterministic input across every surface), and the
- * CLI / Dashboard / SDK surface switcher. Below: the active surface renders
- * real and interactive, with a numbered pin overlay when a principle is
- * selected from the notes panel.
+ * Right stage — the live demo. Top bar is just the CLI / Dashboard / SDK /
+ * CI gate surface switcher; choosing the shared Feature × Situation input
+ * lives in the notes panel's Commands tab instead, alongside an explanation
+ * of what the two menus mean. Below: the active surface renders real and
+ * interactive, with a numbered pin overlay when a principle is selected from
+ * the notes panel.
  */
-import { SCENARIO_IDS, type FeatureDef, type FeatureId, type ScenarioId, type SimulationResult } from '@jikken/shared';
 import { CliSurface, type CliInject } from './surfaces/CliSurface';
 import { SdkSurface } from './surfaces/SdkSurface';
 import { DashboardSurface } from './surfaces/DashboardSurface';
 import { CiSurface } from './surfaces/CiSurface';
+import type { FeatureDef, FeatureId, ScenarioId, SimulationResult } from '@jikken/shared';
 import type { Surface, Principle } from './types';
 
 const SURFACES: { id: Surface; label: string }[] = [
@@ -19,23 +20,12 @@ const SURFACES: { id: Surface; label: string }[] = [
   { id: 'ci', label: 'CI gate' },
 ];
 
-// Reused micro-label pattern (matches CliSurface's "Quickstart" label).
-const MICRO_LABEL = {
-  fontSize: '0.62rem',
-  fontWeight: 'var(--font-weight-bold)',
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase',
-  color: 'var(--portfolio-text-faint)',
-} as const;
-
 export function Stage({
   surface,
   onSurfaceChange,
   features,
   feature,
-  onFeatureChange,
   scenario,
-  onScenarioChange,
   cliInject,
   onCliResult,
   activePrinciple,
@@ -44,16 +34,14 @@ export function Stage({
   onSurfaceChange: (s: Surface) => void;
   features: FeatureDef[];
   feature: FeatureId;
-  onFeatureChange: (f: FeatureId) => void;
   scenario: ScenarioId | null;
-  onScenarioChange: (s: ScenarioId) => void;
   cliInject: CliInject | null;
   onCliResult: (r: SimulationResult, scenario: string | null) => void;
   activePrinciple: Principle | null;
 }) {
   const showPin = activePrinciple !== null && activePrinciple.surface === surface;
-  // The selected feature drives the Situation menu's labels/descriptions, since
-  // each feature frames the same three archetypes in its own domain language.
+  // The selected feature drives each surface's situation lookup, since each
+  // feature frames the same three archetypes in its own domain language.
   const featureDef = features.find((f) => f.id === feature) ?? features[0];
 
   return (
@@ -63,7 +51,7 @@ export function Stage({
         style={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
+          justifyContent: 'flex-end',
           gap: '1rem',
           padding: '0.7rem 1.1rem',
           borderBottom: '1px solid var(--portfolio-border)',
@@ -71,79 +59,6 @@ export function Stage({
           flexWrap: 'wrap',
         }}
       >
-        {/* Situation controls — the feature is fixed (a permanent, selected-looking
-            chip); the situation is a compact dropdown so the bar doesn't crowd. */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
-          {/* Feature — dropdown selector (the product surface the flag gates) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <span
-              title="The product surface the flag gates. Each feature targets on different attributes — identity, plan, or demographics."
-              style={{ ...MICRO_LABEL, cursor: 'help' }}
-            >
-              Feature
-            </span>
-            <select
-              value={feature}
-              onChange={(e) => onFeatureChange(e.target.value as FeatureId)}
-              aria-label="Choose a feature"
-              title={featureDef.description}
-              style={{
-                padding: '0.32rem 0.55rem',
-                borderRadius: '0.4rem',
-                border: '1px solid var(--portfolio-border)',
-                background: 'var(--portfolio-bg-card)',
-                color: 'var(--portfolio-text-primary)',
-                fontSize: '0.72rem',
-                fontFamily: 'var(--font-mono)',
-                fontWeight: 'var(--font-weight-semibold)',
-                cursor: 'pointer',
-              }}
-            >
-              {features.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Situation — dropdown selector (placeholder shows until one is picked) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <span
-              title="The shared situation. Sets the same deterministic input for the CLI, Dashboard, and SDK at once."
-              style={{ ...MICRO_LABEL, cursor: 'help' }}
-            >
-              Situation
-            </span>
-            <select
-              value={scenario ?? ''}
-              onChange={(e) => e.target.value && onScenarioChange(e.target.value as ScenarioId)}
-              aria-label="Choose a situation"
-              title={scenario ? featureDef.situations[scenario].description : 'Pick a situation to begin'}
-              style={{
-                padding: '0.32rem 0.55rem',
-                borderRadius: '0.4rem',
-                border: '1px solid var(--portfolio-border)',
-                background: 'var(--portfolio-bg-card)',
-                color: scenario ? 'var(--portfolio-text-primary)' : 'var(--portfolio-text-muted)',
-                fontSize: '0.72rem',
-                fontFamily: 'var(--font-mono)',
-                fontWeight: scenario ? 'var(--font-weight-semibold)' : 'var(--font-weight-regular)',
-                cursor: 'pointer',
-              }}
-            >
-              <option value="" disabled>
-                Pick a situation…
-              </option>
-              {SCENARIO_IDS.map((id) => (
-                <option key={id} value={id}>
-                  {featureDef.situations[id].label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
         {/* Surface switcher */}
         <div style={{ display: 'flex', gap: '1rem' }}>
           {SURFACES.map((s) => {

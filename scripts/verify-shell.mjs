@@ -19,16 +19,18 @@ await page.goto(`${BASE}/preview`, { waitUntil: 'networkidle' });
 await page.waitForTimeout(800);
 await page.screenshot({ path: `${OUT}/01-initial.png` });
 
-// Pick a situation from the top-bar dropdown — the shared deterministic input.
-// On the CLI tab this injects `jikken diff --scenario <id>` and runs it.
+// Open the Commands tab — Feature/Situation selection lives here now, above
+// the command shortcuts, not in the stage's top bar.
+await page.getByRole('button', { name: 'Commands', exact: true }).click();
+await page.waitForTimeout(300);
+
+// Pick a situation — the shared deterministic input. On the CLI tab this
+// injects `jikken diff --scenario <id>` and runs it.
 await page.getByLabel('Choose a situation').selectOption({ label: 'Exclude employees' });
 await page.waitForTimeout(600);
 await page.screenshot({ path: `${OUT}/02-situation-selected.png` });
 
-// Open the Commands tab and run a command shortcut → CLI runs the engine and
-// prints the conflict report (shortcuts moved here from the terminal footer)
-await page.getByRole('button', { name: 'Commands', exact: true }).click();
-await page.waitForTimeout(300);
+// Run a command shortcut → CLI runs the engine and prints the conflict report
 await page.getByRole('button', { name: 'diff --scenario conflict', exact: true }).first().click();
 await page.waitForTimeout(600);
 await page.screenshot({ path: `${OUT}/03-cli-conflict.png` });
