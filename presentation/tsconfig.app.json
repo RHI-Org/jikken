@@ -20,7 +20,9 @@
 
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@jikken/shared": ["../shared/src/index.ts"],
+      "@jikken/cli-formatter": ["../cli/src/formatter.ts"]
     }
   },
   "include": ["src"]

@@ -18,7 +18,9 @@ import type { FlagConfig, MockUser } from './types.ts';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, content-type, x-jikken-key',
+  // supabase-js always attaches x-client-info and apikey to browser calls;
+  // omitting them here fails the CORS preflight for the SDK tab / CLI persist.
+  'Access-Control-Allow-Headers': 'authorization, content-type, x-jikken-key, x-client-info, apikey',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 

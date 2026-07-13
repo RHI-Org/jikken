@@ -65,3 +65,17 @@ body {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+.jk-spin {
+  animation: spin 0.8s linear infinite;
+}
+
+/* Principle pin — a soft attention pulse when it lands on the stage. */
+@keyframes jk-pin-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(28, 25, 23, 0.35); }
+  70% { box-shadow: 0 0 0 12px rgba(28, 25, 23, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(28, 25, 23, 0); }
+}
+.jk-pin-pulse {
+  animation: jk-pin-pulse 1.4s ease-out 2;
+}

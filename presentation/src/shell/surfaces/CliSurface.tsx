@@ -1,0 +1,190 @@
+/**
+ * CLI surface — a real xterm.js terminal running the shared engine in-browser.
+ *
+ * The ANSI palette is themed to the EXACT hex values in @jikken/shared/COLORS,
+ * so the green a user sees here is byte-for-byte the green the Dashboard paints
+ * and the hex the color-parity test asserts (success metric #1, live).
+ */
+import { useEffect, useRef } from 'react';
+import { Terminal } from '@xterm/xterm';
+import { FitAddon } from '@xterm/addon-fit';
+import '@xterm/xterm/css/xterm.css';
+import { COLORS, type SimulationResult } from '@jikken/shared';
+import { runCommand, PRESET_COMMANDS } from '../cli-runtime';
+
+const PROMPT = '\x1b[38;5;250mjikken\x1b[0m \x1b[38;5;107m$\x1b[0m ';
+
+export interface CliInject {
+  command: string;
+  nonce: number;
+}
+
+export function CliSurface({
+  inject,
+  onResult,
+}: {
+  inject: CliInject | null;
+  onResult?: (r: SimulationResult, scenario: string | null) => void;
+}) {
+  const hostRef = useRef<HTMLDivElement>(null);
+  const termRef = useRef<Terminal | null>(null);
+  const fitRef = useRef<FitAddon | null>(null);
+  const lineRef = useRef('');
+  const onResultRef = useRef(onResult);
+  onResultRef.current = onResult;
+
+  // ── Terminal lifecycle ──
+  // Deferred init: React StrictMode (dev) mounts → unmounts → remounts effects.
+  // Building xterm synchronously then disposing it leaves an orphaned Viewport
+  // timer that fires after dispose and throws "reading 'dimensions'". Deferring
+  // creation by a tick lets StrictMode's synchronous probe-unmount cancel the
+  // timer before any terminal is ever built. (StrictMode is a no-op in prod.)
+  useEffect(() => {
+    if (!hostRef.current) return;
+    let cancelled = false;
+    let cleanup: (() => void) | null = null;
+
+    const initTimer = setTimeout(() => {
+      if (cancelled || !hostRef.current) return;
+      cleanup = buildTerminal();
+    }, 0);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(initTimer);
+      cleanup?.();
+    };
+
+    function buildTerminal(): () => void {
+    const host = hostRef.current!;
+    const term = new Terminal({
+      fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
+      fontSize: 13,
+      lineHeight: 1.35,
+      cursorBlink: true,
+      convertEol: false,
+      theme: {
+        background: '#1c1917', // stone-900
+        foreground: '#e7e5e4', // stone-200
+        cursor: '#a8a29e',
+        green: COLORS.RECEIVE.hex,
+        red: COLORS.EXCLUDE.hex,
+        yellow: COLORS.PARTIAL.hex,
+      },
+    });
+    const fit = new FitAddon();
+    term.loadAddon(fit);
+    term.open(host);
+    termRef.current = term;
+    fitRef.current = fit;
+
+    // FitAddon.fit() throws ("reading 'dimensions'") when the terminal element
+    // is hidden or zero-size — which happens every time we switch away from the
+    // CLI tab (it stays mounted with display:none). Only fit when visible.
+    const safeFit = () => {
+      if (host.offsetParent === null || host.clientWidth === 0 || host.clientHeight === 0) return;
+      try {
+        fit.fit();
+      } catch {
+        /* transient layout — ignore */
+      }
+    };
+    safeFit();
+
+    term.writeln('\x1b[38;5;245mjikken v1.0.0 — feature flag lifecycle tool\x1b[0m');
+    term.writeln('\x1b[38;5;240mType a command, or use a chip above. `help` for options.\x1b[0m');
+    term.write('\r\n' + PROMPT);
+
+    const runLine = (line: string) => {
+      const { text, result, scenario } = runCommand(line);
+      term.write('\r\n');
+      if (text) term.write(text);
+      if (result && onResultRef.current) onResultRef.current(result, scenario);
+      term.write('\r\n' + PROMPT);
+      lineRef.current = '';
+    };
+
+    term.onData((data) => {
+      switch (data) {
+        case '\r': // Enter
+          runLine(lineRef.current);
+          break;
+        case '': // Backspace
+          if (lineRef.current.length > 0) {
+            lineRef.current = lineRef.current.slice(0, -1);
+            term.write('\b \b');
+          }
+          break;
+        case '': // Ctrl-C
+          term.write('^C\r\n' + PROMPT);
+          lineRef.current = '';
+          break;
+        default:
+          if (data >= ' ') {
+            lineRef.current += data;
+            term.write(data);
+          }
+      }
+    });
+
+    // expose a programmatic runner for chips / scenario picker / hand-off
+    (term as unknown as { _runLine: (l: string) => void })._runLine = runLine;
+
+    const ro = new ResizeObserver(() => safeFit());
+    ro.observe(host);
+    return () => {
+      ro.disconnect();
+      term.dispose();
+      termRef.current = null;
+    };
+    }
+  }, []);
+
+  // ── React to injected commands (chips, scenario picker, ★ hand-off) ──
+  useEffect(() => {
+    if (!inject || !termRef.current) return;
+    const term = termRef.current;
+    // echo the command as if typed, then run it
+    term.write(inject.command);
+    (term as unknown as { _runLine: (l: string) => void })._runLine(inject.command);
+  }, [inject]);
+
+  const sendChip = (command: string) => {
+    const term = termRef.current;
+    if (!term) return;
+    term.focus();
+    term.write(command);
+    (term as unknown as { _runLine: (l: string) => void })._runLine(command);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+      {/* Preset command chips */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', padding: '0.75rem 0.9rem', borderBottom: '1px solid var(--portfolio-border-muted)' }}>
+        {PRESET_COMMANDS.map((c) => (
+          <button
+            key={c.label}
+            onClick={() => sendChip(c.command)}
+            style={{
+              padding: '0.3rem 0.6rem',
+              borderRadius: '999px',
+              border: '1px solid var(--portfolio-border)',
+              background: 'var(--portfolio-bg-card)',
+              color: 'var(--portfolio-text-secondary)',
+              fontSize: '0.72rem',
+              fontFamily: 'var(--font-mono)',
+              cursor: 'pointer',
+            }}
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
+      <div
+        ref={hostRef}
+        onClick={() => termRef.current?.focus()}
+        style={{ flex: 1, minHeight: 0, background: '#1c1917', padding: '0.6rem 0.4rem 0.4rem 0.6rem' }}
+      />
+    </div>
+  );
+}

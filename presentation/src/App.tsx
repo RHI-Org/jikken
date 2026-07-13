@@ -10,6 +10,9 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          {/* Dev-only: preview the shell without the auth gate. import.meta.env.DEV
+              is false in production builds, so this route never ships. */}
+          {import.meta.env.DEV && <Route path="/preview" element={<Home />} />}
           <Route
             path="/"
             element={
