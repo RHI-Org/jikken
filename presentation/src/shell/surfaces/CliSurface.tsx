@@ -12,7 +12,7 @@ import '@xterm/xterm/css/xterm.css';
 import { COLORS, type SimulationResult } from '@jikken/shared';
 import { runCommand, colorizeCommand, PRESET_COMMANDS } from '../cli-runtime';
 
-const PROMPT = '\x1b[38;5;250mjikken\x1b[0m \x1b[38;5;245m$\x1b[0m ';
+const PROMPT = '\x1b[1m\x1b[38;5;236mjikken\x1b[0m \x1b[38;5;244m$\x1b[0m ';
 
 export interface CliInject {
   command: string;
@@ -64,9 +64,9 @@ export function CliSurface({
       cursorBlink: true,
       convertEol: false,
       theme: {
-        background: '#1c1917', // stone-900
-        foreground: '#e7e5e4', // stone-200
-        cursor: '#a8a29e',
+        background: '#f5f5f4', // stone-100
+        foreground: '#292524', // stone-800
+        cursor: '#78716c',     // stone-500
         green: COLORS.RECEIVE.hex,
         red: COLORS.EXCLUDE.hex,
         yellow: COLORS.PARTIAL.hex,
@@ -91,8 +91,8 @@ export function CliSurface({
     };
     safeFit();
 
-    term.writeln('\x1b[1m\x1b[38;5;252mjikken v1.0.0\x1b[0m\x1b[38;5;245m — feature flag lifecycle tool\x1b[0m');
-    term.writeln('\x1b[38;5;240mType a command, or use a chip above. `help` for options.\x1b[0m');
+    term.writeln('\x1b[1m\x1b[38;5;236mjikken v1.0.0\x1b[0m\x1b[38;5;244m — feature flag lifecycle tool\x1b[0m');
+    term.writeln('\x1b[38;5;245mType a command, or use a chip below. `help` for options.\x1b[0m');
     term.write('\r\n' + PROMPT);
 
     const runLine = (line: string) => {
@@ -162,7 +162,7 @@ export function CliSurface({
       <div
         ref={hostRef}
         onClick={() => termRef.current?.focus()}
-        style={{ flex: 1, minHeight: 0, background: '#1c1917', padding: '0.6rem 0.4rem 0.4rem 0.6rem' }}
+        style={{ flex: 1, minHeight: 0, background: '#f5f5f4', padding: '0.6rem 0.4rem 0.4rem 0.6rem' }}
       />
       {/* Preset command chips — below the console, so the terminal is the focus */}
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem', padding: '0.75rem 0.9rem', borderTop: '1px solid var(--portfolio-border-muted)' }}>

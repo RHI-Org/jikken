@@ -22,11 +22,12 @@ import { formatOutput } from '@jikken/cli-formatter';
 // ── Greyscale visual hierarchy (matches the concurrent formatter change) ──
 // COLORS.RECEIVE/EXCLUDE/PARTIAL stay reserved for semantic states; these tones
 // only shape the non-semantic chrome: banners, prompt, help, echoed commands.
-const C_HEADER = '\x1b[1m\x1b[38;5;252m'; // bold header
-const C_LABEL = '\x1b[38;5;245m'; //  dim label
-const C_FAINT = '\x1b[38;5;240m'; // faint
-const C_CMD = '\x1b[1m\x1b[38;5;250m'; // command keyword (bold)
-const C_FLAG = '\x1b[38;5;244m'; // --flags
+// Tuned for the light stone console (bg stone-100): dark-on-light greys.
+const C_HEADER = '\x1b[1m\x1b[38;5;236m'; // bold dark header
+const C_LABEL = '\x1b[38;5;244m'; // mid-grey label
+const C_FAINT = '\x1b[38;5;250m'; // faint separator (light)
+const C_CMD = '\x1b[1m\x1b[38;5;236m'; // command keyword (bold dark)
+const C_FLAG = '\x1b[38;5;244m'; // --flags (mid grey)
 
 const CMD_KEYWORDS = new Set(['jikken', 'simulate', 'validate', 'help']);
 

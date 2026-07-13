@@ -19,10 +19,10 @@ export function formatOutput(
     return JSON.stringify(result, null, 2);
   }
 
-  const HEADER = "\u001b[1m\u001b[38;5;252m"; // bold bright — section headers
-  const LABEL  = "\u001b[38;5;245m";           // dim grey — field labels
-  const FAINT  = "\u001b[38;5;240m";           // faint grey — separator rules
-  const VALUE  = "\u001b[38;5;253m";           // near-white — values
+  const HEADER = "\u001b[1m\u001b[38;5;236m"; // bold dark — section headers
+  const LABEL  = "\u001b[38;5;244m";           // mid grey — field labels
+  const FAINT  = "\u001b[38;5;250m";           // faint grey — separator rules
+  const VALUE  = "\u001b[38;5;235m";           // near-black — values
 
   let output = '\n';
   output += `${HEADER}FLAG SIMULATION RESULT${ANSI_RESET}\n`;
