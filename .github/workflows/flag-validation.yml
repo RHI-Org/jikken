@@ -1,0 +1,47 @@
+name: Flag Validation
+
+# Exit codes are the real product: this pipeline's pass/fail IS the CLI's
+# exit code. The runner executes the same shared engine as every other
+# surface — no prod credentials needed to gate a deploy.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install workspaces
+        run: npm ci
+
+      - name: Unit tests — all surfaces
+        run: npm test
+
+      - name: Cross-surface coherence tests
+        run: npm run test:integration
+
+      - name: Flag validation gate (jikken validate)
+        working-directory: cli
+        run: npx tsx src/index.ts validate --scenario all-clear
+
+      - name: Simulation report for flags/dark-mode.json (informational)
+        working-directory: cli
+        continue-on-error: true
+        run: npx tsx src/index.ts simulate --flag dark-mode --users ../data/mock-users.json --rollout 25
+
+      - name: Conflict gate demonstration (expected to fail-stop)
+        if: false # flip to true to demo the pipeline halting on exit 1
+        working-directory: cli
+        run: npx tsx src/index.ts validate --scenario conflict
