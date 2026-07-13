@@ -20,7 +20,7 @@ live demo on the right, collapsible project-notes panel on the left.**
 | Decision | Choice | Notes |
 |---|---|---|
 | Backend | **Supabase** (org project) | Real persistence beats the spec's mock API. Must be the existing org project (`bsfngnjvmostukrfhoxx`) — the `.experienceplus.ai` SSO cookie is tied to it. Tables prefixed `jikken_`. |
-| Deployment | **ff.experienceplus.ai** + SSO | Own Vercel project; behind the shared SSO cookie like rt./lv./ts./r. Folio links to it. |
+| Deployment | **jk.experienceplus.ai** + SSO | Own Vercel project; behind the shared SSO cookie like rt./lv./ts./r. Folio links to it. Two-letter subdomain from the Jikken brand, matching the rt. → Retailor pattern. |
 | CLI in presentation | **Real engine in browser** | xterm.js terminal runs the actual shared simulation engine — same code path as the installed CLI. Preset command chips + free typing. |
 | Dashboard scope | **All five pages** (per spec §5.1) | FlagList, FlagEditor, SimulationView, History, Settings. History is real Supabase audit data. |
 | Product brand | **Jikken** | Masthead, CLI, SDK scope. The CLI binary becomes `jikken` (not `flagsim`) — a product whose thesis is terminology parity can't have a CLI named differently from its brand. npm scope `@jikken/*`. |
@@ -199,7 +199,7 @@ anatomy, not just its idea:
 2. Wire principle-clicks → surface/tab/pin commands; scenario picker;
    the ★ hand-off choreography (CLI run → auto-switch → Realtime pulse).
 3. SSO integration (vendored auth-storage adapter, ProtectedRoute-equivalent).
-4. New Vercel project + `ff.experienceplus.ai` (DNS **and** add the domain to
+4. New Vercel project + `jk.experienceplus.ai` (DNS **and** add the domain to
    the Vercel project — DNS alone won't serve SSL). README per spec §10.8.
    Link from folio.
 
@@ -218,7 +218,7 @@ add ~6h over the spec's §10.9 estimate — accepted in review.
 5. **Every one of the 10 principles is clickable** in the notes panel and
    lands a pin on real UI that demonstrates it.
 6. All test suites pass at spec §8.5 coverage minimums.
-7. Live at `ff.experienceplus.ai` behind the shared SSO cookie.
+7. Live at `jk.experienceplus.ai` behind the shared SSO cookie.
 
 ## 🙅 Out of scope (spec §10.7 / §11.5)
 
