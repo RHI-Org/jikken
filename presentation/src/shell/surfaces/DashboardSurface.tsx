@@ -16,7 +16,7 @@ const DASHBOARD_URL = import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:80
 export function DashboardSurface() {
   return (
     <div style={{ height: '100%', minHeight: 0, padding: '2rem', boxSizing: 'border-box' }}>
-      <TerminalWindow title="jikken.dev/dashboard" variant="url">
+      <TerminalWindow title="">
         {DASHBOARD_URL ? (
           <iframe
             title="Jikken Dashboard"
