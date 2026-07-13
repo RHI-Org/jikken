@@ -159,8 +159,13 @@ export function CliSurface({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
-      {/* Preset command chips */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem', padding: '0.75rem 0.9rem', borderBottom: '1px solid var(--portfolio-border-muted)' }}>
+      <div
+        ref={hostRef}
+        onClick={() => termRef.current?.focus()}
+        style={{ flex: 1, minHeight: 0, background: '#1c1917', padding: '0.6rem 0.4rem 0.4rem 0.6rem' }}
+      />
+      {/* Preset command chips — below the console, so the terminal is the focus */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem', padding: '0.75rem 0.9rem', borderTop: '1px solid var(--portfolio-border-muted)' }}>
         <span
           style={{
             fontSize: '0.62rem',
@@ -195,11 +200,6 @@ export function CliSurface({
           </button>
         ))}
       </div>
-      <div
-        ref={hostRef}
-        onClick={() => termRef.current?.focus()}
-        style={{ flex: 1, minHeight: 0, background: '#1c1917', padding: '0.6rem 0.4rem 0.4rem 0.6rem' }}
-      />
     </div>
   );
 }
