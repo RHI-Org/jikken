@@ -8,7 +8,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FeatureDef, FeatureId, ScenarioId, SimulationResult } from '@jikken/shared';
-import { NotesPanel, EdgeTab, type NotesTab } from './NotesPanel';
+import { NotesPanel, type NotesTab } from './NotesPanel';
 import { Stage } from './Stage';
 import { setActiveCatalog } from './cli-runtime';
 import { loadCatalog, BUNDLED_CATALOG } from './catalog';
@@ -116,7 +116,7 @@ export function Shell() {
 
   return (
     <div style={{ position: 'relative', height: '100vh', width: '100vw', display: 'flex', overflow: 'hidden' }}>
-      {panelOpen ? (
+      {panelOpen && (
         <NotesPanel
           tab={notesTab}
           onTabChange={setNotesTab}
@@ -131,8 +131,6 @@ export function Shell() {
           scenario={scenario}
           onScenarioChange={changeScenario}
         />
-      ) : (
-        <EdgeTab onOpen={() => setPanelOpen(true)} />
       )}
 
       <Stage
@@ -146,6 +144,8 @@ export function Shell() {
         cliInject={cliInject}
         onCliResult={onCliResult}
         activePrinciple={activePrinciple}
+        panelOpen={panelOpen}
+        onOpenPanel={() => setPanelOpen(true)}
       />
     </div>
   );

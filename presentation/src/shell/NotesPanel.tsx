@@ -3,7 +3,8 @@
  * collapse button, and (when collapsed) a vertical "PROJECT NOTES" edge tab
  * to re-open — the Retailor standalone pattern, not a floating hamburger.
  */
-import { PanelLeftClose } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronRight, PanelLeftClose } from 'lucide-react';
 import type { FeatureDef, FeatureId, ScenarioId } from '@jikken/shared';
 import { OverviewTab } from './tabs/OverviewTab';
 import { DesignTab } from './tabs/DesignTab';
@@ -20,50 +21,36 @@ const TABS: { id: NotesTab; label: string }[] = [
   { id: 'details', label: 'Details' },
 ];
 
-// Section header inside the merged Details tab (Design / Principles / Tech).
-function DetailsSection({ label }: { label: string }) {
+// Collapsible section inside the merged Details tab (Design / Principles /
+// Tech). Design starts open (it carries the product thesis + hand-off);
+// Principles and Tech start collapsed — reference material, not the lead.
+function DetailsSection({ label, defaultOpen = false, children }: { label: string; defaultOpen?: boolean; children: React.ReactNode }) {
+  const [open, setOpen] = useState(defaultOpen);
   return (
-    <div
-      style={{
-        fontSize: '0.62rem',
-        fontWeight: 'var(--font-weight-bold)',
-        letterSpacing: '0.1em',
-        textTransform: 'uppercase',
-        color: 'var(--portfolio-text-primary)',
-        paddingBottom: '0.2rem',
-      }}
-    >
-      {label}
+    <div>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.35rem',
+          padding: 0,
+          border: 'none',
+          background: 'none',
+          cursor: 'pointer',
+          fontSize: '0.62rem',
+          fontWeight: 'var(--font-weight-bold)',
+          letterSpacing: '0.1em',
+          textTransform: 'uppercase',
+          color: 'var(--portfolio-text-primary)',
+          paddingBottom: '0.2rem',
+        }}
+      >
+        <ChevronRight size={12} style={{ transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }} />
+        {label}
+      </button>
+      {open && <div style={{ marginTop: '0.7rem' }}>{children}</div>}
     </div>
-  );
-}
-
-export function EdgeTab({ onOpen }: { onOpen: () => void }) {
-  return (
-    <button
-      onClick={onOpen}
-      aria-label="Open project notes"
-      style={{
-        position: 'absolute',
-        left: 0,
-        top: '50%',
-        transform: 'translateY(-50%)',
-        writingMode: 'vertical-rl',
-        padding: '1rem 0.5rem',
-        border: '1px solid var(--portfolio-border)',
-        borderLeft: 'none',
-        borderRadius: '0 0.5rem 0.5rem 0',
-        background: 'var(--portfolio-bg-muted)',
-        color: 'var(--portfolio-text-secondary)',
-        fontSize: '0.7rem',
-        fontWeight: 'var(--font-weight-bold)',
-        letterSpacing: '0.12em',
-        cursor: 'pointer',
-        zIndex: 10,
-      }}
-    >
-      PROJECT NOTES
-    </button>
   );
 }
 
@@ -164,19 +151,16 @@ export function NotesPanel({
       <div style={{ flex: 1, overflowY: 'auto', padding: '1.3rem 1.4rem 2rem' }}>
         {tab === 'overview' && <OverviewTab />}
         {tab === 'details' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.6rem' }}>
-            <section>
-              <DetailsSection label="Design" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+            <DetailsSection label="Design" defaultOpen>
               <DesignTab onHandoff={onHandoff} />
-            </section>
-            <section>
-              <DetailsSection label="Principles (10)" />
+            </DetailsSection>
+            <DetailsSection label="Principles (10)">
               <PrinciplesTab activeNumber={activePrinciple} onSelect={onSelectPrinciple} />
-            </section>
-            <section>
-              <DetailsSection label="Tech" />
+            </DetailsSection>
+            <DetailsSection label="Tech">
               <TechTab />
-            </section>
+            </DetailsSection>
           </div>
         )}
         {tab === 'commands' && (

@@ -35,9 +35,11 @@ await page.getByRole('button', { name: 'diff --scenario conflict', exact: true }
 await page.waitForTimeout(600);
 await page.screenshot({ path: `${OUT}/03-cli-conflict.png` });
 
-// Open the Details tab (Design + Principles + Tech merged) and click principle
-// #2 (Colors → dashboard + pin)
+// Open the Details tab (Design + Principles + Tech merged), expand the
+// collapsed Principles section, and click principle #2 (Colors → dashboard + pin)
 await page.getByRole('button', { name: 'Details', exact: true }).click();
+await page.waitForTimeout(300);
+await page.getByRole('button', { name: /Principles \(10\)/ }).click();
 await page.waitForTimeout(300);
 await page.getByRole('button', { name: /Colors functional/ }).click();
 await page.waitForTimeout(600);

@@ -6,6 +6,7 @@
  * interactive, with a numbered pin overlay when a principle is selected from
  * the notes panel.
  */
+import { PanelLeftOpen } from 'lucide-react';
 import { SCENARIO_IDS, type FeatureDef, type FeatureId, type ScenarioId, type SimulationResult } from '@jikken/shared';
 import { CliSurface, type CliInject } from './surfaces/CliSurface';
 import { SdkSurface } from './surfaces/SdkSurface';
@@ -114,6 +115,8 @@ export function Stage({
   cliInject,
   onCliResult,
   activePrinciple,
+  panelOpen,
+  onOpenPanel,
 }: {
   surface: Surface;
   onSurfaceChange: (s: Surface) => void;
@@ -125,6 +128,8 @@ export function Stage({
   cliInject: CliInject | null;
   onCliResult: (r: SimulationResult, scenario: string | null) => void;
   activePrinciple: Principle | null;
+  panelOpen: boolean;
+  onOpenPanel: () => void;
 }) {
   const showPin = activePrinciple !== null && activePrinciple.surface === surface;
   // The selected feature drives each surface's situation lookup, since each
@@ -146,17 +151,37 @@ export function Stage({
           flexWrap: 'wrap',
         }}
       >
-        <span
-          style={{
-            fontSize: '0.62rem',
-            fontWeight: 'var(--font-weight-bold)',
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            color: 'var(--portfolio-text-faint)',
-          }}
-        >
-          Product Demo
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
+          {!panelOpen && (
+            <button
+              onClick={onOpenPanel}
+              aria-label="Open project notes"
+              title="Project notes"
+              style={{
+                display: 'flex',
+                padding: '0.3rem',
+                border: '1px solid var(--portfolio-border)',
+                borderRadius: '0.35rem',
+                background: 'var(--portfolio-bg-card)',
+                color: 'var(--portfolio-text-secondary)',
+                cursor: 'pointer',
+              }}
+            >
+              <PanelLeftOpen size={14} />
+            </button>
+          )}
+          <span
+            style={{
+              fontSize: '0.62rem',
+              fontWeight: 'var(--font-weight-bold)',
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: 'var(--portfolio-text-faint)',
+            }}
+          >
+            Product Demo
+          </span>
+        </div>
 
         {/* Surface switcher */}
         <div style={{ display: 'flex', gap: '1rem' }}>
