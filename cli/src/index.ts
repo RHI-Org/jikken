@@ -14,9 +14,9 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Command } from 'commander';
-import type { FlagConfig, MockUser, SimulationResult } from '@jikken/shared';
-import { ANSI_RESET, COLORS, EXIT_CODES, PATTERNS, SCENARIOS, SCENARIO_IDS, evaluateFlag } from '@jikken/shared';
-import { formatOutput } from './formatter';
+import type { FlagConfig, MockUser, SimulationDiff, SimulationResult } from '@jikken/shared';
+import { ANSI_RESET, COLORS, EXIT_CODES, PATTERNS, SCENARIOS, SCENARIO_IDS, diffSimulations, evaluateFlag } from '@jikken/shared';
+import { formatDiff, formatOutput } from './formatter';
 
 type ScenarioId = (typeof SCENARIO_IDS)[number];
 
@@ -195,6 +195,36 @@ program
 
     console.log(`${COLORS.RECEIVE.ansi}[OK]${ANSI_RESET} Flag validated. Ready for deployment.`);
     process.exit(EXIT_CODES.ALL_CLEAR);
+  });
+
+// ─── Diff Command (change-impact report / CI gate) ───
+program
+  .command('diff')
+  .description('Show who gains or loses access between the live baseline and a proposed flag edit')
+  .option('--scenario <id>', `Replay a named demo scenario: ${SCENARIO_IDS.join(' | ')}`)
+  .option('--format <type>', 'Output format: text or json', 'text')
+  .option('--quiet', 'Suppress the per-user gained/lost detail')
+  .action((options: { scenario?: string; format: string; quiet?: boolean }) => {
+    if (options.format !== 'text' && options.format !== 'json') {
+      errorLine(`Invalid --format '${options.format}'. Use 'text' or 'json'.`);
+      process.exit(EXIT_CODES.INVALID_INPUT);
+    }
+
+    // A diff needs a baseline to compare against, which only scenarios carry.
+    if (!options.scenario) {
+      errorLine(`Missing required option --scenario <id>. Valid scenarios: ${SCENARIO_IDS.join(', ')}.`);
+      process.exit(EXIT_CODES.INVALID_INPUT);
+    }
+    if (!isScenarioId(options.scenario)) {
+      errorLine(`Unknown scenario '${options.scenario}'. Valid scenarios: ${SCENARIO_IDS.join(', ')}.`);
+      process.exit(EXIT_CODES.INVALID_INPUT);
+    }
+
+    const scenario = SCENARIOS[options.scenario];
+    const diff: SimulationDiff = diffSimulations(scenario.baseline, scenario.flag, scenario.users);
+    const output = formatDiff(diff, options.format, Boolean(options.quiet));
+    console.log(output);
+    process.exit(diff.exit_code);
   });
 
 program.parseAsync(process.argv);

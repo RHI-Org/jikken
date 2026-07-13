@@ -5,18 +5,18 @@ import type { OverviewSection, OverviewStat, HowToStep } from '../types';
 
 // The product, stated first: who it's for and what it does for them.
 export const INTRO =
-  'Jikken lets a product manager roll out a feature to a slice of real users — and see the impact before it ships — without waiting on an engineering ticket. The organization keeps its guardrails: every change is checked and logged. Self-serve, but never ungoverned.';
+  'Jikken shows a product manager what a targeting change actually does to real users — who gains access, and who loses it — before it ships. No engineering ticket, no guesswork. And if a change would cut off users it should not, the same check can halt the rollout in CI, before it reaches anyone. Self-serve, but never ungoverned.';
 
 // The product problem/approach — the front-door story (persona + governance),
 // distinct from the craft thesis (cross-surface coherence) in the Design tab.
 export const PRODUCT_SECTIONS: OverviewSection[] = [
   {
     label: 'THE PROBLEM',
-    body: "More and more, non-engineers own feature releases. But their options are bad: file a ticket and wait weeks, learn a platform built for engineers, or skip the process — and ship without governance.",
+    body: "Non-engineers now own feature releases, but they can't see what a change will do. Edit a targeting rule and you find out in production — after some users quietly lose access they used to have.",
   },
   {
     label: 'THE APPROACH',
-    body: 'Give the release to the people who own it. Self-serve setup, a simulation that shows impact before rollout, and guardrails — validation, an audit trail, CI checks — built in. Speed and control, not a trade between them.',
+    body: 'Show the change, not just the current state. Pick a scenario and Jikken diffs the proposed edit against what is live: who gains access, and who loses it. A clean change ships; a risky one fails the CI gate and stops before it reaches real users.',
   },
 ];
 
@@ -32,7 +32,7 @@ export const HOWTO: HowToStep[] = [
   },
   {
     title: 'Run or inspect the result',
-    body: 'Run a CLI command, use the dashboard simulation, or execute the SDK example. Each uses the same evaluation engine.',
+    body: 'The default run diffs the change against what is live — who gains access and who loses it. Use the dashboard simulation or the SDK example too; each uses the same evaluation engine.',
   },
   {
     title: 'Explore the guided details',

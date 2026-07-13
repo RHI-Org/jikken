@@ -60,6 +60,28 @@ describe('simulate scenarios', () => {
   });
 });
 
+describe('diff command', () => {
+  it('reports the change impact and gained access for the all-clear scenario (exit 0)', () => {
+    const output = run('diff --scenario all-clear');
+    expect(output).toMatch(/CHANGE IMPACT/);
+    expect(output).toMatch(/GAINED ACCESS/);
+  });
+
+  it('exits 1 and reports lost access for the conflict scenario', () => {
+    const result = runExpectFailure('diff --scenario conflict');
+    expect(result.status).toBe(1);
+    expect(result.stdout).toContain('LOST ACCESS (3)');
+  });
+
+  it('produces machine-parseable JSON with lost users for the conflict scenario', () => {
+    const result = runExpectFailure('diff --scenario conflict --format json');
+    const diff = JSON.parse(result.stdout);
+    expect(Array.isArray(diff.lost)).toBe(true);
+    expect(diff.lost.length).toBe(3);
+    expect(diff.exit_code).toBe(1);
+  });
+});
+
 describe('output format', () => {
   it('produces machine-parseable JSON with --format json', () => {
     const output = run('simulate --scenario all-clear --format json');

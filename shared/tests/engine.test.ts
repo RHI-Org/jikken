@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { COLORS, EXIT_CODES, evaluateFlag, rolloutBucket, SCENARIOS, SCENARIO_IDS } from '../src/index';
+import { COLORS, diffSimulations, EXIT_CODES, evaluateFlag, rolloutBucket, SCENARIOS, SCENARIO_IDS } from '../src/index';
 
 describe('scenario outcomes are exactly their names', () => {
   it('all-clear → exit 0, everyone receives', () => {
@@ -31,6 +31,50 @@ describe('scenario outcomes are exactly their names', () => {
     expect(r.summary.warned).toBe(6);
     expect(r.summary.conflicted).toBe(0);
     expect(r.summary.passed).toBe(4);
+  });
+});
+
+describe('diffSimulations — before→after access changes', () => {
+  it('all-clear (25% → 100%) is purely additive: users gain, none lose', () => {
+    const s = SCENARIOS['all-clear'];
+    const d = diffSimulations(s.baseline, s.flag, s.users);
+    expect(d.lost.length).toBe(0);
+    expect(d.gained.length).toBe(8);
+    expect(d.gained.map((g) => g.user_id)).toEqual([
+      'user_002',
+      'user_003',
+      'user_004',
+      'user_005',
+      'user_006',
+      'user_007',
+      'user_008',
+      'user_009',
+    ]);
+    expect(d.gained.every((g) => g.after === 'receive')).toBe(true);
+    expect(d.net_receivers).toBe(8);
+    expect(d.exit_code).toBe(EXIT_CODES.ALL_CLEAR);
+  });
+
+  it('conflict (add exclude-internal rule) costs 3 receivers, including the beta partner', () => {
+    const s = SCENARIOS.conflict;
+    const d = diffSimulations(s.baseline, s.flag, s.users);
+    expect(d.gained.length).toBe(0);
+    expect(d.lost.length).toBe(3);
+    expect(d.lost.map((l) => l.user_id)).toEqual(['user_004', 'user_005', 'user_009']);
+    expect(d.lost.every((l) => l.before === 'receive' && l.after === 'exclude')).toBe(true);
+    expect(d.net_receivers).toBe(-3);
+    expect(d.exit_code).toBe(EXIT_CODES.CONFLICT);
+  });
+
+  it('warning (add US/CA requirement) drops 3 DE/FR early adopters to partial', () => {
+    const s = SCENARIOS.warning;
+    const d = diffSimulations(s.baseline, s.flag, s.users);
+    expect(d.gained.length).toBe(0);
+    expect(d.lost.length).toBe(3);
+    expect(d.lost.map((l) => l.user_id)).toEqual(['user_004', 'user_005', 'user_010']);
+    expect(d.lost.every((l) => l.before === 'receive' && l.after === 'partial')).toBe(true);
+    expect(d.net_receivers).toBe(-3);
+    expect(d.exit_code).toBe(EXIT_CODES.WARNING);
   });
 });
 

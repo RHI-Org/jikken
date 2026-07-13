@@ -88,6 +88,28 @@ export interface FlagDecision {
   rule_sources: string[];
 }
 
+export interface UserDelta {
+  user_id: string;
+  before: 'receive' | 'exclude' | 'partial';
+  after: 'receive' | 'exclude' | 'partial';
+  /** The after-decision's human reason (why it changed). */
+  reason: string;
+}
+
+export interface SimulationDiff {
+  flag_id: string;
+  before: SimulationResult;
+  after: SimulationResult;
+  /** Users who did NOT receive before but receive after. */
+  gained: UserDelta[];
+  /** Users who received before but do NOT receive after (the regression the tool catches). */
+  lost: UserDelta[];
+  /** after.summary.passed - before.summary.passed */
+  net_receivers: number;
+  /** = after.exit_code — drives the CI gate. */
+  exit_code: number;
+}
+
 export interface ConflictDetail {
   /** The identifier of the first conflicting rule */
   rule_a: string;

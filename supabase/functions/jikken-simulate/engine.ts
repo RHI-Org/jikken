@@ -15,7 +15,9 @@ import type {
   FlagConfig,
   FlagDecision,
   MockUser,
+  SimulationDiff,
   SimulationResult,
+  UserDelta,
 } from './types.ts';
 import { EXIT_CODES } from './constants.ts';
 
@@ -169,4 +171,25 @@ export function evaluateFlag(config: FlagConfig, users: MockUser[]): SimulationR
     evaluated_at: new Date().toISOString(),
     total_latency_ms: Math.max(Date.now() - started, 0),
   };
+}
+
+/**
+ * Diff a proposed flag edit against the currently-live baseline: who gains
+ * access, who loses it. "Access" == decision 'receive'. Pure/deterministic
+ * like evaluateFlag — same inputs, same diff on every surface.
+ */
+export function diffSimulations(baseline: FlagConfig, proposed: FlagConfig, users: MockUser[]): SimulationDiff {
+  const before = evaluateFlag(baseline, users);
+  const after = evaluateFlag(proposed, users);
+  const beforeDecision = new Map(before.decisions.map((d) => [d.user_id, d.decision]));
+  const gained: UserDelta[] = [];
+  const lost: UserDelta[] = [];
+  for (const d of after.decisions) {
+    const was = beforeDecision.get(d.user_id);
+    const wasReceive = was === 'receive';
+    const isReceive = d.decision === 'receive';
+    if (was && !wasReceive && isReceive) gained.push({ user_id: d.user_id, before: was, after: d.decision, reason: d.reason });
+    if (was && wasReceive && !isReceive) lost.push({ user_id: d.user_id, before: was, after: d.decision, reason: d.reason });
+  }
+  return { flag_id: proposed.id, before, after, gained, lost, net_receivers: after.summary.passed - before.summary.passed, exit_code: after.exit_code };
 }

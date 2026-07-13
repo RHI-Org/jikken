@@ -35,7 +35,7 @@ export function Shell() {
     (s: ScenarioId) => {
       setScenario(s);
       setActivePrinciple(null);
-      if (surface === 'cli') injectCli(`jikken simulate --scenario ${s}`);
+      if (surface === 'cli') injectCli(`jikken diff --scenario ${s}`);
     },
     [surface, injectCli],
   );
@@ -47,7 +47,7 @@ export function Shell() {
   const restart = useCallback(() => {
     if (!scenario) return; // no situation chosen yet — nothing to replay
     setActivePrinciple(null);
-    if (surface === 'cli') injectCli(`jikken simulate --scenario ${scenario}`);
+    if (surface === 'cli') injectCli(`jikken diff --scenario ${scenario}`);
     else setRestartNonce((n) => n + 1);
   }, [surface, scenario, injectCli]);
 
@@ -69,7 +69,7 @@ export function Shell() {
     if (!scenario) return; // hand-off needs a chosen situation to replay
     setActivePrinciple(null);
     setSurface('cli');
-    injectCli(`jikken simulate --scenario ${scenario}`);
+    injectCli(`jikken diff --scenario ${scenario}`);
     window.setTimeout(() => setSurface('dashboard'), 1600);
   }, [scenario, injectCli]);
 

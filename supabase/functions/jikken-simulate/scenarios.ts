@@ -23,7 +23,11 @@ export interface Scenario {
   label: string;
   /** One-line plain-English summary of the rule. */
   description: string;
+  /** The currently-LIVE config; only the diff uses it (never the exit-code parity tests). */
+  baseline: FlagConfig;
   flag: FlagConfig;
+  /** Before→after narrative: what the edit does and what the tool catches. */
+  story: { title: string; summary: string; caught: string };
   users: MockUser[];
 }
 
@@ -59,7 +63,7 @@ export const MOCK_USERS: MockUser[] = [
   user(6, { segment: 'mainstream', country: 'CA' }),
   user(7, { segment: 'early_adopter', country: 'US' }),
   user(8, { segment: 'mainstream', country: 'US' }),
-  user(9, { segment: 'early_adopter', country: 'CA', email: 'user_009@internal.company.com' }),
+  user(9, { segment: 'early_adopter', country: 'CA', email: 'user_009@internal.company.com', attributes: { account_type: 'beta_partner' } }),
   user(10, { segment: 'early_adopter', country: 'DE' }),
 ];
 
@@ -69,6 +73,17 @@ export const SCENARIOS: Record<ScenarioId, Scenario> = {
     feature: 'Dark Mode',
     label: 'Full rollout',
     description: '100% rollout to everyone, no audience rules — every user receives (exit 0).',
+    baseline: {
+      id: 'dark-mode',
+      name: 'Dark Mode Toggle',
+      description: 'Enables dark mode UI for eligible users',
+      enabled: true,
+      rollout_percentage: 25,
+      audience_rules: [],
+      environment: 'staging',
+      created_at: T0,
+      updated_at: T0,
+    },
     flag: {
       id: 'dark-mode',
       name: 'Dark Mode Toggle',
@@ -80,6 +95,11 @@ export const SCENARIOS: Record<ScenarioId, Scenario> = {
       created_at: T0,
       updated_at: T0,
     },
+    story: {
+      title: 'Expand to everyone',
+      summary: 'Dark Mode is live at 25%. This change takes it to 100%.',
+      caught: 'Purely additive — users gain access, none lose it. Safe to ship.',
+    },
     users: MOCK_USERS,
   },
 
@@ -88,6 +108,17 @@ export const SCENARIOS: Record<ScenarioId, Scenario> = {
     feature: 'Dark Mode',
     label: 'Exclude employees',
     description: 'Blocks @internal.company.com accounts — those users are excluded by rule (exit 1).',
+    baseline: {
+      id: 'dark-mode',
+      name: 'Dark Mode Toggle',
+      description: 'Enables dark mode UI for eligible users',
+      enabled: true,
+      rollout_percentage: 100,
+      audience_rules: [],
+      environment: 'production',
+      created_at: T0,
+      updated_at: T0,
+    },
     flag: {
       id: 'dark-mode',
       name: 'Dark Mode Toggle',
@@ -99,6 +130,11 @@ export const SCENARIOS: Record<ScenarioId, Scenario> = {
       created_at: T0,
       updated_at: T0,
     },
+    story: {
+      title: 'Exclude employees',
+      summary: 'Dark Mode is live for everyone. This change adds a rule to exclude @internal.company.com.',
+      caught: '3 users who have Dark Mode today would lose it — including a beta partner on the internal domain. CI blocks the deploy until you confirm.',
+    },
     users: MOCK_USERS,
   },
 
@@ -107,6 +143,17 @@ export const SCENARIOS: Record<ScenarioId, Scenario> = {
     feature: 'Dark Mode',
     label: 'Early adopters in US / CA',
     description: 'Targets early adopters in the US and Canada — users matching only one rule partially match (exit 2).',
+    baseline: {
+      id: 'dark-mode',
+      name: 'Dark Mode Toggle',
+      description: 'Enables dark mode UI for eligible users',
+      enabled: true,
+      rollout_percentage: 100,
+      audience_rules: [{ type: 'segment', operator: 'equals', value: 'early_adopter' }],
+      environment: 'staging',
+      created_at: T0,
+      updated_at: T0,
+    },
     flag: {
       id: 'dark-mode',
       name: 'Dark Mode Toggle',
@@ -120,6 +167,11 @@ export const SCENARIOS: Record<ScenarioId, Scenario> = {
       environment: 'staging',
       created_at: T0,
       updated_at: T0,
+    },
+    story: {
+      title: 'Restrict to US / CA',
+      summary: 'Dark Mode is live for all early adopters. This change also requires country US or CA.',
+      caught: 'Early adopters in Germany and France would lose full access (they drop to partial). Proceed with caution.',
     },
     users: MOCK_USERS,
   },

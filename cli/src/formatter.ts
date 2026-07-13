@@ -7,7 +7,7 @@
  * Design Principle: Output scannable in 3 seconds.
  * Design Principle: Colors functional, not decorative.
  */
-import type { SimulationResult } from '@jikken/shared';
+import type { SimulationResult, SimulationDiff } from '@jikken/shared';
 import { ANSI_RESET, COLORS, EXIT_CODE_MESSAGES } from '@jikken/shared';
 
 export function formatOutput(
@@ -66,4 +66,51 @@ export function formatOutput(
   }
 
   return output;
+}
+
+export function formatDiff(diff: SimulationDiff, format: 'text' | 'json', quiet: boolean): string {
+  if (format === 'json') {
+    return JSON.stringify(diff, null, 2);
+  }
+
+  const HEADER = "\u001b[1m\u001b[38;5;236m";
+  const LABEL = "\u001b[38;5;244m";
+  const FAINT = "\u001b[38;5;250m";
+  const VALUE = "\u001b[38;5;235m";
+
+  let out = "\n";
+  out += `${HEADER}CHANGE IMPACT${ANSI_RESET}\n`;
+  out += `${FAINT}${"=".repeat(60)}${ANSI_RESET}\n\n`;
+  out += `${LABEL}Flag:${ANSI_RESET} ${VALUE}${diff.flag_id}${ANSI_RESET}\n`;
+
+  const netSign = diff.net_receivers >= 0 ? "+" : "";
+  const netColor = diff.net_receivers >= 0 ? COLORS.RECEIVE.ansi : COLORS.EXCLUDE.ansi;
+  out += `${LABEL}Receiving:${ANSI_RESET} ${VALUE}${diff.before.summary.passed} -> ${diff.after.summary.passed}${ANSI_RESET} ${netColor}(${netSign}${diff.net_receivers})${ANSI_RESET}\n\n`;
+
+  out += `${HEADER}GAINED ACCESS (${diff.gained.length})${ANSI_RESET}\n`;
+  out += `${FAINT}${"-".repeat(40)}${ANSI_RESET}\n`;
+  if (diff.gained.length === 0) {
+    out += `${LABEL}  (none)${ANSI_RESET}\n`;
+  } else if (!quiet) {
+    for (const g of diff.gained) {
+      out += `  ${COLORS.RECEIVE.ansi}+ ${g.user_id}${ANSI_RESET}  ${VALUE}${g.reason}${ANSI_RESET}\n`;
+    }
+  }
+
+  out += "\n";
+  out += `${HEADER}LOST ACCESS (${diff.lost.length})${ANSI_RESET}\n`;
+  out += `${FAINT}${"-".repeat(40)}${ANSI_RESET}\n`;
+  if (diff.lost.length === 0) {
+    out += `${LABEL}  (none)${ANSI_RESET}\n`;
+  } else if (!quiet) {
+    for (const l of diff.lost) {
+      out += `  ${COLORS.EXCLUDE.ansi}- ${l.user_id}${ANSI_RESET}  ${VALUE}${l.before} -> ${l.after}: ${l.reason}${ANSI_RESET}\n`;
+    }
+  }
+
+  out += "\n";
+  const exitMsg = EXIT_CODE_MESSAGES[diff.exit_code as keyof typeof EXIT_CODE_MESSAGES];
+  out += `${LABEL}Exit code:${ANSI_RESET} ${VALUE}${diff.exit_code} — ${exitMsg}${ANSI_RESET}\n`;
+
+  return out;
 }

@@ -11,13 +11,15 @@ import {
   PATTERNS,
   SCENARIOS,
   SCENARIO_IDS,
+  diffSimulations,
   evaluateFlag,
   type FlagConfig,
   type MockUser,
   type ScenarioId,
+  type SimulationDiff,
   type SimulationResult,
 } from '@jikken/shared';
-import { formatOutput } from '@jikken/cli-formatter';
+import { formatDiff, formatOutput } from '@jikken/cli-formatter';
 
 // ── Greyscale visual hierarchy (matches the concurrent formatter change) ──
 // COLORS.RECEIVE/EXCLUDE/PARTIAL stay reserved for semantic states; these tones
@@ -29,7 +31,7 @@ const C_FAINT = '\x1b[38;5;250m'; // faint separator (light)
 const C_CMD = '\x1b[1m\x1b[38;5;236m'; // command keyword (bold dark)
 const C_FLAG = '\x1b[38;5;244m'; // --flags (mid grey)
 
-const CMD_KEYWORDS = new Set(['jikken', 'simulate', 'validate', 'help']);
+const CMD_KEYWORDS = new Set(['jikken', 'simulate', 'diff', 'validate', 'help']);
 
 /**
  * Colorize an echoed command line: the command keyword(s) render bold-grey and
@@ -171,6 +173,7 @@ export function runCommand(line: string): RunOutput {
       text:
         `${C_HEADER}jikken${ANSI_RESET}${C_LABEL} — feature flag lifecycle tool${ANSI_RESET}\r\n\r\n` +
         `${C_LABEL}Commands:${ANSI_RESET}\r\n` +
+        cmdLine('diff', `${C_FLAG}--scenario${ANSI_RESET} ${C_FAINT}<all-clear|conflict|warning>${ANSI_RESET} ${C_LABEL}— what the change does to real users${ANSI_RESET}`) +
         cmdLine('simulate', `${C_FLAG}--scenario${ANSI_RESET} ${C_FAINT}<all-clear|conflict|warning>${ANSI_RESET}`) +
         cmdLine('simulate', `${C_FLAG}--flag${ANSI_RESET} ${C_FAINT}<id>${ANSI_RESET} ${C_FLAG}--rollout${ANSI_RESET} ${C_FAINT}0-100${ANSI_RESET} ${C_FLAG}--format${ANSI_RESET} ${C_FAINT}json${ANSI_RESET} ${C_FLAG}--quiet${ANSI_RESET}`) +
         cmdLine('validate', `${C_FLAG}--scenario${ANSI_RESET} ${C_FAINT}<id>${ANSI_RESET} ${C_FLAG}--strict${ANSI_RESET}`),
@@ -179,6 +182,41 @@ export function runCommand(line: string): RunOutput {
       scenario: null,
     };
   }
+  if (cmd === 'diff') {
+    const format = typeof opts.format === 'string' ? opts.format : 'text';
+    if (format !== 'text' && format !== 'json') {
+      return {
+        text: err(`Invalid --format '${format}'. Use 'text' or 'json'.`),
+        exitCode: EXIT_CODES.INVALID_INPUT,
+        result: null,
+        scenario: null,
+      };
+    }
+    // A diff needs a baseline to compare against, so --scenario is required here
+    // (a bare --flag has nothing to diff from).
+    const scenario = typeof opts.scenario === 'string' ? opts.scenario : undefined;
+    if (!scenario) {
+      return {
+        text: err('Missing required option --scenario <id> for diff (a diff needs a baseline to compare against).'),
+        exitCode: EXIT_CODES.INVALID_INPUT,
+        result: null,
+        scenario: null,
+      };
+    }
+    if (!isScenarioId(scenario)) {
+      return {
+        text: err(`Unknown scenario '${scenario}'. Valid scenarios: ${SCENARIO_IDS.join(', ')}.`),
+        exitCode: EXIT_CODES.INVALID_INPUT,
+        result: null,
+        scenario: null,
+      };
+    }
+    const s = SCENARIOS[scenario];
+    const diff: SimulationDiff = diffSimulations(s.baseline, s.flag, s.users);
+    const output = crlf(formatDiff(diff, format as 'text' | 'json', Boolean(opts.quiet)));
+    return { text: output + '\r\n', exitCode: diff.exit_code, result: diff.after, scenario };
+  }
+
   if (cmd !== 'simulate' && cmd !== 'validate') {
     return {
       text: err(`Unknown command '${cmd}'.`) + "Did you mean 'simulate'?\r\n",
@@ -233,6 +271,7 @@ export function runCommand(line: string): RunOutput {
  * across all three surfaces) is chosen once in the top bar, not down here.
  */
 export const PRESET_COMMANDS: { label: string; command: string }[] = [
+  { label: 'diff --scenario conflict', command: 'jikken diff --scenario conflict' },
   { label: 'simulate --flag dark-mode', command: 'jikken simulate --flag dark-mode --rollout 25' },
   { label: '--format json', command: 'jikken simulate --flag dark-mode --rollout 25 --format json' },
   { label: '--quiet', command: 'jikken simulate --flag dark-mode --rollout 25 --quiet' },
