@@ -67,6 +67,7 @@ export function NotesPanel({
   onFeatureChange,
   scenario,
   onScenarioChange,
+  onStartTutorial,
 }: {
   tab: NotesTab;
   onTabChange: (t: NotesTab) => void;
@@ -80,6 +81,7 @@ export function NotesPanel({
   onFeatureChange: (f: FeatureId) => void;
   scenario: ScenarioId | null;
   onScenarioChange: (s: ScenarioId) => void;
+  onStartTutorial: () => void;
 }) {
   return (
     <aside
@@ -128,6 +130,7 @@ export function NotesPanel({
           return (
             <button
               key={t.id}
+              data-tutorial={`${t.id}-tab`}
               onClick={() => onTabChange(t.id)}
               style={{
                 padding: '0.55rem 0',
@@ -149,7 +152,7 @@ export function NotesPanel({
 
       {/* Body */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '1.3rem 1.4rem 2rem' }}>
-        {tab === 'overview' && <OverviewTab />}
+        {tab === 'overview' && <OverviewTab onStartTutorial={onStartTutorial} />}
         {tab === 'details' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
             <DetailsSection label="Design" defaultOpen>

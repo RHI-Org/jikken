@@ -14,6 +14,10 @@ import { Link } from 'react-router-dom';
 import type { SimulationResult } from '@jikken/shared';
 import { COLORS } from '@jikken/shared';
 import { flagStore } from '@/store/flagStore';
+import {
+  emitTutorialEvent,
+  TUTORIAL_ANCHORS,
+} from '@/tutorial/bridge';
 
 const RESULT_STYLE: Record<SimulationResult['result'], { bg: string; text: string; label: string }> = {
   all_clear: { bg: COLORS.RECEIVE.bg, text: COLORS.RECEIVE.text, label: 'ALL CLEAR' },
@@ -64,6 +68,12 @@ export default function HistoryPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!loading && sims.length > 0) {
+      emitTutorialEvent({ type: 'jikken:tutorial:event', event: 'history-row-visible' });
+    }
+  }, [loading, sims.length]);
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-2xl font-semibold mb-6">Simulation History</h1>
@@ -85,13 +95,19 @@ export default function HistoryPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {sims.map((sim) => {
+              {sims.map((sim, index) => {
                 const style = RESULT_STYLE[sim.result];
                 const isPulsing = pulsing.has(sim.simulation_id);
                 return (
                   <tr
                     key={sim.simulation_id}
                     className={isPulsing ? 'jk-row-pulse' : undefined}
+                    data-tutorial={index === 0 ? TUTORIAL_ANCHORS.latestHistoryRow : undefined}
+                    onClick={index === 0 ? () => emitTutorialEvent({
+                      type: 'jikken:tutorial:event',
+                      event: 'user-action',
+                      anchor: TUTORIAL_ANCHORS.latestHistoryRow,
+                    }) : undefined}
                   >
                     <td className="px-4 py-2 font-mono text-xs text-gray-600">{sim.simulation_id}</td>
                     <td className="px-4 py-2">

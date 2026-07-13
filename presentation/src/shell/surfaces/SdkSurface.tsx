@@ -11,6 +11,7 @@ import { Play, Loader2 } from 'lucide-react';
 import { EXIT_CODE_MESSAGES, COLORS, type ScenarioId, type SimulationResult } from '@jikken/shared';
 import { supabase } from '@/integrations/supabase/client';
 import { TerminalWindow } from '../TerminalWindow';
+import { TUTORIAL_EVENTS, useTutorial } from '@/tutorial';
 
 // ── Monochrome editor tokens (dark stone; hierarchy from weight, not hue) ──
 const T = {
@@ -56,6 +57,7 @@ function CodeSample({ scenario }: { scenario: ScenarioId }) {
 }
 
 export function SdkSurface({ scenario }: { scenario: ScenarioId }) {
+  const tutorial = useTutorial();
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -78,6 +80,9 @@ export function SdkSurface({ scenario }: { scenario: ScenarioId }) {
       );
     } finally {
       setRunning(false);
+      // The walkthrough must remain operable when the optional live function
+      // is unavailable; the visible error still demonstrates graceful failure.
+      tutorial.emit(TUTORIAL_EVENTS.sdkRunComplete);
     }
   };
 
@@ -89,6 +94,7 @@ export function SdkSurface({ scenario }: { scenario: ScenarioId }) {
   const footer = (
     <div style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.9rem', flexWrap: 'wrap' }}>
       <button
+        data-tutorial="sdk-run"
         onClick={run}
         disabled={running}
         style={{
@@ -113,7 +119,7 @@ export function SdkSurface({ scenario }: { scenario: ScenarioId }) {
         <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: 'var(--portfolio-text-muted)' }}>{error}</span>
       )}
       {result && (
-        <span style={{ fontSize: '0.78rem', fontFamily: 'var(--font-mono)', color: 'var(--portfolio-text-secondary)' }}>
+        <span data-tutorial="sdk-result" style={{ fontSize: '0.78rem', fontFamily: 'var(--font-mono)', color: 'var(--portfolio-text-secondary)' }}>
           <span style={{ fontWeight: 'var(--font-weight-bold)', color: resultHex }}>exit {result.exit_code}</span>
           {' — '}
           {EXIT_CODE_MESSAGES[result.exit_code as keyof typeof EXIT_CODE_MESSAGES]}

@@ -117,6 +117,8 @@ export function Stage({
   activePrinciple,
   panelOpen,
   onOpenPanel,
+  tutorialCompleted,
+  onStartTutorial,
 }: {
   surface: Surface;
   onSurfaceChange: (s: Surface) => void;
@@ -130,6 +132,8 @@ export function Stage({
   activePrinciple: Principle | null;
   panelOpen: boolean;
   onOpenPanel: () => void;
+  tutorialCompleted: boolean;
+  onStartTutorial: () => void;
 }) {
   const showPin = activePrinciple !== null && activePrinciple.surface === surface;
   // The selected feature drives each surface's situation lookup, since each
@@ -181,6 +185,15 @@ export function Stage({
           >
             Product Demo
           </span>
+          {tutorialCompleted && (
+            <button
+              type="button"
+              onClick={onStartTutorial}
+              style={{ padding: 0, border: 0, background: 'none', color: 'var(--portfolio-text-muted)', cursor: 'pointer', fontSize: '0.68rem', textDecoration: 'underline' }}
+            >
+              Replay walkthrough
+            </button>
+          )}
         </div>
 
         {/* Surface switcher */}
@@ -190,6 +203,7 @@ export function Stage({
             return (
               <button
                 key={s.id}
+                data-tutorial={`surface-${s.id}`}
                 onClick={() => onSurfaceChange(s.id)}
                 style={{
                   padding: '0.25rem 0',

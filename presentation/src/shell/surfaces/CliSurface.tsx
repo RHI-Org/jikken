@@ -157,6 +157,7 @@ export function CliSurface({
     <div style={{ height: '100%', minHeight: 0, padding: '2rem', boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <TerminalWindow title="jikken — zsh" titleBarBg="#e5e5e5">
         <div
+          data-tutorial="cli-output"
           ref={hostRef}
           onClick={() => termRef.current?.focus()}
           style={{ flex: 1, minHeight: 0, background: '#f5f5f4', padding: '0.6rem 0.4rem 0.4rem 0.6rem' }}

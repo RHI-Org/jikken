@@ -72,6 +72,7 @@ export function CommandsTab({
           <label style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
             <span style={MICRO_LABEL}>Feature</span>
             <select
+              data-tutorial="feature-select"
               value={feature}
               onChange={(e) => onFeatureChange(e.target.value as FeatureId)}
               aria-label="Choose a feature"
@@ -89,6 +90,7 @@ export function CommandsTab({
           <label style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
             <span style={MICRO_LABEL}>Scenario</span>
             <select
+              data-tutorial="scenario-select"
               value={scenario ?? ''}
               onChange={(e) => e.target.value && onScenarioChange(e.target.value as ScenarioId)}
               aria-label="Choose a scenario"
@@ -121,6 +123,7 @@ export function CommandsTab({
           {PRESET_COMMANDS.map((c) => (
             <button
               key={c.label}
+              data-tutorial={c.command.includes('diff') && c.command.includes('conflict') ? 'run-conflict-command' : undefined}
               onClick={() => onRunCommand(c.command)}
               style={{
                 display: 'flex',

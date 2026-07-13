@@ -15,8 +15,10 @@ import { loadCatalog, BUNDLED_CATALOG } from './catalog';
 import type { CliInject } from './surfaces/CliSurface';
 import type { Surface, Principle } from './types';
 import { supabase } from '@/integrations/supabase/client';
+import { TUTORIAL_EVENTS, useTutorial } from '@/tutorial';
 
 export function Shell() {
+  const tutorial = useTutorial();
   const [panelOpen, setPanelOpen] = useState(true);
   const [notesTab, setNotesTab] = useState<NotesTab>('overview');
   const [surface, setSurface] = useState<Surface>('cli');
@@ -42,6 +44,18 @@ export function Shell() {
   const [cliInject, setCliInject] = useState<CliInject | null>(null);
   const nonce = useRef(0);
 
+  // A fresh walkthrough starts from a known state. Starting on a different
+  // feature makes "Choose Dark Mode" a real change event instead of a no-op.
+  useEffect(() => {
+    if (!tutorial.active || tutorial.currentStep?.id !== 'welcome') return;
+    setPanelOpen(true);
+    setNotesTab('overview');
+    setSurface('cli');
+    setFeature('checkout-redesign');
+    setScenario(null);
+    setActivePrinciple(null);
+  }, [tutorial.active, tutorial.currentStep?.id, tutorial.state.session]);
+
   const injectCli = useCallback((command: string) => {
     nonce.current += 1;
     setCliInject({ command, nonce: nonce.current });
@@ -54,8 +68,9 @@ export function Shell() {
       setScenario(s);
       setActivePrinciple(null);
       if (surface === 'cli') injectCli(`jikken diff --feature ${feature} --scenario ${s}`);
+      if (s === 'conflict') tutorial.emit(TUTORIAL_EVENTS.excludeEmployeesSelected);
     },
-    [surface, feature, injectCli],
+    [surface, feature, injectCli, tutorial],
   );
 
   // Feature picker: the second dimension. Switching feature re-runs the current
@@ -65,9 +80,15 @@ export function Shell() {
       setFeature(f);
       setActivePrinciple(null);
       if (surface === 'cli' && scenario) injectCli(`jikken diff --feature ${f} --scenario ${scenario}`);
+      if (f === 'dark-mode') tutorial.emit(TUTORIAL_EVENTS.darkModeSelected);
     },
-    [surface, scenario, injectCli],
+    [surface, scenario, injectCli, tutorial],
   );
+
+  const changeNotesTab = useCallback((tab: NotesTab) => {
+    setNotesTab(tab);
+    if (tab === 'commands') tutorial.emit(TUTORIAL_EVENTS.commandsOpened);
+  }, [tutorial]);
 
   // A principle click commands the stage: switch to its surface, drop its pin.
   const selectPrinciple = useCallback((p: Principle) => {
@@ -78,7 +99,10 @@ export function Shell() {
   const changeSurface = useCallback((s: Surface) => {
     setSurface(s);
     setActivePrinciple(null);
-  }, []);
+    if (s === 'dashboard') tutorial.emit(TUTORIAL_EVENTS.dashboardOpened);
+    if (s === 'sdk') tutorial.emit(TUTORIAL_EVENTS.sdkOpened);
+    if (s === 'ci') tutorial.emit(TUTORIAL_EVENTS.ciOpened);
+  }, [tutorial]);
 
   // Command shortcut (from the Commands tab): switch to the CLI and run it.
   const runCommandShortcut = useCallback(
@@ -107,11 +131,12 @@ export function Shell() {
     (_r: SimulationResult, sc: string | null) => {
       const scenarioId = sc ?? scenario;
       if (!scenarioId) return; // nothing chosen / no scenario to attribute the run to
+      tutorial.emit(TUTORIAL_EVENTS.cliRunComplete);
       void supabase.functions
         .invoke('jikken-simulate', { body: { scenario: scenarioId, surface: 'cli' } })
         .catch(() => {});
     },
-    [scenario],
+    [scenario, tutorial],
   );
 
   return (
@@ -119,7 +144,7 @@ export function Shell() {
       {panelOpen && (
         <NotesPanel
           tab={notesTab}
-          onTabChange={setNotesTab}
+          onTabChange={changeNotesTab}
           onClose={() => setPanelOpen(false)}
           activePrinciple={activePrinciple?.number ?? null}
           onSelectPrinciple={selectPrinciple}
@@ -130,6 +155,7 @@ export function Shell() {
           onFeatureChange={changeFeature}
           scenario={scenario}
           onScenarioChange={changeScenario}
+          onStartTutorial={tutorial.start}
         />
       )}
 
@@ -146,6 +172,8 @@ export function Shell() {
         activePrinciple={activePrinciple}
         panelOpen={panelOpen}
         onOpenPanel={() => setPanelOpen(true)}
+        tutorialCompleted={tutorial.completed && !tutorial.active}
+        onStartTutorial={tutorial.restart}
       />
     </div>
   );

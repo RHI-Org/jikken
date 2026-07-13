@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import { Check, X, AlertTriangle, Loader2, CircleDashed, Ban, RotateCcw } from 'lucide-react';
 import { COLORS, EXIT_CODE_MESSAGES, diffSimulations, type Scenario } from '@jikken/shared';
 import { TerminalWindow } from '../TerminalWindow';
+import { TUTORIAL_EVENTS, useTutorial } from '@/tutorial';
 
 const STEP_DELAYS = [500, 1100, 1900, 2700]; // build, tests, gate, deploy
 const BANNER_DELAY = 3200;
@@ -50,12 +51,17 @@ function StepIcon({ state, tone }: { state: StepState; tone: 'ok' | 'warn' | 'fa
 }
 
 export function CiSurface({ scenario }: { scenario: Scenario }) {
+  const tutorial = useTutorial();
   // Deterministic: the same engine call every surface makes.
   const diff = diffSimulations(scenario.baseline, scenario.flag, scenario.users);
   const exit = diff.exit_code;
   const outcome: 'ok' | 'warn' | 'fail' = exit === 0 ? 'ok' : exit === 2 ? 'warn' : 'fail';
 
   const { resolved, showBanner, rerun } = useStagedRun(`${scenario.feature}:${scenario.id}`);
+
+  useEffect(() => {
+    if (showBanner) tutorial.emit(TUTORIAL_EVENTS.ciVerdictVisible);
+  }, [showBanner, tutorial]);
   const stateAt = (i: number): StepState => (resolved > i ? 'done' : resolved === i ? 'running' : 'pending');
 
   const gateDetail =
@@ -218,6 +224,7 @@ export function CiSurface({ scenario }: { scenario: Scenario }) {
           {/* Verdict banner — the governance moment */}
           {showBanner && (
             <div
+              data-tutorial="ci-verdict"
               className="jk-ci-banner"
               style={{
                 marginTop: '1.1rem',

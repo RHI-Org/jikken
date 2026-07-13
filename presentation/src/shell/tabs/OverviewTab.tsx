@@ -11,7 +11,7 @@ const microLabel: React.CSSProperties = {
   textTransform: 'uppercase',
 };
 
-export function OverviewTab() {
+export function OverviewTab({ onStartTutorial }: { onStartTutorial: () => void }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
       <div>
@@ -20,6 +20,14 @@ export function OverviewTab() {
           {INTRO}
         </p>
       </div>
+
+      <button
+        type="button"
+        onClick={onStartTutorial}
+        style={{ alignSelf: 'flex-start', padding: '0.65rem 0.9rem', border: 0, borderRadius: '0.45rem', background: 'var(--portfolio-btn-bg)', color: 'var(--portfolio-btn-text)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'var(--font-weight-semibold)' }}
+      >
+        Start 90-second walkthrough
+      </button>
 
       {PRODUCT_SECTIONS.map((section) => (
         <div key={section.label} style={{ borderTop: '1px solid var(--portfolio-border-muted)', paddingTop: '0.85rem' }}>

@@ -4,7 +4,13 @@
  * the session in, so there's no separate login step here.
  */
 import { Shell } from '@/shell/Shell';
+import { TutorialOverlay, TutorialProvider, jikkenTutorialSteps } from '@/tutorial';
 
-const Home: React.FC = () => <Shell />;
+const Home: React.FC = () => (
+  <TutorialProvider steps={jikkenTutorialSteps}>
+    <Shell />
+    <TutorialOverlay />
+  </TutorialProvider>
+);
 
 export default Home;

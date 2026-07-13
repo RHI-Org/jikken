@@ -6,13 +6,34 @@
  * Design Principle: Consistency across surfaces.
  * Design Principle: Graceful failure is a feature.
  */
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import FlagList from './pages/FlagList';
 import FlagEditor from './pages/FlagEditor';
 import SimulationView from './pages/SimulationView';
 import HistoryPage from './pages/HistoryPage';
 import SettingsPage from './pages/SettingsPage';
+import {
+  connectTutorialBridge,
+  emitTutorialEvent,
+  TUTORIAL_ANCHORS,
+} from './tutorial/bridge';
+
+function TutorialBridge() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => connectTutorialBridge(navigate), [navigate]);
+
+  useEffect(() => {
+    if (location.pathname === '/flags/history') {
+      emitTutorialEvent({ type: 'jikken:tutorial:event', event: 'history-opened' });
+    }
+  }, [location.pathname]);
+
+  return null;
+}
 
 // Left-hand nav column — Flags / History / Settings stacked vertically,
 // instead of a top bar, so the dashboard reads as a two-column app.
@@ -34,7 +55,16 @@ function NavBar() {
         <Link to="/flags" className={linkClass(isActive('/flags') && !isActive('/flags/history'))}>
           Flags
         </Link>
-        <Link to="/flags/history" className={linkClass(isActive('/flags/history'))}>
+        <Link
+          to="/flags/history"
+          className={linkClass(isActive('/flags/history'))}
+          data-tutorial={TUTORIAL_ANCHORS.historyNav}
+          onClick={() => emitTutorialEvent({
+            type: 'jikken:tutorial:event',
+            event: 'user-action',
+            anchor: TUTORIAL_ANCHORS.historyNav,
+          })}
+        >
           History
         </Link>
         <Link to="/settings" className={linkClass(isActive('/settings'))}>
@@ -63,6 +93,7 @@ export default function App() {
   return (
     <Router basename={import.meta.env.BASE_URL}>
       <div className="h-screen bg-gray-50 flex">
+        <TutorialBridge />
         <NavBar />
         <Toaster position="top-right" />
         <main className="flex-1 min-w-0 overflow-y-auto">
