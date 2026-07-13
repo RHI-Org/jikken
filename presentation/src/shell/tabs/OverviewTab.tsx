@@ -31,7 +31,7 @@ export function OverviewTab({
       <button
         type="button"
         onClick={onStartTutorial}
-        style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: '0.45rem', padding: '0.65rem 0.9rem', border: 0, borderRadius: '0.45rem', background: 'var(--portfolio-btn-bg)', color: 'var(--portfolio-btn-text)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'var(--font-weight-semibold)' }}
+        style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: '0.45rem', padding: '0.65rem 0.9rem', border: 0, borderRadius: '0.45rem', background: '#2563eb', boxShadow: '0 1px 2px rgba(37, 99, 235, 0.3)', color: '#fff', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'var(--font-weight-semibold)' }}
       >
         <Play size={14} fill="currentColor" />
         Start 90-second walkthrough
