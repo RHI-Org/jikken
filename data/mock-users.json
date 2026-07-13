@@ -1,0 +1,152 @@
+[
+  {
+    "user_id": "user_001",
+    "email": "user_001@example.com",
+    "country": "US",
+    "segment": "early_adopter"
+  },
+  {
+    "user_id": "user_002",
+    "email": "user_002@example.com",
+    "country": "CA",
+    "segment": "standard"
+  },
+  {
+    "user_id": "user_003",
+    "email": "user_003@example.com",
+    "country": "UK",
+    "segment": "premium"
+  },
+  {
+    "user_id": "user_004",
+    "email": "user_004@example.com",
+    "country": "DE",
+    "segment": "enterprise"
+  },
+  {
+    "user_id": "user_005",
+    "email": "user_005@example.com",
+    "country": "FR",
+    "segment": "early_adopter"
+  },
+  {
+    "user_id": "user_006",
+    "email": "user_006@example.com",
+    "country": "US",
+    "segment": "standard"
+  },
+  {
+    "user_id": "user_007",
+    "email": "user_007@example.com",
+    "country": "CA",
+    "segment": "premium"
+  },
+  {
+    "user_id": "user_008",
+    "email": "user_008@example.com",
+    "country": "UK",
+    "segment": "enterprise"
+  },
+  {
+    "user_id": "user_009",
+    "email": "user_009@example.com",
+    "country": "DE",
+    "segment": "early_adopter"
+  },
+  {
+    "user_id": "user_010",
+    "email": "user_010@example.com",
+    "country": "FR",
+    "segment": "standard"
+  },
+  {
+    "user_id": "user_011",
+    "email": "user_011@example.com",
+    "country": "US",
+    "segment": "premium"
+  },
+  {
+    "user_id": "user_012",
+    "email": "user_012@example.com",
+    "country": "CA",
+    "segment": "enterprise"
+  },
+  {
+    "user_id": "user_013",
+    "email": "user_013@example.com",
+    "country": "UK",
+    "segment": "early_adopter"
+  },
+  {
+    "user_id": "user_014",
+    "email": "user_014@example.com",
+    "country": "DE",
+    "segment": "standard"
+  },
+  {
+    "user_id": "user_015",
+    "email": "user_015@example.com",
+    "country": "FR",
+    "segment": "premium"
+  },
+  {
+    "user_id": "user_016",
+    "email": "user_016@example.com",
+    "country": "US",
+    "segment": "enterprise"
+  },
+  {
+    "user_id": "user_017",
+    "email": "user_017@example.com",
+    "country": "CA",
+    "segment": "early_adopter"
+  },
+  {
+    "user_id": "user_018",
+    "email": "user_018@example.com",
+    "country": "UK",
+    "segment": "standard"
+  },
+  {
+    "user_id": "user_019",
+    "email": "user_019@example.com",
+    "country": "DE",
+    "segment": "premium"
+  },
+  {
+    "user_id": "user_020",
+    "email": "user_020@example.com",
+    "country": "FR",
+    "segment": "enterprise"
+  },
+  {
+    "user_id": "user_021",
+    "email": "user_021@example.com",
+    "country": "US",
+    "segment": "early_adopter"
+  },
+  {
+    "user_id": "user_022",
+    "email": "user_022@example.com",
+    "country": "CA",
+    "segment": "standard"
+  },
+  {
+    "user_id": "user_023",
+    "email": "user_023@example.com",
+    "country": "UK",
+    "segment": "premium"
+  },
+  {
+    "user_id": "user_024",
+    "email": "user_024@example.com",
+    "country": "DE",
+    "segment": "enterprise"
+  },
+  {
+    "user_id": "user_025",
+    "email": "user_025@example.com",
+    "country": "FR",
+    "segment": "early_adopter"
+  }
+]

@@ -4,10 +4,19 @@
   "version": "0.0.0",
   "type": "module",
   "workspaces": [
+    "shared",
+    "cli",
+    "dashboard",
+    "sdk",
     "presentation"
   ],
   "scripts": {
     "present": "npm run dev --workspace presentation",
-    "build:present": "npm run build --workspace presentation"
+    "dashboard": "npm run dev --workspace dashboard",
+    "cli": "npm run start --workspace cli --",
+    "build": "npm run build --workspaces --if-present",
+    "build:present": "npm run build --workspace presentation",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
   }
 }

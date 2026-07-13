@@ -1,0 +1,22 @@
+{
+  "id": "dark-mode",
+  "name": "Dark Mode Toggle",
+  "description": "Enables dark mode UI for eligible users",
+  "enabled": true,
+  "rollout_percentage": 25,
+  "audience_rules": [
+    {
+      "type": "segment",
+      "operator": "equals",
+      "value": "early_adopter"
+    },
+    {
+      "type": "country",
+      "operator": "in_list",
+      "value": ["US", "CA", "UK"]
+    }
+  ],
+  "environment": "staging",
+  "created_at": "2026-07-13T10:00:00Z",
+  "updated_at": "2026-07-13T10:00:00Z"
+}
