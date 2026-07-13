@@ -223,7 +223,6 @@ export default function SimulationView({ simulationResult: providedResult }: Sim
           Back to Flags
         </Link>
         <h1 className="text-3xl font-semibold tracking-tight text-gray-900">{flagTitle}</h1>
-        <p className="mt-1 font-mono text-sm text-gray-500">{flag_id}</p>
       </header>
 
       {demoScenario && (
@@ -249,7 +248,6 @@ export default function SimulationView({ simulationResult: providedResult }: Sim
         <div className="flex justify-between items-start mb-4">
           <div>
             <h3 className="text-lg font-semibold">Simulation Summary</h3>
-            <p className="text-xs text-gray-500 font-mono">{flag_id}</p>
             <p className="mt-1 text-[11px] text-gray-400">
               Last run {new Date(result.evaluated_at).toLocaleTimeString()}
             </p>
