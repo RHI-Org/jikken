@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* History page — one-shot highlight when a simulation arrives via Realtime
+   (the CLI→Dashboard hand-off pulse). Fades from a soft stone wash to clear. */
+@keyframes jk-row-pulse {
+  0% { background-color: rgba(41, 37, 36, 0.14); }
+  100% { background-color: transparent; }
+}
+.jk-row-pulse {
+  animation: jk-row-pulse 2.2s ease-out;
+}

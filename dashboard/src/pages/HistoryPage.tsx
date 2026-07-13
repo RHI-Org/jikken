@@ -1,11 +1,15 @@
 /**
  * HistoryPage Component
  *
- * Past simulations — real audit trail for engineers/auditors.
+ * Past simulations — the real audit trail, backed by jikken_simulations.
+ * Subscribes to Realtime inserts so a run from ANY surface (a CLI-tab run,
+ * an SDK call, a dashboard sim) lands here live, with a one-shot pulse on the
+ * arriving row. This is the CLI→Dashboard hand-off centerpiece.
  *
  * Design Principle: Consistency — same result colors as CLI and SimulationView.
+ * Design Principle: Transparent reasoning — the audit trail is always visible.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { SimulationResult } from '@jikken/shared';
 import { COLORS } from '@jikken/shared';
@@ -20,16 +24,43 @@ const RESULT_STYLE: Record<SimulationResult['result'], { bg: string; text: strin
 export default function HistoryPage() {
   const [sims, setSims] = useState<SimulationResult[]>([]);
   const [loading, setLoading] = useState(true);
+  // simulation_ids that just arrived via Realtime — drives the pulse class.
+  const [pulsing, setPulsing] = useState<Set<string>>(new Set());
+  const pulseTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
   useEffect(() => {
     let cancelled = false;
+
     flagStore.listSimulations().then((result) => {
       if (cancelled) return;
-      setSims([...result].reverse());
+      setSims([...result].reverse()); // newest first
       setLoading(false);
     });
+
+    // Live inserts from any surface → prepend + pulse (dedupe by simulation_id).
+    const unsubscribe = flagStore.subscribeSimulations((sim) => {
+      setSims((prev) => {
+        if (prev.some((s) => s.simulation_id === sim.simulation_id)) return prev;
+        return [sim, ...prev];
+      });
+      setPulsing((prev) => new Set(prev).add(sim.simulation_id));
+      const t = setTimeout(() => {
+        setPulsing((prev) => {
+          const next = new Set(prev);
+          next.delete(sim.simulation_id);
+          return next;
+        });
+        pulseTimers.current.delete(sim.simulation_id);
+      }, 2200);
+      pulseTimers.current.set(sim.simulation_id, t);
+    });
+
+    const timers = pulseTimers.current;
     return () => {
       cancelled = true;
+      unsubscribe();
+      timers.forEach((t) => clearTimeout(t));
+      timers.clear();
     };
   }, []);
 
@@ -56,8 +87,12 @@ export default function HistoryPage() {
             <tbody className="divide-y divide-gray-100">
               {sims.map((sim) => {
                 const style = RESULT_STYLE[sim.result];
+                const isPulsing = pulsing.has(sim.simulation_id);
                 return (
-                  <tr key={sim.simulation_id}>
+                  <tr
+                    key={sim.simulation_id}
+                    className={isPulsing ? 'jk-row-pulse' : undefined}
+                  >
                     <td className="px-4 py-2 font-mono text-xs text-gray-600">{sim.simulation_id}</td>
                     <td className="px-4 py-2">
                       <Link

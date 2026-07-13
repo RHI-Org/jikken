@@ -8,6 +8,7 @@
  */
 import type { FlagConfig, MockUser, SimulationResult } from '@jikken/shared';
 import { evaluateFlag, SCENARIOS, SCENARIO_IDS } from '@jikken/shared';
+import { supabase, hasSupabase } from '@/integrations/supabase/client';
 
 export interface FlagStore {
   listFlags(): Promise<FlagConfig[]>;
@@ -16,6 +17,12 @@ export interface FlagStore {
   deleteFlag(id: string): Promise<void>;
   runSimulation(flagId: string, users?: MockUser[]): Promise<SimulationResult>;
   listSimulations(): Promise<SimulationResult[]>;
+  /**
+   * Subscribe to newly-inserted simulations (any surface). Powers the History
+   * page's live hand-off pulse. Returns an unsubscribe function. The
+   * LocalStorage implementation is a no-op (no cross-surface stream).
+   */
+  subscribeSimulations(onInsert: (sim: SimulationResult) => void): () => void;
 }
 
 const FLAGS_KEY = 'jikken-flags-v1';
@@ -156,6 +163,142 @@ export class LocalStorageFlagStore implements FlagStore {
   async listSimulations(): Promise<SimulationResult[]> {
     return readJSON<SimulationResult[]>(SIMS_KEY, []);
   }
+
+  // No cross-surface stream in LocalStorage mode — return a no-op unsubscribe.
+  subscribeSimulations(): () => void {
+    return () => {};
+  }
 }
 
-export const flagStore: FlagStore = new LocalStorageFlagStore();
+/** Resolve the mock users for a flag: its matching scenario set, else generic. */
+function usersForFlag(flagId: string, override?: MockUser[]): MockUser[] {
+  if (override) return override;
+  const scenario = SCENARIO_IDS.map((id) => SCENARIOS[id]).find((s) => s.flag.id === flagId);
+  return scenario?.users ?? generateMockUsers();
+}
+
+/** Shape of a jikken_simulations row (subset we consume). */
+interface SimulationRow {
+  simulation_id: string;
+  flag_id: string;
+  result: SimulationResult['result'];
+  exit_code: number;
+  summary: SimulationResult['summary'];
+  decisions: SimulationResult['decisions'];
+  evaluated_at: string;
+  total_latency_ms: number;
+}
+
+function rowToResult(row: SimulationRow): SimulationResult {
+  return {
+    flag_id: row.flag_id,
+    simulation_id: row.simulation_id,
+    result: row.result,
+    summary: row.summary,
+    decisions: row.decisions ?? [],
+    exit_code: row.exit_code,
+    evaluated_at: row.evaluated_at,
+    total_latency_ms: row.total_latency_ms,
+  };
+}
+
+/**
+ * Supabase-backed store — the real Wave 2 data layer. Flags and the
+ * simulation audit log live in jikken_flags / jikken_simulations; the same
+ * shared engine evaluates runs (so a Dashboard run and a CLI/SDK run of the
+ * same inputs are bit-identical), and History streams inserts via Realtime.
+ */
+export class SupabaseFlagStore implements FlagStore {
+  private get db() {
+    if (!supabase) throw new Error('Supabase client unavailable');
+    return supabase;
+  }
+
+  async listFlags(): Promise<FlagConfig[]> {
+    const { data, error } = await this.db
+      .from('jikken_flags')
+      .select('*')
+      .order('created_at', { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data ?? []) as FlagConfig[];
+  }
+
+  async getFlag(id: string): Promise<FlagConfig | null> {
+    const { data, error } = await this.db.from('jikken_flags').select('*').eq('id', id).maybeSingle();
+    if (error) throw new Error(error.message);
+    return (data as FlagConfig) ?? null;
+  }
+
+  async saveFlag(config: FlagConfig): Promise<void> {
+    const { error } = await this.db.from('jikken_flags').upsert(
+      {
+        id: config.id,
+        name: config.name,
+        description: config.description ?? null,
+        enabled: config.enabled,
+        rollout_percentage: config.rollout_percentage,
+        audience_rules: config.audience_rules ?? [],
+        environment: config.environment,
+        updated_at: now(),
+      },
+      { onConflict: 'id' },
+    );
+    if (error) throw new Error(error.message);
+  }
+
+  async deleteFlag(id: string): Promise<void> {
+    const { error } = await this.db.from('jikken_flags').delete().eq('id', id);
+    if (error) throw new Error(error.message);
+  }
+
+  async runSimulation(flagId: string, users?: MockUser[]): Promise<SimulationResult> {
+    const flag = await this.getFlag(flagId);
+    if (!flag) throw new Error(`Flag not found: ${flagId}`);
+
+    const result = evaluateFlag(flag, usersForFlag(flagId, users));
+
+    const { data: auth } = await this.db.auth.getUser();
+    const { error } = await this.db.from('jikken_simulations').insert({
+      simulation_id: result.simulation_id,
+      flag_id: result.flag_id,
+      surface: 'dashboard',
+      result: result.result,
+      exit_code: result.exit_code,
+      summary: result.summary,
+      decisions: result.decisions,
+      evaluated_at: result.evaluated_at,
+      total_latency_ms: result.total_latency_ms,
+      created_by: auth.user?.id ?? null,
+    });
+    if (error) throw new Error(error.message);
+
+    return result;
+  }
+
+  async listSimulations(): Promise<SimulationResult[]> {
+    const { data, error } = await this.db
+      .from('jikken_simulations')
+      .select('*')
+      .order('created_at', { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((row) => rowToResult(row as SimulationRow));
+  }
+
+  subscribeSimulations(onInsert: (sim: SimulationResult) => void): () => void {
+    const channel = this.db
+      .channel('jikken_simulations_inserts')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'jikken_simulations' },
+        (payload) => onInsert(rowToResult(payload.new as SimulationRow)),
+      )
+      .subscribe();
+    return () => {
+      void this.db.removeChannel(channel);
+    };
+  }
+}
+
+export const flagStore: FlagStore = hasSupabase
+  ? new SupabaseFlagStore()
+  : new LocalStorageFlagStore();
