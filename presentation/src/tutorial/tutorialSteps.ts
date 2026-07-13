@@ -141,6 +141,7 @@ export function createJikkenTutorialSteps(
       body: 'Exit 1 stops the rollout before three employees lose access. The risky change never ships.',
       placement: 'left',
       allowNext: true,
+      dimBackground: false,
     },
     {
       id: 'complete',
@@ -149,6 +150,7 @@ export function createJikkenTutorialSteps(
       placement: 'center',
       allowNext: true,
       nextLabel: 'Finish',
+      dimBackground: false,
     },
   ];
 }

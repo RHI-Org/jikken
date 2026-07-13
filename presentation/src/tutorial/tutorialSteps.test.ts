@@ -39,4 +39,11 @@ describe('Jikken tutorial contract', () => {
 
     expect(steps.filter((step) => visibleSteps.includes(step.id)).every((step) => step.dimBackground === false)).toBe(true);
   });
+
+  it('keeps the CI gate visible throughout steps 14–15', () => {
+    const steps = createJikkenTutorialSteps();
+    const visibleSteps = ['ci-verdict', 'complete'];
+
+    expect(steps.filter((step) => visibleSteps.includes(step.id)).every((step) => step.dimBackground === false)).toBe(true);
+  });
 });

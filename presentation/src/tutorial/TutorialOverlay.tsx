@@ -158,7 +158,7 @@ export function TutorialOverlay() {
       aria-label="Jikken walkthrough"
       style={{ inset: 0, pointerEvents: 'none', position: 'fixed', zIndex: 10_000 }}
     >
-      {centered ? (
+      {centered && dimBackground ? (
         <div style={{ background: 'rgba(12, 10, 9, 0.72)', inset: 0, position: 'absolute' }} />
       ) : anchorBox ? (
         <div
