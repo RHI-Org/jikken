@@ -7,6 +7,7 @@
  */
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Search, X } from 'lucide-react';
 import type { FlagConfig } from '@jikken/shared';
 import { flagStore } from '@/store/flagStore';
 
@@ -88,9 +89,23 @@ function FlagPortfolioCharts({ flags }: { flags: FlagConfig[] }) {
   );
 }
 
+export function filterFlags(flags: FlagConfig[], query: string): FlagConfig[] {
+  const normalizedQuery = query.trim().toLowerCase();
+  return flags.filter((flag) =>
+    [
+      flag.name,
+      flag.id,
+      flag.description ?? '',
+      flag.environment,
+      flag.enabled ? 'active' : 'inactive',
+    ].some((value) => value.toLowerCase().includes(normalizedQuery)),
+  );
+}
+
 export default function FlagList() {
   const [flags, setFlags] = useState<FlagConfig[]>([]);
   const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -104,6 +119,8 @@ export default function FlagList() {
     };
   }, []);
 
+  const filteredFlags = filterFlags(flags, query);
+
   return (
     <div className="max-w-4xl mx-auto px-8 pt-10 pb-8">
       <div className="flex justify-between items-center mb-6">
@@ -116,6 +133,25 @@ export default function FlagList() {
         </Link>
       </div>
 
+      {!loading && flags.length > 0 && (
+        <div className="relative mb-6">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" aria-hidden="true" />
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search flags by name, ID, environment, or status"
+            aria-label="Search feature flags"
+            className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-9 pr-10 text-sm text-gray-900 shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          />
+          {query && (
+            <button type="button" onClick={() => setQuery('')} aria-label="Clear flag search" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700">
+              <X className="h-4 w-4" aria-hidden="true" />
+            </button>
+          )}
+        </div>
+      )}
+
       {loading ? (
         <p className="text-gray-500">Loading...</p>
       ) : flags.length === 0 ? (
@@ -123,8 +159,12 @@ export default function FlagList() {
       ) : (
         <>
           <FlagPortfolioCharts flags={flags} />
-          <div className="space-y-3">
-            {flags.map((flag) => (
+          {filteredFlags.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-gray-500">
+              No flags match “{query}”.
+            </div>
+          ) : <div className="space-y-3">
+            {filteredFlags.map((flag) => (
               <Link
                 key={flag.id}
                 to={`/flags/simulate/${flag.id}`}
@@ -151,7 +191,7 @@ export default function FlagList() {
                 </div>
               </Link>
             ))}
-          </div>
+          </div>}
         </>
       )}
     </div>

@@ -6,9 +6,11 @@
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { SimulationResult } from '@jikken/shared';
+import type { FlagConfig, SimulationResult } from '@jikken/shared';
 import FlagEditor from '../pages/FlagEditor';
 import SimulationView from '../pages/SimulationView';
+import { filterFlags } from '../pages/FlagList';
+import { filterSimulations } from '../pages/HistoryPage';
 
 vi.mock('jspdf', () => ({
   default: vi.fn().mockImplementation(() => ({
@@ -55,6 +57,28 @@ const mockResult: SimulationResult = {
   evaluated_at: '2026-07-13T14:23:01Z',
   total_latency_ms: 4.2,
 };
+
+const mockFlags: FlagConfig[] = [
+  {
+    id: 'dark-mode',
+    name: 'Dark Mode',
+    description: 'Theme controls',
+    enabled: true,
+    rollout_percentage: 100,
+    environment: 'production',
+    created_at: '2026-07-13T14:23:01Z',
+    updated_at: '2026-07-13T14:23:01Z',
+  },
+  {
+    id: 'beta-dashboard',
+    name: 'Beta Dashboard',
+    enabled: false,
+    rollout_percentage: 0,
+    environment: 'development',
+    created_at: '2026-07-13T14:23:01Z',
+    updated_at: '2026-07-13T14:23:01Z',
+  },
+];
 
 function renderWithRouter(ui: React.ReactElement) {
   return render(<MemoryRouter>{ui}</MemoryRouter>);
@@ -151,5 +175,19 @@ describe('SimulationView', () => {
         expect.stringContaining('FLAG SIMULATION REPORT'),
       );
     });
+  });
+});
+
+describe('dashboard search', () => {
+  it('filters flags by ID, environment, and status', () => {
+    expect(filterFlags(mockFlags, 'dark-mode')).toHaveLength(1);
+    expect(filterFlags(mockFlags, 'development')[0]?.id).toBe('beta-dashboard');
+    expect(filterFlags(mockFlags, 'inactive')[0]?.id).toBe('beta-dashboard');
+  });
+
+  it('filters history by flag and human result label', () => {
+    expect(filterSimulations([mockResult], 'dark-mode')).toHaveLength(1);
+    expect(filterSimulations([{ ...mockResult, result: 'warning' }], 'needs review')).toHaveLength(1);
+    expect(filterSimulations([mockResult], 'missing')).toHaveLength(0);
   });
 });

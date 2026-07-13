@@ -30,27 +30,35 @@ export function DashboardSurface() {
 
     const post = (message: object) => target.postMessage(message, dashboardOrigin);
     let highlight: string | null = null;
-    if (step === 'dashboard-scenario') {
-      post({ type: 'jikken:tutorial:navigate', path: '/flags/simulate/dark-mode?scenario=conflict' });
+    let path: string | null = null;
+    if (step === 'open-dashboard') {
+      path = '/flags/simulate/dark-mode?scenario=conflict';
+    } else if (step === 'dashboard-scenario') {
+      path = '/flags/simulate/dark-mode?scenario=conflict';
       highlight = 'scenario-context';
     } else if (step === 'dashboard-impact') {
+      path = '/flags/simulate/dark-mode?scenario=conflict';
       highlight = 'simulation-summary';
     } else if (step === 'dashboard-decision') {
+      path = '/flags/simulate/dark-mode?scenario=conflict';
       highlight = 'excluded-decision';
     } else if (step === 'dashboard-history') {
-      post({ type: 'jikken:tutorial:navigate', path: '/flags/history' });
+      path = '/flags/history';
       highlight = 'latest-history-row';
     }
-    if (!highlight) return;
-    const message = { type: 'jikken:tutorial:highlight', anchor: highlight };
+    if (!path && !highlight) return;
+    const sendCommands = () => {
+      if (path) post({ type: 'jikken:tutorial:navigate', path });
+      if (highlight) post({ type: 'jikken:tutorial:highlight', anchor: highlight });
+    };
     // Navigation and iframe rendering are asynchronous. Repeating this small,
     // idempotent command makes the target appear as soon as its route mounts.
-    post(message);
+    sendCommands();
     // The iframe's load event can fire just before its React bridge mounts, and
     // the simulation card appears after its first result render. Retry the
     // idempotent focus command long enough to cover both transitions.
     tutorialTimers.current = [150, 450, 900, 1600].map((delay) =>
-      window.setTimeout(() => post(message), delay),
+      window.setTimeout(sendCommands, delay),
     );
   }, [dashboardOrigin, tutorial.currentStep?.id]);
 

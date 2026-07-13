@@ -60,7 +60,7 @@ export function Shell() {
       setActivePrinciple(null);
     } else if (step === 'inspect-cli-result' && !tutorialCliRan.current) {
       injectCli('jikken diff --feature dark-mode --scenario conflict');
-    } else if (step === 'dashboard-scenario') {
+    } else if (step === 'open-dashboard' || step === 'dashboard-scenario') {
       setSurface('dashboard');
     } else if (step === 'sdk-contract') {
       setSurface('sdk');

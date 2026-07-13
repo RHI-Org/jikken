@@ -11,6 +11,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Search, X } from 'lucide-react';
 import type { SimulationResult } from '@jikken/shared';
 import { COLORS } from '@jikken/shared';
 import { flagStore } from '@/store/flagStore';
@@ -25,9 +26,24 @@ const RESULT_STYLE: Record<SimulationResult['result'], { bg: string; text: strin
   warning: { bg: COLORS.PARTIAL.bg, text: COLORS.PARTIAL.text, label: 'NEEDS REVIEW' },
 };
 
+export function filterSimulations(simulations: SimulationResult[], query: string): SimulationResult[] {
+  const normalizedQuery = query.trim().toLowerCase();
+  return simulations.filter((simulation) => {
+    const resultLabel = RESULT_STYLE[simulation.result].label;
+    return [
+      simulation.simulation_id,
+      simulation.flag_id,
+      simulation.result,
+      resultLabel,
+      new Date(simulation.evaluated_at).toLocaleString(),
+    ].some((value) => value.toLowerCase().includes(normalizedQuery));
+  });
+}
+
 export default function HistoryPage() {
   const [sims, setSims] = useState<SimulationResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState('');
   // simulation_ids that just arrived via Realtime — drives the pulse class.
   const [pulsing, setPulsing] = useState<Set<string>>(new Set());
   const pulseTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
@@ -74,14 +90,39 @@ export default function HistoryPage() {
     }
   }, [loading, sims.length]);
 
+  const filteredSims = filterSimulations(sims, query);
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-2xl font-semibold mb-6">Simulation History</h1>
+
+      {!loading && sims.length > 0 && (
+        <div className="relative mb-5">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" aria-hidden="true" />
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search by flag, simulation ID, result, or date"
+            aria-label="Search simulation history"
+            className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-9 pr-10 text-sm text-gray-900 shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          />
+          {query && (
+            <button type="button" onClick={() => setQuery('')} aria-label="Clear history search" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700">
+              <X className="h-4 w-4" aria-hidden="true" />
+            </button>
+          )}
+        </div>
+      )}
 
       {loading ? (
         <p className="text-gray-500">Loading...</p>
       ) : sims.length === 0 ? (
         <p className="text-gray-500">No simulations have been run yet.</p>
+      ) : filteredSims.length === 0 ? (
+        <div className="rounded-lg border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-gray-500">
+          No simulations match “{query}”.
+        </div>
       ) : (
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <table className="w-full text-sm">
@@ -95,7 +136,7 @@ export default function HistoryPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {sims.map((sim, index) => {
+              {filteredSims.map((sim, index) => {
                 const style = RESULT_STYLE[sim.result];
                 const isPulsing = pulsing.has(sim.simulation_id);
                 return (
