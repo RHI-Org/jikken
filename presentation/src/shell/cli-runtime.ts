@@ -8,15 +8,13 @@ import {
   ANSI_RESET,
   COLORS,
   EXIT_CODES,
-  FEATURE_IDS,
+  FEATURES,
   PATTERNS,
   SCENARIOS,
   SCENARIO_IDS,
   diffSimulations,
   evaluateFlag,
-  getScenario,
-  isFeatureId,
-  type FeatureId,
+  type FeatureDef,
   type FlagConfig,
   type MockUser,
   type Scenario,
@@ -78,10 +76,18 @@ function isScenarioId(v: string): v is ScenarioId {
   return (SCENARIO_IDS as readonly string[]).includes(v);
 }
 
+// The catalog the CLI resolves against. Defaults to the bundled FEATURES, but
+// the Shell swaps in the Supabase-loaded catalog once it resolves, so a run
+// targets exactly what the menus show — including DB-only features.
+let activeCatalog: FeatureDef[] = FEATURES;
+export function setActiveCatalog(catalog: FeatureDef[]): void {
+  activeCatalog = catalog.length > 0 ? catalog : FEATURES;
+}
+
 /**
- * Resolve a (feature × situation) pair from parsed opts. `--feature` is
- * optional and defaults to `dark-mode`, so the historical `--scenario <id>`
- * form (and every existing test) keeps working unchanged.
+ * Resolve a (feature × situation) pair from parsed opts against the active
+ * catalog. `--feature` is optional and defaults to `dark-mode`, so the
+ * historical `--scenario <id>` form (and every existing test) is unchanged.
  */
 function resolveScenario(
   opts: Record<string, string | true>,
@@ -90,11 +96,12 @@ function resolveScenario(
   if (!situation || !isScenarioId(situation)) {
     return { error: err(`Unknown scenario '${situation ?? ''}'. Valid scenarios: ${SCENARIO_IDS.join(', ')}.`) };
   }
-  const feature = typeof opts.feature === 'string' ? opts.feature : 'dark-mode';
-  if (!isFeatureId(feature)) {
-    return { error: err(`Unknown feature '${feature}'. Valid features: ${FEATURE_IDS.join(', ')}.`) };
+  const featureId = typeof opts.feature === 'string' ? opts.feature : 'dark-mode';
+  const feature = activeCatalog.find((f) => f.id === featureId);
+  if (!feature) {
+    return { error: err(`Unknown feature '${featureId}'. Valid features: ${activeCatalog.map((f) => f.id).join(', ')}.`) };
   }
-  return { scenario: getScenario(feature as FeatureId, situation), situation };
+  return { scenario: feature.situations[situation], situation };
 }
 
 /** Minimal flag builder for --flag (no filesystem in the browser). */

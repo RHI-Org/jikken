@@ -6,10 +6,12 @@
  * Owns the cross-surface state so one intent — a scenario, a principle, the
  * ★ hand-off — commands every surface coherently.
  */
-import { useCallback, useRef, useState } from 'react';
-import type { FeatureId, ScenarioId, SimulationResult } from '@jikken/shared';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { FeatureDef, FeatureId, ScenarioId, SimulationResult } from '@jikken/shared';
 import { NotesPanel, EdgeTab, type NotesTab } from './NotesPanel';
 import { Stage } from './Stage';
+import { setActiveCatalog } from './cli-runtime';
+import { loadCatalog, BUNDLED_CATALOG } from './catalog';
 import type { CliInject } from './surfaces/CliSurface';
 import type { Surface, Principle } from './types';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,8 +20,24 @@ export function Shell() {
   const [panelOpen, setPanelOpen] = useState(true);
   const [notesTab, setNotesTab] = useState<NotesTab>('overview');
   const [surface, setSurface] = useState<Surface>('cli');
+  const [catalog, setCatalog] = useState<FeatureDef[]>(BUNDLED_CATALOG);
   const [feature, setFeature] = useState<FeatureId>('dark-mode');
   const [scenario, setScenario] = useState<ScenarioId | null>(null);
+
+  // Load the Feature × Situation catalog from Supabase; falls back to the
+  // bundled catalog (already the initial state) if the table isn't provisioned.
+  // The CLI resolver reads the same catalog so a run matches the menus exactly.
+  useEffect(() => {
+    let live = true;
+    loadCatalog().then((c) => {
+      if (!live) return;
+      setCatalog(c);
+      setActiveCatalog(c);
+    });
+    return () => {
+      live = false;
+    };
+  }, []);
   const [activePrinciple, setActivePrinciple] = useState<Principle | null>(null);
   const [cliInject, setCliInject] = useState<CliInject | null>(null);
   const nonce = useRef(0);
@@ -104,6 +122,7 @@ export function Shell() {
       <Stage
         surface={surface}
         onSurfaceChange={changeSurface}
+        features={catalog}
         feature={feature}
         onFeatureChange={changeFeature}
         scenario={scenario}

@@ -5,7 +5,7 @@
  * real and interactive, with a numbered pin overlay when a principle is
  * selected from the notes panel.
  */
-import { FEATURES, SCENARIO_IDS, type FeatureId, type ScenarioId, type SimulationResult } from '@jikken/shared';
+import { SCENARIO_IDS, type FeatureDef, type FeatureId, type ScenarioId, type SimulationResult } from '@jikken/shared';
 import { CliSurface, type CliInject } from './surfaces/CliSurface';
 import { SdkSurface } from './surfaces/SdkSurface';
 import { DashboardSurface } from './surfaces/DashboardSurface';
@@ -29,6 +29,7 @@ const MICRO_LABEL = {
 export function Stage({
   surface,
   onSurfaceChange,
+  features,
   feature,
   onFeatureChange,
   scenario,
@@ -39,6 +40,7 @@ export function Stage({
 }: {
   surface: Surface;
   onSurfaceChange: (s: Surface) => void;
+  features: FeatureDef[];
   feature: FeatureId;
   onFeatureChange: (f: FeatureId) => void;
   scenario: ScenarioId | null;
@@ -50,7 +52,7 @@ export function Stage({
   const showPin = activePrinciple !== null && activePrinciple.surface === surface;
   // The selected feature drives the Situation menu's labels/descriptions, since
   // each feature frames the same three archetypes in its own domain language.
-  const featureDef = FEATURES.find((f) => f.id === feature) ?? FEATURES[0];
+  const featureDef = features.find((f) => f.id === feature) ?? features[0];
 
   return (
     <div style={{ flex: 1, minWidth: 0, height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--portfolio-page-bg)' }}>
@@ -95,7 +97,7 @@ export function Stage({
                 cursor: 'pointer',
               }}
             >
-              {FEATURES.map((f) => (
+              {features.map((f) => (
                 <option key={f.id} value={f.id}>
                   {f.label}
                 </option>
