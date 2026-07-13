@@ -105,6 +105,7 @@ export function createJikkenTutorialSteps(
       body: 'FlagClient sends the same conflict scenario to the shared engine. isSafeToDeploy translates the result into a decision automation can enforce.',
       placement: 'left',
       allowNext: true,
+      dimBackground: false,
     },
     {
       id: 'run-sdk',
@@ -113,6 +114,7 @@ export function createJikkenTutorialSteps(
       body: 'Call the Edge Function from code. It evaluates the scenario and returns the shared result shape.',
       placement: 'left',
       allowNext: true,
+      dimBackground: false,
     },
     {
       id: 'sdk-result',
@@ -121,6 +123,7 @@ export function createJikkenTutorialSteps(
       body: 'The response carries the simulation ID, conflict verdict, exit 1, and audience summary. CI can act on it without parsing presentation text.',
       placement: 'left',
       allowNext: true,
+      dimBackground: false,
     },
     {
       id: 'open-ci',
@@ -129,6 +132,7 @@ export function createJikkenTutorialSteps(
       body: 'The pipeline turns that shared result into an enforceable deployment decision.',
       placement: 'bottom',
       allowNext: true,
+      dimBackground: false,
     },
     {
       id: 'ci-verdict',

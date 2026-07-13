@@ -16,6 +16,8 @@ export interface TutorialStep {
   /** Optional command/value exposed through a copy button in the callout. */
   copyText?: string;
   id: string;
+  /** Keep the surrounding product surface visible instead of dimming it. */
+  dimBackground?: boolean;
   nextLabel?: string;
   placement?: TutorialPlacement;
   title: string;

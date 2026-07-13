@@ -151,6 +151,7 @@ export function TutorialOverlay() {
   const calloutPosition = positionCallout(anchorBox, calloutBox, placement);
   const lastStep = currentIndex === totalSteps - 1;
   const showNext = currentStep.allowNext === true;
+  const dimBackground = currentStep.dimBackground !== false;
 
   return createPortal(
     <div
@@ -165,7 +166,9 @@ export function TutorialOverlay() {
           style={{
             border: `2px solid ${ACCENT}`,
             borderRadius: 8,
-            boxShadow: '0 0 0 9999px rgba(12, 10, 9, 0.72)',
+            boxShadow: dimBackground
+              ? '0 0 0 9999px rgba(12, 10, 9, 0.72)'
+              : '0 0 0 4px rgba(37, 99, 235, 0.18)',
             height: anchorBox.height + 12,
             left: anchorBox.left - 6,
             pointerEvents: 'none',
@@ -175,9 +178,9 @@ export function TutorialOverlay() {
             width: anchorBox.width + 12,
           }}
         />
-      ) : (
+      ) : dimBackground ? (
         <div style={{ background: 'rgba(12, 10, 9, 0.58)', inset: 0, position: 'absolute' }} />
-      )}
+      ) : null}
 
       <div
         aria-describedby={`tutorial-body-${currentStep.id}`}

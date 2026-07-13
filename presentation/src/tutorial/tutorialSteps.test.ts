@@ -32,4 +32,11 @@ describe('Jikken tutorial contract', () => {
 
     expect(resetDemo).toHaveBeenCalledOnce();
   });
+
+  it('keeps the SDK visible throughout steps 10–13', () => {
+    const steps = createJikkenTutorialSteps();
+    const visibleSteps = ['sdk-contract', 'run-sdk', 'sdk-result', 'open-ci'];
+
+    expect(steps.filter((step) => visibleSteps.includes(step.id)).every((step) => step.dimBackground === false)).toBe(true);
+  });
 });
