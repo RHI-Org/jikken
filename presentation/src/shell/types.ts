@@ -9,8 +9,12 @@ import type { ScenarioId } from '@jikken/shared';
 
 export type { ScenarioId };
 
-/** The three demo surfaces, each mapped to one audience. */
-export type Surface = 'cli' | 'dashboard' | 'sdk';
+/**
+ * The four demo surfaces, each mapped to one audience: the terminal (dev),
+ * the dashboard (PM), the SDK (integrator), and the CI gate (the pipeline —
+ * where governance stops a risky change from shipping).
+ */
+export type Surface = 'cli' | 'dashboard' | 'sdk' | 'ci';
 
 /**
  * A pin dropped on the live stage when a principle is selected: normalized

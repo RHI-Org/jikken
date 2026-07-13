@@ -9,12 +9,14 @@ import { SCENARIO_IDS, type FeatureDef, type FeatureId, type ScenarioId, type Si
 import { CliSurface, type CliInject } from './surfaces/CliSurface';
 import { SdkSurface } from './surfaces/SdkSurface';
 import { DashboardSurface } from './surfaces/DashboardSurface';
+import { CiSurface } from './surfaces/CiSurface';
 import type { Surface, Principle } from './types';
 
 const SURFACES: { id: Surface; label: string }[] = [
   { id: 'cli', label: 'CLI' },
   { id: 'dashboard', label: 'Dashboard' },
   { id: 'sdk', label: 'SDK' },
+  { id: 'ci', label: 'CI gate' },
 ];
 
 // Reused micro-label pattern (matches CliSurface's "Quickstart" label).
@@ -188,6 +190,17 @@ export function Stage({
               </div>
             ) : (
               <SdkSurface scenario={scenario} />
+            )}
+          </div>
+        )}
+        {surface === 'ci' && (
+          <div style={{ position: 'absolute', inset: 0 }}>
+            {scenario === null ? (
+              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--portfolio-text-faint)', fontSize: '0.85rem' }}>
+                Pick a situation to begin
+              </div>
+            ) : (
+              <CiSurface scenario={featureDef.situations[scenario]} />
             )}
           </div>
         )}

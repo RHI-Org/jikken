@@ -126,6 +126,18 @@ body {
 .jk-ascii__character--3 { color: var(--stone-500); }
 .jk-ascii__character--4 { color: var(--stone-600); }
 
+/* CI verdict banner — lands with a small rise once the pipeline resolves. */
+@keyframes jk-ci-banner-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.jk-ci-banner {
+  animation: jk-ci-banner-in 0.35s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .jk-ci-banner { animation: none; }
+}
+
 /* Principle pin — a soft attention pulse when it lands on the stage. */
 @keyframes jk-pin-pulse {
   0% { box-shadow: 0 0 0 0 rgba(28, 25, 23, 0.35); }

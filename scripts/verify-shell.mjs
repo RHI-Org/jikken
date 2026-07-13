@@ -51,6 +51,11 @@ await page.getByRole('button', { name: 'SDK', exact: true }).click();
 await page.waitForTimeout(400);
 await page.screenshot({ path: `${OUT}/06-sdk.png` });
 
+// CI gate — governance: the pipeline runs and blocks the risky deploy
+await page.getByRole('button', { name: 'CI gate', exact: true }).click();
+await page.waitForTimeout(3800); // full pipeline choreography + verdict banner
+await page.screenshot({ path: `${OUT}/06b-ci-blocked.png` });
+
 // Hand-off (in the Details tab's Design section)
 await page.getByRole('button', { name: 'Details', exact: true }).click();
 await page.waitForTimeout(300);

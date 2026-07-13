@@ -1,25 +1,58 @@
 /**
- * SDK surface — the machine-to-machine story. Shows the real @jikken/sdk usage
- * and a Run affordance that calls the live jikken-simulate Edge Function with
- * the current scenario, then prints the result beneath it. Same engine as the
- * CLI tab, so the exit_code shown here equals the CLI's exit code.
+ * SDK surface — the machine-to-machine story, framed as an editor window.
+ * Shows the real @jikken/sdk usage with line numbers and a quiet, monochrome
+ * syntax treatment (type carries the hierarchy, not color), plus a Run
+ * affordance in the window footer that calls the live jikken-simulate Edge
+ * Function with the current scenario. Same engine as the CLI tab, so the
+ * exit_code shown here equals the CLI's exit code.
  */
 import { useState } from 'react';
 import { Play, Loader2 } from 'lucide-react';
-import { EXIT_CODE_MESSAGES, type ScenarioId, type SimulationResult } from '@jikken/shared';
+import { EXIT_CODE_MESSAGES, COLORS, type ScenarioId, type SimulationResult } from '@jikken/shared';
 import { supabase } from '@/integrations/supabase/client';
+import { TerminalWindow } from '../TerminalWindow';
 
-function codeSample(scenario: ScenarioId): string {
-  return `import { FlagClient } from '@jikken/sdk';
+// ── Monochrome editor tokens (dark stone; hierarchy from weight, not hue) ──
+const T = {
+  base: { color: '#d6d3d1' },                                    // stone-300
+  kw: { color: '#fafaf9', fontWeight: 600 },                     // stone-50 bold
+  str: { color: '#e7e5e4' },                                     // stone-200
+  comment: { color: '#78716c', fontStyle: 'italic' as const },   // stone-500
+  punct: { color: '#a8a29e' },                                   // stone-400
+} as const;
 
-const flags = new FlagClient({
-  apiKey: process.env.JIKKEN_API_KEY!,
-  timeoutMs: 5000,
-});
+function CodeLine({ n, children }: { n: number; children: React.ReactNode }) {
+  return (
+    <div style={{ display: 'flex', gap: '1.1rem', lineHeight: 1.75 }}>
+      <span style={{ width: '1.4rem', textAlign: 'right', color: '#57534e', userSelect: 'none', flexShrink: 0 }}>{n}</span>
+      <span style={{ whiteSpace: 'pre-wrap' }}>{children}</span>
+    </div>
+  );
+}
 
-// Gate a deploy on the flag simulation — exit codes are the contract.
-const safe = await flags.isSafeToDeploy({ scenario: '${scenario}' });
-if (!safe) process.exit(1); // CONFLICT — stop the pipeline`;
+function CodeSample({ scenario }: { scenario: ScenarioId }) {
+  return (
+    <div
+      style={{
+        padding: '1.2rem 1.3rem 1.4rem',
+        background: '#1c1917',
+        fontFamily: 'var(--font-mono)',
+        fontSize: '0.78rem',
+        ...T.base,
+      }}
+    >
+      <CodeLine n={1}><span style={T.kw}>import</span> <span style={T.punct}>{'{'}</span> FlagClient <span style={T.punct}>{'}'}</span> <span style={T.kw}>from</span> <span style={T.str}>'@jikken/sdk'</span>;</CodeLine>
+      <CodeLine n={2}>{' '}</CodeLine>
+      <CodeLine n={3}><span style={T.kw}>const</span> flags = <span style={T.kw}>new</span> FlagClient(<span style={T.punct}>{'{'}</span></CodeLine>
+      <CodeLine n={4}>{'  '}apiKey: process.env.JIKKEN_API_KEY!,</CodeLine>
+      <CodeLine n={5}>{'  '}timeoutMs: <span style={T.str}>5000</span>,</CodeLine>
+      <CodeLine n={6}><span style={T.punct}>{'}'}</span>);</CodeLine>
+      <CodeLine n={7}>{' '}</CodeLine>
+      <CodeLine n={8}><span style={T.comment}>{'// Gate a deploy on the flag simulation — exit codes are the contract.'}</span></CodeLine>
+      <CodeLine n={9}><span style={T.kw}>const</span> safe = <span style={T.kw}>await</span> flags.isSafeToDeploy(<span style={T.punct}>{'{'}</span> scenario: <span style={T.str}>'{scenario}'</span> <span style={T.punct}>{'}'}</span>);</CodeLine>
+      <CodeLine n={10}><span style={T.kw}>if</span> (!safe) process.exit(<span style={T.str}>1</span>); <span style={T.comment}>{'// CONFLICT — stop the pipeline'}</span></CodeLine>
+    </div>
+  );
 }
 
 export function SdkSurface({ scenario }: { scenario: ScenarioId }) {
@@ -48,39 +81,26 @@ export function SdkSurface({ scenario }: { scenario: ScenarioId }) {
     }
   };
 
-  return (
-    <div style={{ height: '100%', overflowY: 'auto', padding: '1.4rem 1.6rem' }}>
-      <pre
-        style={{
-          margin: 0,
-          padding: '1.1rem 1.2rem',
-          borderRadius: '0.6rem',
-          background: '#1c1917',
-          color: '#e7e5e4',
-          fontFamily: 'var(--font-mono)',
-          fontSize: '0.78rem',
-          lineHeight: 1.6,
-          overflowX: 'auto',
-          whiteSpace: 'pre',
-        }}
-      >
-        {codeSample(scenario)}
-      </pre>
+  // Exit-code → the shared semantic hex (the same value the CLI's ANSI theme
+  // and the Dashboard's Tailwind classes resolve to — the parity thesis).
+  const resultHex =
+    result === null ? undefined : result.exit_code === 0 ? COLORS.RECEIVE.hex : result.exit_code === 2 ? COLORS.PARTIAL.hex : COLORS.EXCLUDE.hex;
 
+  const footer = (
+    <div style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.9rem', flexWrap: 'wrap' }}>
       <button
         onClick={run}
         disabled={running}
         style={{
-          marginTop: '1rem',
           display: 'inline-flex',
           alignItems: 'center',
           gap: '0.4rem',
-          padding: '0.55rem 1rem',
+          padding: '0.5rem 0.95rem',
           borderRadius: '0.5rem',
           border: 'none',
           background: 'var(--portfolio-text-primary)',
           color: '#fff',
-          fontSize: '0.82rem',
+          fontSize: '0.78rem',
           fontWeight: 'var(--font-weight-semibold)',
           cursor: running ? 'default' : 'pointer',
           opacity: running ? 0.7 : 1,
@@ -89,56 +109,38 @@ export function SdkSurface({ scenario }: { scenario: ScenarioId }) {
         {running ? <Loader2 size={14} className="jk-spin" /> : <Play size={14} />}
         {running ? 'Calling Edge Function…' : 'Run against live Edge Function'}
       </button>
-
       {error && (
-        <div
-          style={{
-            marginTop: '1rem',
-            padding: '0.85rem 1rem',
-            borderRadius: '0.5rem',
-            border: '1px solid var(--portfolio-border)',
-            background: 'var(--portfolio-bg-muted)',
-            fontSize: '0.8rem',
-            color: 'var(--portfolio-text-secondary)',
-            fontFamily: 'var(--font-mono)',
-          }}
-        >
-          {error}
-        </div>
+        <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: 'var(--portfolio-text-muted)' }}>{error}</span>
       )}
-
       {result && (
-        <div style={{ marginTop: '1rem' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 'var(--font-weight-bold)', letterSpacing: '0.06em', color: 'var(--portfolio-text-faint)', textTransform: 'uppercase' }}>
-            Live result — exit code {result.exit_code}
-          </div>
-          <div style={{ marginTop: '0.35rem', fontSize: '0.82rem', color: 'var(--portfolio-text-secondary)' }}>
-            {EXIT_CODE_MESSAGES[result.exit_code as keyof typeof EXIT_CODE_MESSAGES]}{' '}
-            <span style={{ color: 'var(--portfolio-text-muted)' }}>
-              ({result.summary.passed} received · {result.summary.conflicted} excluded · {result.summary.warned} partial)
-            </span>
-          </div>
-          <pre
-            style={{
-              marginTop: '0.7rem',
-              padding: '1rem 1.1rem',
-              borderRadius: '0.6rem',
-              background: '#1c1917',
-              color: '#e7e5e4',
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.72rem',
-              lineHeight: 1.55,
-              overflowX: 'auto',
-            }}
-          >
-            {JSON.stringify(
-              { simulation_id: result.simulation_id, result: result.result, exit_code: result.exit_code, summary: result.summary },
-              null,
-              2,
-            )}
-          </pre>
-        </div>
+        <span style={{ fontSize: '0.78rem', fontFamily: 'var(--font-mono)', color: 'var(--portfolio-text-secondary)' }}>
+          <span style={{ fontWeight: 'var(--font-weight-bold)', color: resultHex }}>exit {result.exit_code}</span>
+          {' — '}
+          {EXIT_CODE_MESSAGES[result.exit_code as keyof typeof EXIT_CODE_MESSAGES]}
+        </span>
       )}
+    </div>
+  );
+
+  return (
+    <div style={{ height: '100%', minHeight: 0, padding: '2rem', boxSizing: 'border-box' }}>
+      <TerminalWindow title="deploy-gate.ts — jikken sdk" footer={footer}>
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', background: '#1c1917' }}>
+          <CodeSample scenario={scenario} />
+          {result && (
+            <div style={{ padding: '0 1.3rem 1.3rem', fontFamily: 'var(--font-mono)', fontSize: '0.72rem', lineHeight: 1.6 }}>
+              <div style={{ color: '#78716c', paddingBottom: '0.3rem' }}>{'// live response'}</div>
+              <pre style={{ margin: 0, color: '#d6d3d1', whiteSpace: 'pre-wrap' }}>
+                {JSON.stringify(
+                  { simulation_id: result.simulation_id, result: result.result, exit_code: result.exit_code, summary: result.summary },
+                  null,
+                  2,
+                )}
+              </pre>
+            </div>
+          )}
+        </div>
+      </TerminalWindow>
     </div>
   );
 }

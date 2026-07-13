@@ -14,9 +14,15 @@ export interface TerminalWindowProps {
   children: ReactNode;
   footer?: ReactNode;
   style?: CSSProperties;
+  /**
+   * Title treatment: 'title' (default) renders plain centered mono text;
+   * 'url' wraps it in a browser-style address pill — used when the window
+   * plays a browser rather than a terminal or editor.
+   */
+  variant?: 'title' | 'url';
 }
 
-export function TerminalWindow({ title, children, footer, style }: TerminalWindowProps) {
+export function TerminalWindow({ title, children, footer, style, variant = 'title' }: TerminalWindowProps) {
   return (
     <div
       style={{
@@ -80,6 +86,15 @@ export function TerminalWindow({ title, children, footer, style }: TerminalWindo
             letterSpacing: '0.02em',
             whiteSpace: 'nowrap',
             pointerEvents: 'none',
+            ...(variant === 'url'
+              ? {
+                  padding: '0.22rem 1.4rem',
+                  borderRadius: '999px',
+                  border: '1px solid var(--portfolio-border)',
+                  background: 'var(--portfolio-bg-card)',
+                  fontWeight: 'var(--font-weight-regular)',
+                }
+              : {}),
           }}
         >
           {title}
