@@ -15,8 +15,8 @@ export type NotesTab = 'overview' | 'details' | 'commands';
 
 const TABS: { id: NotesTab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
-  { id: 'details', label: 'Details' },
   { id: 'commands', label: 'Commands' },
+  { id: 'details', label: 'Details' },
 ];
 
 // Section header inside the merged Details tab (Design / Principles / Tech).

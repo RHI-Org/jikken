@@ -56,11 +56,12 @@ await page.getByRole('button', { name: 'CI gate', exact: true }).click();
 await page.waitForTimeout(3800); // full pipeline choreography + verdict banner
 await page.screenshot({ path: `${OUT}/06b-ci-blocked.png` });
 
-// Hand-off (in the Details tab's Design section)
+// Hand-off (in the Details tab's Design section) — CLI run, then auto-switch
+// to the CI gate where the pipeline resolves and blocks/ships the change
 await page.getByRole('button', { name: 'Details', exact: true }).click();
 await page.waitForTimeout(300);
 await page.getByRole('button', { name: /The hand-off/ }).click();
-await page.waitForTimeout(2200); // choreography: cli run then auto-switch to dashboard
+await page.waitForTimeout(5200); // cli run (1.6s) + pipeline choreography (~3.4s)
 await page.screenshot({ path: `${OUT}/07-handoff-after.png` });
 
 // Collapse panel → edge tab

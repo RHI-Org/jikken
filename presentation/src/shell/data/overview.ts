@@ -64,5 +64,5 @@ export const SECTIONS: OverviewSection[] = [
 
 export const HANDOFF = {
   label: "The hand-off",
-  body: "Run a simulation in the CLI. Watch it land in the Dashboard's history a second later, live — same run, same result, two surfaces. The whole thesis in one click.",
+  body: "Run a simulation in the CLI, then watch the CI gate pick it up — same run, same engine. A clean change ships; a risky one is blocked before deploy, live. The whole thesis in one click.",
 } as const;

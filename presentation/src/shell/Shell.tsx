@@ -91,14 +91,14 @@ export function Shell() {
   );
 
   // ★ The hand-off centerpiece: run the scenario in the CLI, then auto-switch
-  // to the Dashboard where the run lands in history (Realtime pulse arrives
-  // once the dashboard's Supabase data layer is wired).
+  // to the CI gate, where the same engine run either ships the change or
+  // visibly blocks the deploy — the governance layer as the demo's climax.
   const handoff = useCallback(() => {
     if (!scenario) return; // hand-off needs a chosen situation to replay
     setActivePrinciple(null);
     setSurface('cli');
     injectCli(`jikken diff --feature ${feature} --scenario ${scenario}`);
-    window.setTimeout(() => setSurface('dashboard'), 1600);
+    window.setTimeout(() => setSurface('ci'), 1600);
   }, [feature, scenario, injectCli]);
 
   // Best-effort audit persistence for CLI-tab runs (forward-compatible with
