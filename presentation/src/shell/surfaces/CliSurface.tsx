@@ -202,7 +202,7 @@ export function CliSurface({
   // The window floats on the stage with breathing room on every side, so it
   // reads as a real terminal app rather than a full-bleed console.
   return (
-    <div style={{ height: '100%', minHeight: 0, padding: '1.1rem', boxSizing: 'border-box' }}>
+    <div style={{ height: '100%', minHeight: 0, padding: '2rem', boxSizing: 'border-box' }}>
       <TerminalWindow title="jikken — zsh" footer={quickstart}>
         <div
           ref={hostRef}

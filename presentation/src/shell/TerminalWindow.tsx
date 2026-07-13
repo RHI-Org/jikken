@@ -51,15 +51,19 @@ export function TerminalWindow({ title, children, footer, style }: TerminalWindo
             alignItems: 'center',
           }}
         >
-          {[0, 1, 2].map((i) => (
+          {[
+            { fill: '#ff5f56', ring: '#e0443e' }, // close  — red
+            { fill: '#ffbd2e', ring: '#dea123' }, // minimize — yellow
+            { fill: '#27c93f', ring: '#1aab29' }, // zoom   — green
+          ].map((c, i) => (
             <span
               key={i}
               style={{
                 width: '0.7rem',
                 height: '0.7rem',
                 borderRadius: '999px',
-                background: 'var(--stone-400)',
-                border: '1px solid var(--stone-500)',
+                background: c.fill,
+                border: `1px solid ${c.ring}`,
               }}
             />
           ))}
