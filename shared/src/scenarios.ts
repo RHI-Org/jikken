@@ -14,6 +14,13 @@ import type { AudienceRule, Environment, FlagConfig, MockUser } from './types';
 
 export type ScenarioId = 'all-clear' | 'conflict' | 'warning';
 
+/** Canonical scenario names shared by menus, commands, and demo surfaces. */
+export const SCENARIO_NAMES: Record<ScenarioId, string> = {
+  'all-clear': 'All clear',
+  conflict: 'Conflict',
+  warning: 'Warning',
+};
+
 export interface Scenario {
   id: ScenarioId;
   /** Product feature the flag gates — same for every scenario. */
@@ -70,7 +77,7 @@ export const SCENARIOS: Record<ScenarioId, Scenario> = {
   'all-clear': {
     id: 'all-clear',
     feature: 'Dark Mode',
-    label: 'Full rollout',
+    label: 'All clear',
     description: '100% rollout to everyone, no audience rules — every user receives (exit 0).',
     baseline: {
       id: 'dark-mode',
@@ -105,7 +112,7 @@ export const SCENARIOS: Record<ScenarioId, Scenario> = {
   conflict: {
     id: 'conflict',
     feature: 'Dark Mode',
-    label: 'Exclude employees',
+    label: 'Conflict',
     description: 'Blocks @internal.company.com accounts — those users are excluded by rule (exit 1).',
     baseline: {
       id: 'dark-mode',
@@ -140,7 +147,7 @@ export const SCENARIOS: Record<ScenarioId, Scenario> = {
   warning: {
     id: 'warning',
     feature: 'Dark Mode',
-    label: 'Early adopters in US / CA',
+    label: 'Warning',
     description: 'Targets early adopters in the US and Canada — users matching only one rule need review and are not eligible yet (exit 2).',
     baseline: {
       id: 'dark-mode',
@@ -246,7 +253,7 @@ const CHECKOUT: Record<SituationId, Scenario> = {
   'all-clear': {
     id: 'all-clear',
     feature: 'Checkout Redesign',
-    label: 'Full rollout',
+    label: 'All clear',
     description: 'Take the new checkout from a 30% test to everyone — purely additive (exit 0).',
     baseline: flag('checkout-redesign', 'Checkout Redesign', 30, []),
     flag: flag('checkout-redesign', 'Checkout Redesign', 100, []),
@@ -260,7 +267,7 @@ const CHECKOUT: Record<SituationId, Scenario> = {
   conflict: {
     id: 'conflict',
     feature: 'Checkout Redesign',
-    label: 'Paid customers only',
+    label: 'Conflict',
     description: 'Add a rule that excludes free-tier users — those users lose the checkout they have (exit 1).',
     baseline: flag('checkout-redesign', 'Checkout Redesign', 100, []),
     flag: flag('checkout-redesign', 'Checkout Redesign', 100, [
@@ -276,7 +283,7 @@ const CHECKOUT: Record<SituationId, Scenario> = {
   warning: {
     id: 'warning',
     feature: 'Checkout Redesign',
-    label: 'Paid customers in NA / EU',
+    label: 'Warning',
     description: 'Layer a region rule on top of the paid rule — users matching only one rule need review and are not eligible yet (exit 2).',
     baseline: flag('checkout-redesign', 'Checkout Redesign', 100, [
       { type: 'plan_tier', operator: 'in_list', value: ['pro', 'enterprise'] },
@@ -310,7 +317,7 @@ const PREMIUM: Record<SituationId, Scenario> = {
   'all-clear': {
     id: 'all-clear',
     feature: 'Premium Tier',
-    label: 'Full rollout',
+    label: 'All clear',
     description: 'Take the premium upsell from a 50% test to everyone — purely additive (exit 0).',
     baseline: flag('premium-tier', 'Premium Tier Upsell', 50, []),
     flag: flag('premium-tier', 'Premium Tier Upsell', 100, []),
@@ -324,7 +331,7 @@ const PREMIUM: Record<SituationId, Scenario> = {
   conflict: {
     id: 'conflict',
     feature: 'Premium Tier',
-    label: 'High-income only',
+    label: 'Conflict',
     description: 'Restrict the upsell to high-income users — everyone else loses it (exit 1).',
     baseline: flag('premium-tier', 'Premium Tier Upsell', 100, []),
     flag: flag('premium-tier', 'Premium Tier Upsell', 100, [
@@ -340,7 +347,7 @@ const PREMIUM: Record<SituationId, Scenario> = {
   warning: {
     id: 'warning',
     feature: 'Premium Tier',
-    label: 'Paid income, prime age',
+    label: 'Warning',
     description: 'Layer an age rule on top of the income rule — users matching only one rule need review and are not eligible yet (exit 2).',
     baseline: flag('premium-tier', 'Premium Tier Upsell', 100, [
       { type: 'income_band', operator: 'in_list', value: ['mid', 'high'] },

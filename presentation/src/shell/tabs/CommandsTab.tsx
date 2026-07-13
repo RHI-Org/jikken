@@ -6,7 +6,7 @@
  */
 import { useState } from 'react';
 import { ArrowRight, Info } from 'lucide-react';
-import { SCENARIO_IDS, type FeatureDef, type FeatureId, type ScenarioId } from '@jikken/shared';
+import { SCENARIO_IDS, SCENARIO_NAMES, type FeatureDef, type FeatureId, type ScenarioId } from '@jikken/shared';
 import { PRESET_COMMANDS } from '../cli-runtime';
 
 const COMMAND_GROUPS = [
@@ -87,7 +87,7 @@ export function CommandsTab({
 }) {
   const featureDef = features.find((f) => f.id === feature) ?? features[0];
   const scenarioMap = SCENARIO_IDS.map(
-    (id) => `${featureDef.situations[id].label} = --scenario ${id}`,
+    (id) => `${SCENARIO_NAMES[id]} (--scenario ${id})`,
   ).join('; ');
 
   return (
@@ -144,7 +144,7 @@ export function CommandsTab({
               </option>
               {SCENARIO_IDS.map((id) => (
                 <option key={id} value={id}>
-                  {featureDef.situations[id].label} — --scenario {id}
+                  {SCENARIO_NAMES[id]}
                 </option>
               ))}
             </select>

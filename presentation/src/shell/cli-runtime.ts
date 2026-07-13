@@ -304,9 +304,9 @@ export function runCommand(line: string): RunOutput {
 export type PresetCommandGroup = 'workflow' | 'output' | 'guidance';
 
 export const PRESET_COMMANDS: { label: string; command: string; group: PresetCommandGroup; description: string }[] = [
-  { label: 'diff --scenario conflict', command: 'jikken diff --scenario conflict', group: 'workflow', description: 'Run the “Exclude employees” scenario: compare its proposed targeting change with what is live and show who gains or loses access.' },
+  { label: 'diff --scenario conflict', command: 'jikken diff --scenario conflict', group: 'workflow', description: 'Run the Conflict scenario: compare its proposed targeting change with what is live and show who gains or loses access.' },
   { label: 'simulate --flag dark-mode', command: 'jikken simulate --flag dark-mode --rollout 25', group: 'workflow', description: 'Evaluate a flag against the deterministic sample population at a 25% rollout.' },
-  { label: 'validate --scenario warning --strict', command: 'jikken validate --scenario warning --strict', group: 'workflow', description: 'Run the “Early adopters in US / CA” scenario and apply CI policy, halting when its targeting needs review.' },
+  { label: 'validate --scenario warning --strict', command: 'jikken validate --scenario warning --strict', group: 'workflow', description: 'Run the Warning scenario and apply CI policy, halting when its targeting needs review.' },
   { label: '--format json', command: 'jikken simulate --flag dark-mode --rollout 25 --format json', group: 'output', description: 'Return the simulation as structured JSON for scripts, SDKs, and pipelines.' },
   { label: '--quiet', command: 'jikken simulate --flag dark-mode --rollout 25 --quiet', group: 'output', description: 'Show only the summary and exit code, omitting the per-user decision trace.' },
   { label: '"did you mean?"', command: 'jikken simulate --flag "Dark Mode!"', group: 'guidance', description: 'Demonstrate actionable validation that suggests a corrected flag ID.' },

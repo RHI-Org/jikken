@@ -9,7 +9,7 @@
  */
 import { useEffect, useState } from 'react';
 import { Check, X, AlertTriangle, Loader2, CircleDashed, Ban, RotateCcw } from 'lucide-react';
-import { COLORS, EXIT_CODE_MESSAGES, diffSimulations, type Scenario } from '@jikken/shared';
+import { COLORS, EXIT_CODE_MESSAGES, SCENARIO_NAMES, diffSimulations, type Scenario } from '@jikken/shared';
 import { TerminalWindow } from '../TerminalWindow';
 import { TUTORIAL_EVENTS, useTutorial } from '@/tutorial';
 
@@ -155,7 +155,7 @@ export function CiSurface({ scenario }: { scenario: Scenario }) {
             <span>
               on: <span style={{ color: 'var(--portfolio-text-primary)', fontWeight: 'var(--font-weight-semibold)' }}>pull_request → main</span>
             </span>
-            <span>targeting change: {scenario.label.toLowerCase()}</span>
+            <span>scenario: {SCENARIO_NAMES[scenario.id].toLowerCase()}</span>
           </div>
 
           {/* Steps */}

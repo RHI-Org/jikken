@@ -8,7 +8,7 @@
  */
 import { useState } from 'react';
 import { LogOut, PanelLeftOpen } from 'lucide-react';
-import { SCENARIO_IDS, type FeatureDef, type FeatureId, type ScenarioId, type SimulationResult } from '@jikken/shared';
+import { SCENARIO_IDS, SCENARIO_NAMES, type FeatureDef, type FeatureId, type ScenarioId, type SimulationResult } from '@jikken/shared';
 import { CliSurface, type CliInject } from './surfaces/CliSurface';
 import { SdkSurface } from './surfaces/SdkSurface';
 import { DashboardSurface } from './surfaces/DashboardSurface';
@@ -97,7 +97,7 @@ function NoSituationYet({
                 cursor: 'pointer',
               }}
             >
-              {featureDef.situations[id].label}
+              {SCENARIO_NAMES[id]}
             </button>
           ))}
         </div>
