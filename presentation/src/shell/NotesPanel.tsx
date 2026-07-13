@@ -184,6 +184,22 @@ export function NotesPanel({
           />
         )}
       </div>
+
+      {/* Legal notices — kept outside the scrolling notes body so they remain
+          anchored to the bottom of the left panel. */}
+      <footer style={{ flexShrink: 0, padding: '0.8rem 1.4rem 1rem', borderTop: '1px solid var(--portfolio-border-muted)', color: 'var(--portfolio-text-faint)', fontSize: '0.62rem', lineHeight: 1.5 }}>
+        <div>© {new Date().getFullYear()} Ryan Hanau, Inc., All Rights Reserved</div>
+        <div>We use limited cookies as described in our Privacy Policy.</div>
+        <div style={{ marginTop: '0.25rem' }}>
+          <a href="https://www.ryanh.com/terms-and-conditions" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--portfolio-text-subtle)', textDecoration: 'none' }}>
+            Terms of Use/Notices
+          </a>
+          <span style={{ margin: '0 0.45rem' }}>·</span>
+          <a href="https://www.ryanh.com/privacy-policy" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--portfolio-text-subtle)', textDecoration: 'none' }}>
+            Privacy Policy
+          </a>
+        </div>
+      </footer>
     </aside>
   );
 }

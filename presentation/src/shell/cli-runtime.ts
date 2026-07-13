@@ -31,10 +31,12 @@ import { formatDiff, formatOutput } from '@jikken/cli-formatter';
 const C_HEADER = '\x1b[1m\x1b[38;5;232m'; // bold dark header
 const C_LABEL = '\x1b[38;5;244m'; // mid-grey label
 const C_FAINT = '\x1b[38;5;250m'; // faint separator (light)
-const C_CMD = '\x1b[1m\x1b[38;5;232m'; // command keyword (bold dark)
-const C_FLAG = '\x1b[38;5;244m'; // --flags (mid grey)
+const C_ROOT = '\x1b[1m\x1b[38;5;232m'; // executable (bold dark)
+const C_CMD = '\x1b[1m\x1b[38;5;25m'; // command keyword (blue)
+const C_FLAG = '\x1b[38;5;97m'; // --flags (purple)
+const C_VALUE = '\x1b[38;5;30m'; // values (teal)
 
-const CMD_KEYWORDS = new Set(['jikken', 'simulate', 'diff', 'validate', 'help']);
+const CMD_KEYWORDS = new Set(['simulate', 'diff', 'validate', 'help', 'clear']);
 
 /**
  * Colorize an echoed command line: the command keyword(s) render bold-grey and
@@ -46,9 +48,10 @@ export function colorizeCommand(line: string): string {
     .trim()
     .split(/\s+/)
     .map((tok) => {
+      if (tok === 'jikken') return `${C_ROOT}${tok}${ANSI_RESET}`;
       if (tok.startsWith('--')) return `${C_FLAG}${tok}${ANSI_RESET}`;
       if (CMD_KEYWORDS.has(tok)) return `${C_CMD}${tok}${ANSI_RESET}`;
-      return tok;
+      return `${C_VALUE}${tok}${ANSI_RESET}`;
     })
     .join(' ');
 }
@@ -62,6 +65,8 @@ export interface RunOutput {
   result: SimulationResult | null;
   /** The scenario id, when the run replayed one. */
   scenario: ScenarioId | null;
+  /** Clear the visible terminal and scrollback instead of printing output. */
+  clear?: boolean;
 }
 
 function err(message: string): string {
@@ -193,6 +198,9 @@ export function runCommand(line: string): RunOutput {
   if (cmd === '' ) {
     return { text: '', exitCode: 0, result: null, scenario: null };
   }
+  if (cmd === 'clear') {
+    return { text: '', exitCode: 0, result: null, scenario: null, clear: true };
+  }
   if (cmd === 'help') {
     const cmdLine = (keyword: string, rest: string) =>
       `  ${C_CMD}${keyword}${ANSI_RESET} ${rest}\r\n`;
@@ -203,7 +211,8 @@ export function runCommand(line: string): RunOutput {
         cmdLine('diff', `${C_FLAG}--scenario${ANSI_RESET} ${C_FAINT}<all-clear|conflict|warning>${ANSI_RESET} ${C_LABEL}— what the change does to real users${ANSI_RESET}`) +
         cmdLine('simulate', `${C_FLAG}--scenario${ANSI_RESET} ${C_FAINT}<all-clear|conflict|warning>${ANSI_RESET}`) +
         cmdLine('simulate', `${C_FLAG}--flag${ANSI_RESET} ${C_FAINT}<id>${ANSI_RESET} ${C_FLAG}--rollout${ANSI_RESET} ${C_FAINT}0-100${ANSI_RESET} ${C_FLAG}--format${ANSI_RESET} ${C_FAINT}json${ANSI_RESET} ${C_FLAG}--quiet${ANSI_RESET}`) +
-        cmdLine('validate', `${C_FLAG}--scenario${ANSI_RESET} ${C_FAINT}<id>${ANSI_RESET} ${C_FLAG}--strict${ANSI_RESET}`),
+        cmdLine('validate', `${C_FLAG}--scenario${ANSI_RESET} ${C_FAINT}<id>${ANSI_RESET} ${C_FLAG}--strict${ANSI_RESET}`) +
+        cmdLine('clear', `${C_LABEL}— clear the terminal${ANSI_RESET}`),
       exitCode: 0,
       result: null,
       scenario: null,

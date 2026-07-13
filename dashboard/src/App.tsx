@@ -15,6 +15,7 @@ import SimulationView from './pages/SimulationView';
 import HistoryPage from './pages/HistoryPage';
 import SettingsPage from './pages/SettingsPage';
 import { JikkenMark } from './components/JikkenMark';
+import { Bell, UserCircle } from 'lucide-react';
 import {
   connectTutorialBridge,
   emitTutorialEvent,
@@ -36,24 +37,24 @@ function TutorialBridge() {
   return null;
 }
 
-// Left-hand nav column — Flags / History / Settings stacked vertically,
-// instead of a top bar, so the dashboard reads as a two-column app.
+// Full-width product navigation. Utility placeholders on the right establish
+// the eventual notification/account affordances without implying live data.
 function NavBar() {
   const location = useLocation();
   const isActive = (prefix: string) => location.pathname.startsWith(prefix);
 
   const linkClass = (active: boolean) =>
-    `block px-3 py-2 rounded text-sm font-medium ${
-      active ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'
+    `inline-flex items-center h-16 px-3 border-b-2 text-sm font-medium ${
+      active ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-900'
     }`;
 
   return (
-    <nav className="w-48 shrink-0 bg-white border-r border-gray-200 flex flex-col">
-      <Link to="/flags" className="flex items-center gap-2 font-semibold text-lg text-gray-900 px-4 py-4 border-b border-gray-200">
+    <header className="h-16 w-full shrink-0 bg-white border-b border-gray-200 flex items-center px-5 gap-7">
+      <Link to="/flags" className="flex items-center gap-2 font-semibold text-lg text-gray-900">
         <JikkenMark size={20} />
         <span>Jikken</span>
       </Link>
-      <div className="flex flex-col gap-1 p-3">
+      <nav className="flex items-center h-full gap-1" aria-label="Dashboard navigation">
         <Link to="/flags" className={linkClass(isActive('/flags') && !isActive('/flags/history'))}>
           Flags
         </Link>
@@ -72,8 +73,19 @@ function NavBar() {
         <Link to="/settings" className={linkClass(isActive('/settings'))}>
           Settings
         </Link>
+      </nav>
+      <div className="ml-auto flex items-center gap-3 text-gray-500">
+        <button type="button" aria-label="Notifications" title="Notifications coming soon" className="relative grid place-items-center w-9 h-9 rounded-full hover:bg-gray-100">
+          <Bell size={18} />
+          <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-blue-600" />
+        </button>
+        <div className="h-6 w-px bg-gray-200" />
+        <button type="button" aria-label="User menu" title="User menu coming soon" className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 hover:bg-gray-100">
+          <UserCircle size={25} />
+          <span className="text-xs font-medium text-gray-700">Demo user</span>
+        </button>
       </div>
-    </nav>
+    </header>
   );
 }
 
@@ -94,11 +106,11 @@ function NotFoundPage() {
 export default function App() {
   return (
     <Router basename={import.meta.env.BASE_URL}>
-      <div className="h-screen bg-gray-50 flex">
+      <div className="h-screen bg-gray-50 flex flex-col">
         <TutorialBridge />
         <NavBar />
         <Toaster position="top-right" />
-        <main className="flex-1 min-w-0 overflow-y-auto">
+        <main className="flex-1 min-h-0 min-w-0 overflow-y-auto">
           <Routes>
             {/* Default route */}
             <Route path="/" element={<FlagList />} />

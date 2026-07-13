@@ -12,6 +12,7 @@ import '@xterm/xterm/css/xterm.css';
 import { COLORS, type SimulationResult } from '@jikken/shared';
 import { runCommand, colorizeCommand } from '../cli-runtime';
 import { TerminalWindow } from '../TerminalWindow';
+import { Trash2 } from 'lucide-react';
 
 const PROMPT = '\x1b[1m\x1b[38;5;232mjikken\x1b[0m \x1b[38;5;244m$\x1b[0m ';
 
@@ -97,12 +98,22 @@ export function CliSurface({
     term.write('\r\n' + PROMPT);
 
     const runLine = (line: string) => {
-      const { text, result, scenario } = runCommand(line);
+      const { text, result, scenario, clear } = runCommand(line);
+      if (clear) {
+        lineRef.current = '';
+        term.clear();
+        term.write('\x1b[2J\x1b[H' + PROMPT);
+        return;
+      }
       term.write('\r\n');
       if (text) term.write(text);
       if (result && onResultRef.current) onResultRef.current(result, scenario);
       term.write('\r\n' + PROMPT);
       lineRef.current = '';
+    };
+
+    const renderInput = () => {
+      term.write(`\r\x1b[2K${PROMPT}${colorizeCommand(lineRef.current)}`);
     };
 
     term.onData((data) => {
@@ -113,7 +124,7 @@ export function CliSurface({
         case '': // Backspace
           if (lineRef.current.length > 0) {
             lineRef.current = lineRef.current.slice(0, -1);
-            term.write('\b \b');
+            renderInput();
           }
           break;
         case '': // Ctrl-C
@@ -123,7 +134,7 @@ export function CliSurface({
         default:
           if (data >= ' ') {
             lineRef.current += data;
-            term.write(data);
+            renderInput();
           }
       }
     });
@@ -155,7 +166,28 @@ export function CliSurface({
   // shortcuts now live in the Commands tab (left panel), not a bottom bar.
   return (
     <div style={{ height: '100%', minHeight: 0, padding: '2rem', boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <TerminalWindow title="jikken — zsh" titleBarBg="#e5e5e5">
+      <TerminalWindow
+        title="jikken — zsh"
+        titleBarBg="#e5e5e5"
+        footer={(
+          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0.55rem 0.75rem' }}>
+            <button
+              type="button"
+              onClick={() => {
+                const term = termRef.current;
+                if (!term) return;
+                (term as unknown as { _runLine: (line: string) => void })._runLine('clear');
+                term.focus();
+              }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.35rem 0.6rem', border: '1px solid var(--portfolio-border)', borderRadius: '0.4rem', background: 'var(--portfolio-bg-card)', color: 'var(--portfolio-text-muted)', cursor: 'pointer', fontSize: '0.7rem', fontFamily: 'var(--font-mono)' }}
+              aria-label="Clear terminal"
+            >
+              <Trash2 size={12} />
+              Clear
+            </button>
+          </div>
+        )}
+      >
         <div
           data-tutorial="cli-output"
           ref={hostRef}

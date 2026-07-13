@@ -27,7 +27,7 @@ export default function FlagList() {
   }, []);
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto px-8 pt-10 pb-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold">Feature Flags</h1>
         <Link
