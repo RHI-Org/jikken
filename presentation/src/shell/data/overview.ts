@@ -1,8 +1,31 @@
 /**
- * Overview data for the shell presentation.
- * Contains statistics, sections, and handoff details.
+ * Content for the Overview operating guide and Design narrative tabs.
  */
-import type { OverviewSection, OverviewStat } from '../types';
+import type { OverviewSection, OverviewStat, HowToStep } from '../types';
+
+// What the app is and how to operate the live demo.
+export const INTRO =
+  'Jikken lets you test the same feature-flag scenario through three working interfaces: a CLI, a dashboard, and an SDK. Use the controls above the stage to set the scenario, then explore how each surface reports the same result.';
+
+// A short, ordered guide to operating the application.
+export const HOWTO: HowToStep[] = [
+  {
+    title: 'Pick a scenario',
+    body: 'Choose all-clear, conflict, or warning in the top bar. This sets the deterministic input shared by every surface.',
+  },
+  {
+    title: 'Switch surfaces',
+    body: 'Use the CLI, Dashboard, and SDK tabs to see the same evaluation expressed for each audience.',
+  },
+  {
+    title: 'Run or inspect the result',
+    body: 'Run a CLI command, use the dashboard simulation, or execute the SDK example. Each uses the same evaluation engine.',
+  },
+  {
+    title: 'Explore the guided details',
+    body: 'Open Design for the product rationale, or Principles to jump directly to a specific behavior on the live stage.',
+  },
+];
 
 export const STATS: OverviewStat[] = [
   { value: "3", label: "surfaces" },

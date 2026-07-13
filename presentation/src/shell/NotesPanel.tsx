@@ -1,18 +1,20 @@
 /**
- * Left panel — project notes. Overview / Principles / Tech text tabs, a
+ * Left panel — project notes. Overview / Design / Principles / Tech text tabs, a
  * collapse button, and (when collapsed) a vertical "PROJECT NOTES" edge tab
  * to re-open — the Retailor standalone pattern, not a floating hamburger.
  */
 import { PanelLeftClose } from 'lucide-react';
 import { OverviewTab } from './tabs/OverviewTab';
+import { DesignTab } from './tabs/DesignTab';
 import { PrinciplesTab } from './tabs/PrinciplesTab';
 import { TechTab } from './tabs/TechTab';
 import type { Principle } from './types';
 
-export type NotesTab = 'overview' | 'principles' | 'tech';
+export type NotesTab = 'overview' | 'design' | 'principles' | 'tech';
 
 const TABS: { id: NotesTab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
+  { id: 'design', label: 'Design' },
   { id: 'principles', label: 'Principles (10)' },
   { id: 'tech', label: 'Tech' },
 ];
@@ -102,7 +104,7 @@ export function NotesPanel({
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: '1.1rem', padding: '0 1.4rem', borderBottom: '1px solid var(--portfolio-border-muted)' }}>
+      <div style={{ display: 'flex', gap: '0.8rem', padding: '0 1.4rem', borderBottom: '1px solid var(--portfolio-border-muted)' }}>
         {TABS.map((t) => {
           const active = t.id === tab;
           return (
@@ -115,7 +117,7 @@ export function NotesPanel({
                 border: 'none',
                 borderBottom: `2px solid ${active ? 'var(--portfolio-text-primary)' : 'transparent'}`,
                 marginBottom: -1,
-                fontSize: '0.8rem',
+                fontSize: '0.76rem',
                 fontWeight: active ? 'var(--font-weight-semibold)' : 'var(--font-weight-regular)',
                 color: active ? 'var(--portfolio-text-primary)' : 'var(--portfolio-text-faint)',
                 cursor: 'pointer',
@@ -129,7 +131,8 @@ export function NotesPanel({
 
       {/* Body */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '1.3rem 1.4rem 2rem' }}>
-        {tab === 'overview' && <OverviewTab onHandoff={onHandoff} />}
+        {tab === 'overview' && <OverviewTab />}
+        {tab === 'design' && <DesignTab onHandoff={onHandoff} />}
         {tab === 'principles' && (
           <PrinciplesTab activeNumber={activePrinciple} onSelect={onSelectPrinciple} />
         )}

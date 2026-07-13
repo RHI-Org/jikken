@@ -54,3 +54,9 @@ export interface OverviewStat {
   value: string;
   label: string;
 }
+
+/** A step in the Overview "how to use this" guide. */
+export interface HowToStep {
+  title: string;
+  body: string;
+}
