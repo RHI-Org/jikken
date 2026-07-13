@@ -71,7 +71,18 @@ create policy jikken_simulations_insert on public.jikken_simulations
 
 -- ── Realtime ───────────────────────────────────────────────────────────────
 -- Stream inserts to the Dashboard's History page (the hand-off pulse).
-alter publication supabase_realtime add table public.jikken_simulations;
+-- Idempotent: `alter publication … add table` errors if already a member.
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'jikken_simulations'
+  ) then
+    alter publication supabase_realtime add table public.jikken_simulations;
+  end if;
+end $$;
 
 -- ── Seed flags (idempotent) ────────────────────────────────────────────────
 insert into public.jikken_flags (id, name, description, enabled, rollout_percentage, audience_rules, environment)
