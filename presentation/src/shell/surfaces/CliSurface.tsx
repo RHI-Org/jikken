@@ -10,7 +10,7 @@ import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
 import { COLORS, type SimulationResult } from '@jikken/shared';
-import { runCommand, colorizeCommand, PRESET_COMMANDS } from '../cli-runtime';
+import { runCommand, colorizeCommand } from '../cli-runtime';
 import { TerminalWindow } from '../TerminalWindow';
 
 const PROMPT = '\x1b[1m\x1b[38;5;232mjikken\x1b[0m \x1b[38;5;244m$\x1b[0m ';
@@ -93,7 +93,7 @@ export function CliSurface({
     safeFit();
 
     term.writeln('\x1b[1m\x1b[38;5;232mjikken v1.0.0\x1b[0m\x1b[38;5;244m — feature flag lifecycle tool\x1b[0m');
-    term.writeln('\x1b[38;5;245mType a command, or use a chip below. `help` for options.\x1b[0m');
+    term.writeln('\x1b[38;5;245mType a command, or open Commands for shortcuts. `help` for options.\x1b[0m');
     term.write('\r\n' + PROMPT);
 
     const runLine = (line: string) => {

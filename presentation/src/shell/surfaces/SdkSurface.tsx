@@ -6,9 +6,9 @@
  * Function with the current scenario. Same engine as the CLI tab, so the
  * exit_code shown here equals the CLI's exit code.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Play, Loader2 } from 'lucide-react';
-import { EXIT_CODE_MESSAGES, COLORS, type ScenarioId, type SimulationResult } from '@jikken/shared';
+import { EXIT_CODE_MESSAGES, COLORS, SCENARIOS, evaluateFlag, type ScenarioId, type SimulationResult } from '@jikken/shared';
 import { supabase } from '@/integrations/supabase/client';
 import { TerminalWindow } from '../TerminalWindow';
 import { TUTORIAL_EVENTS, useTutorial } from '@/tutorial';
@@ -34,6 +34,7 @@ function CodeLine({ n, children }: { n: number; children: React.ReactNode }) {
 function CodeSample({ scenario }: { scenario: ScenarioId }) {
   return (
     <div
+      data-tutorial="sdk-code"
       style={{
         padding: '1.2rem 1.3rem 1.4rem',
         background: '#1c1917',
@@ -73,10 +74,13 @@ export function SdkSurface({ scenario }: { scenario: ScenarioId }) {
       if (fnError) throw fnError;
       setResult(data as SimulationResult);
     } catch (e) {
+      // The browser demo remains deterministic when the optional remote
+      // function is unavailable: this is the exact same shared engine/input.
+      setResult(evaluateFlag(SCENARIOS[scenario].flag, SCENARIOS[scenario].users));
       setError(
         e instanceof Error
-          ? `${e.message} — the Edge Function may not be deployed yet (CONNECTION_FAILURE).`
-          : 'Simulation failed.',
+          ? `${e.message} — showing the identical local-engine result.`
+          : 'Edge Function unavailable — showing the identical local-engine result.',
       );
     } finally {
       setRunning(false);
@@ -85,6 +89,12 @@ export function SdkSurface({ scenario }: { scenario: ScenarioId }) {
       tutorial.emit(TUTORIAL_EVENTS.sdkRunComplete);
     }
   };
+
+  useEffect(() => {
+    if (tutorial.currentStep?.id === 'sdk-result' && !result && !running) void run();
+    // Run once when the walkthrough enters the response step.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tutorial.currentStep?.id]);
 
   // Exit-code → the shared semantic hex (the same value the CLI's ANSI theme
   // and the Dashboard's Tailwind classes resolve to — the parity thesis).
@@ -119,7 +129,7 @@ export function SdkSurface({ scenario }: { scenario: ScenarioId }) {
         <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: 'var(--portfolio-text-muted)' }}>{error}</span>
       )}
       {result && (
-        <span data-tutorial="sdk-result" style={{ fontSize: '0.78rem', fontFamily: 'var(--font-mono)', color: 'var(--portfolio-text-secondary)' }}>
+        <span style={{ fontSize: '0.78rem', fontFamily: 'var(--font-mono)', color: 'var(--portfolio-text-secondary)' }}>
           <span style={{ fontWeight: 'var(--font-weight-bold)', color: resultHex }}>exit {result.exit_code}</span>
           {' — '}
           {EXIT_CODE_MESSAGES[result.exit_code as keyof typeof EXIT_CODE_MESSAGES]}
@@ -134,7 +144,7 @@ export function SdkSurface({ scenario }: { scenario: ScenarioId }) {
         <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', background: '#1c1917' }}>
           <CodeSample scenario={scenario} />
           {result && (
-            <div style={{ padding: '0 1.3rem 1.3rem', fontFamily: 'var(--font-mono)', fontSize: '0.72rem', lineHeight: 1.6 }}>
+            <div data-tutorial="sdk-result" style={{ padding: '0 1.3rem 1.3rem', fontFamily: 'var(--font-mono)', fontSize: '0.72rem', lineHeight: 1.6 }}>
               <div style={{ color: '#78716c', paddingBottom: '0.3rem' }}>{'// live response'}</div>
               <pre style={{ margin: 0, color: '#d6d3d1', whiteSpace: 'pre-wrap' }}>
                 {JSON.stringify(

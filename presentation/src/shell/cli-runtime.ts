@@ -286,18 +286,20 @@ export function runCommand(line: string): RunOutput {
 }
 
 /**
- * Preset command chips shown above the terminal. These demonstrate the CLI's
+ * Preset command shortcuts shown in the Commands tab. These demonstrate the CLI's
  * own capabilities — a real command, JSON output for machines, the CI
  * validation gate, an error with a "did you mean?" suggestion, and help. They
  * are deliberately NOT scenario switchers: the scenario (the shared situation
  * across all three surfaces) is chosen once in the top bar, not down here.
  */
-export const PRESET_COMMANDS: { label: string; command: string }[] = [
-  { label: 'diff --scenario conflict', command: 'jikken diff --scenario conflict' },
-  { label: 'simulate --flag dark-mode', command: 'jikken simulate --flag dark-mode --rollout 25' },
-  { label: '--format json', command: 'jikken simulate --flag dark-mode --rollout 25 --format json' },
-  { label: '--quiet', command: 'jikken simulate --flag dark-mode --rollout 25 --quiet' },
-  { label: 'validate --strict', command: 'jikken validate --scenario conflict --strict' },
-  { label: '"did you mean?"', command: 'jikken simulate --flag "Dark Mode!"' },
-  { label: 'help', command: 'help' },
+export type PresetCommandGroup = 'workflow' | 'output' | 'guidance';
+
+export const PRESET_COMMANDS: { label: string; command: string; group: PresetCommandGroup }[] = [
+  { label: 'diff --scenario conflict', command: 'jikken diff --scenario conflict', group: 'workflow' },
+  { label: 'simulate --flag dark-mode', command: 'jikken simulate --flag dark-mode --rollout 25', group: 'workflow' },
+  { label: 'validate --strict', command: 'jikken validate --scenario conflict --strict', group: 'workflow' },
+  { label: '--format json', command: 'jikken simulate --flag dark-mode --rollout 25 --format json', group: 'output' },
+  { label: '--quiet', command: 'jikken simulate --flag dark-mode --rollout 25 --quiet', group: 'output' },
+  { label: '"did you mean?"', command: 'jikken simulate --flag "Dark Mode!"', group: 'guidance' },
+  { label: 'help', command: 'help', group: 'guidance' },
 ];

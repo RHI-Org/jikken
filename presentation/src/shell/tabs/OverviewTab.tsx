@@ -2,6 +2,7 @@
  * Overview tab — a concise operating guide for the live application.
  */
 import { INTRO, PRODUCT_SECTIONS, HOWTO } from '../data/overview';
+import { Play } from 'lucide-react';
 
 const microLabel: React.CSSProperties = {
   fontSize: '0.65rem',
@@ -11,7 +12,13 @@ const microLabel: React.CSSProperties = {
   textTransform: 'uppercase',
 };
 
-export function OverviewTab({ onStartTutorial }: { onStartTutorial: () => void }) {
+export function OverviewTab({
+  onStartTutorial,
+  onOpenCommands,
+}: {
+  onStartTutorial: () => void;
+  onOpenCommands: () => void;
+}) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
       <div>
@@ -24,8 +31,9 @@ export function OverviewTab({ onStartTutorial }: { onStartTutorial: () => void }
       <button
         type="button"
         onClick={onStartTutorial}
-        style={{ alignSelf: 'flex-start', padding: '0.65rem 0.9rem', border: 0, borderRadius: '0.45rem', background: 'var(--portfolio-btn-bg)', color: 'var(--portfolio-btn-text)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'var(--font-weight-semibold)' }}
+        style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: '0.45rem', padding: '0.65rem 0.9rem', border: 0, borderRadius: '0.45rem', background: 'var(--portfolio-btn-bg)', color: 'var(--portfolio-btn-text)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'var(--font-weight-semibold)' }}
       >
+        <Play size={14} fill="currentColor" />
         Start 90-second walkthrough
       </button>
 
@@ -64,7 +72,18 @@ export function OverviewTab({ onStartTutorial }: { onStartTutorial: () => void }
                 {step.title}
               </div>
               <p style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', lineHeight: 1.55, color: 'var(--portfolio-text-muted)' }}>
-                {step.body}
+                {index === 0 ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={onOpenCommands}
+                      style={{ display: 'inline', padding: 0, border: 0, background: 'none', color: 'var(--portfolio-text-primary)', cursor: 'pointer', font: 'inherit', fontWeight: 'var(--font-weight-semibold)', textDecoration: 'underline', textUnderlineOffset: '2px' }}
+                    >
+                      Open the Commands tab
+                    </button>
+                    {step.body.slice('Open the Commands tab'.length)}
+                  </>
+                ) : step.body}
               </p>
             </div>
           </li>

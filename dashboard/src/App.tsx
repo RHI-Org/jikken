@@ -14,6 +14,7 @@ import FlagEditor from './pages/FlagEditor';
 import SimulationView from './pages/SimulationView';
 import HistoryPage from './pages/HistoryPage';
 import SettingsPage from './pages/SettingsPage';
+import { JikkenMark } from './components/JikkenMark';
 import {
   connectTutorialBridge,
   emitTutorialEvent,
@@ -48,8 +49,9 @@ function NavBar() {
 
   return (
     <nav className="w-48 shrink-0 bg-white border-r border-gray-200 flex flex-col">
-      <Link to="/flags" className="font-semibold text-lg text-gray-900 px-4 py-4 border-b border-gray-200">
-        Jikken
+      <Link to="/flags" className="flex items-center gap-2 font-semibold text-lg text-gray-900 px-4 py-4 border-b border-gray-200">
+        <JikkenMark size={20} />
+        <span>Jikken</span>
       </Link>
       <div className="flex flex-col gap-1 p-3">
         <Link to="/flags" className={linkClass(isActive('/flags') && !isActive('/flags/history'))}>

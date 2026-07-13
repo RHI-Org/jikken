@@ -45,18 +45,20 @@ describe('dashboard tutorial bridge', () => {
     expect(isAllowedTutorialOrigin('https://attacker.example')).toBe(false);
   });
 
-  it('navigates only for the typed history command from the parent', () => {
+  it('navigates only to allowlisted tutorial screens from the parent', () => {
     const navigate = connect();
 
     send({ type: 'jikken:tutorial:navigate', path: '/flags/history' });
+    send({ type: 'jikken:tutorial:navigate', path: '/flags/simulate/dark-mode?scenario=conflict' });
     send({ type: 'jikken:tutorial:navigate', path: '/settings' });
     send(
       { type: 'jikken:tutorial:navigate', path: '/flags/history' },
       'https://attacker.example',
     );
 
-    expect(navigate).toHaveBeenCalledOnce();
-    expect(navigate).toHaveBeenCalledWith('/flags/history');
+    expect(navigate).toHaveBeenCalledTimes(2);
+    expect(navigate).toHaveBeenNthCalledWith(1, '/flags/history');
+    expect(navigate).toHaveBeenNthCalledWith(2, '/flags/simulate/dark-mode?scenario=conflict');
   });
 
   it('highlights a known anchor and restores its styles on cleanup', () => {

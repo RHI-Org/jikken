@@ -1,12 +1,15 @@
 export const TUTORIAL_ANCHORS = {
   historyNav: 'history-nav',
   latestHistoryRow: 'latest-history-row',
+  scenarioContext: 'scenario-context',
+  simulationSummary: 'simulation-summary',
+  excludedDecision: 'excluded-decision',
 } as const;
 
 export type TutorialAnchor = (typeof TUTORIAL_ANCHORS)[keyof typeof TUTORIAL_ANCHORS];
 
 type TutorialCommand =
-  | { type: 'jikken:tutorial:navigate'; path: '/flags/history' }
+  | { type: 'jikken:tutorial:navigate'; path: TutorialPath }
   | { type: 'jikken:tutorial:highlight'; anchor: TutorialAnchor };
 
 export type TutorialEvent =
@@ -16,6 +19,8 @@ export type TutorialEvent =
 
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 const HISTORY_PATH = '/flags/history';
+const SIMULATION_PATH = '/flags/simulate/dark-mode?scenario=conflict';
+type TutorialPath = typeof HISTORY_PATH | typeof SIMULATION_PATH;
 let trustedParentOrigin: string | null = null;
 let clearHighlight: (() => void) | null = null;
 
@@ -55,7 +60,7 @@ function isTutorialCommand(value: unknown): value is TutorialCommand {
   const message = value as Record<string, unknown>;
 
   if (message.type === 'jikken:tutorial:navigate') {
-    return message.path === HISTORY_PATH;
+    return message.path === HISTORY_PATH || message.path === SIMULATION_PATH;
   }
 
   if (message.type === 'jikken:tutorial:highlight') {

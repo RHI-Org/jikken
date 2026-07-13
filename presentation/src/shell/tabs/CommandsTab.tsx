@@ -8,6 +8,12 @@ import { ArrowRight } from 'lucide-react';
 import { SCENARIO_IDS, type FeatureDef, type FeatureId, type ScenarioId } from '@jikken/shared';
 import { PRESET_COMMANDS } from '../cli-runtime';
 
+const COMMAND_GROUPS = [
+  { id: 'workflow', label: 'Workflow' },
+  { id: 'output', label: 'Output' },
+  { id: 'guidance', label: 'Help & errors' },
+] as const;
+
 // Custom chevron (native carets can't be repositioned) — drawn in the same
 // muted tone as the faint text, shifted 10px left of the default edge inset.
 const CARET_SVG =
@@ -119,26 +125,30 @@ export function CommandsTab({
           Run a command in the terminal — the same engine and output as the
           installed <code style={{ fontFamily: 'var(--font-mono)' }}>jikken</code> binary.
         </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-          {PRESET_COMMANDS.map((c) => (
-            <button
-              key={c.label}
-              data-tutorial={c.command.includes('diff') && c.command.includes('conflict') ? 'run-conflict-command' : undefined}
-              onClick={() => onRunCommand(c.command)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '0.7rem',
-                textAlign: 'left',
-                padding: '0.65rem 0.7rem',
-                borderRadius: '0.5rem',
-                border: '1px solid var(--portfolio-border)',
-                background: 'var(--portfolio-bg-card)',
-                cursor: 'pointer',
-              }}
-            >
-              <span
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {COMMAND_GROUPS.map((group) => (
+            <div key={group.id}>
+              <div style={{ ...MICRO_LABEL, marginBottom: '0.4rem' }}>{group.label}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                {PRESET_COMMANDS.filter((command) => command.group === group.id).map((c) => (
+                  <button
+                    key={c.label}
+                    data-tutorial={c.command.includes('diff') && c.command.includes('conflict') ? 'run-conflict-command' : undefined}
+                    onClick={() => onRunCommand(c.command)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '0.7rem',
+                      textAlign: 'left',
+                      padding: '0.65rem 0.7rem',
+                      borderRadius: '0.5rem',
+                      border: '1px solid var(--portfolio-border)',
+                      background: 'var(--portfolio-bg-card)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <span
                 style={{
                   fontFamily: 'var(--font-mono)',
                   fontSize: '0.76rem',
@@ -146,11 +156,14 @@ export function CommandsTab({
                   lineHeight: 1.3,
                   wordBreak: 'break-word',
                 }}
-              >
-                {c.label}
-              </span>
-              <ArrowRight size={14} style={{ flexShrink: 0, color: 'var(--portfolio-text-faint)' }} />
-            </button>
+                    >
+                      {c.label}
+                    </span>
+                    <ArrowRight size={14} style={{ flexShrink: 0, color: 'var(--portfolio-text-faint)' }} />
+                  </button>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </section>

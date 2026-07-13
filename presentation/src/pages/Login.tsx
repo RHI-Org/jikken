@@ -10,6 +10,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { Lock, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import AsciiAnimation from '@/components/AsciiAnimation';
+import { JikkenMark } from '@/components/JikkenMark';
 
 const inputStyle: React.CSSProperties = {
   padding: '0.65rem 0.85rem',
@@ -59,8 +60,9 @@ const Login: React.FC = () => {
       <div className="jk-login__form">
         <div style={{ width: 'min(360px, 100%)' }}>
           <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-            <h1 style={{ margin: 0, fontWeight: 'var(--font-weight-bold)', fontSize: '2.25rem', letterSpacing: '0.01em', color: 'var(--portfolio-text-primary)' }}>
-              Jikken
+            <h1 style={{ margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.65rem', fontWeight: 'var(--font-weight-bold)', fontSize: '2.25rem', letterSpacing: '0.01em', color: 'var(--portfolio-text-primary)' }}>
+              <JikkenMark size={34} />
+              <span>Jikken</span>
             </h1>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.9rem', margin: '1.1rem 0' }}>
               <div style={{ width: '5rem', height: '1px', background: 'var(--portfolio-border)' }} />

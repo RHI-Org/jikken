@@ -12,6 +12,7 @@ import { PrinciplesTab } from './tabs/PrinciplesTab';
 import { TechTab } from './tabs/TechTab';
 import { CommandsTab } from './tabs/CommandsTab';
 import type { Principle } from './types';
+import { JikkenMark } from '@/components/JikkenMark';
 
 export type NotesTab = 'overview' | 'details' | 'commands';
 
@@ -98,8 +99,9 @@ export function NotesPanel({
       {/* Header */}
       <div style={{ padding: '1.25rem 1.4rem 1rem', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem' }}>
         <div>
-          <div style={{ fontSize: '1.2rem', fontWeight: 'var(--font-weight-bold)', lineHeight: 1.1 }}>
-            Jikken
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '1.2rem', fontWeight: 'var(--font-weight-bold)', lineHeight: 1.1 }}>
+            <JikkenMark size={21} />
+            <span>Jikken</span>
           </div>
           <div style={{ marginTop: '0.3rem', fontSize: '0.78rem', color: 'var(--portfolio-text-muted)' }}>
             Preview who a feature reaches — and stop risky changes before they ship.
@@ -152,7 +154,12 @@ export function NotesPanel({
 
       {/* Body */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '1.3rem 1.4rem 2rem' }}>
-        {tab === 'overview' && <OverviewTab onStartTutorial={onStartTutorial} />}
+        {tab === 'overview' && (
+          <OverviewTab
+            onStartTutorial={onStartTutorial}
+            onOpenCommands={() => onTabChange('commands')}
+          />
+        )}
         {tab === 'details' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
             <DetailsSection label="Design" defaultOpen>

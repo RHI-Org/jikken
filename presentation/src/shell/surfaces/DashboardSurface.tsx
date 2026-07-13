@@ -17,15 +17,39 @@ const DASHBOARD_URL = import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:80
 
 export function DashboardSurface() {
   const frameRef = useRef<HTMLIFrameElement>(null);
+  const tutorialTimers = useRef<number[]>([]);
   const tutorial = useTutorial();
   const dashboardOrigin = new URL(DASHBOARD_URL, window.location.href).origin;
 
-  const highlightHistory = useCallback(() => {
-    if (tutorial.currentStep?.id !== 'open-history') return;
-    frameRef.current?.contentWindow?.postMessage(
-      { type: 'jikken:tutorial:highlight', anchor: 'history-nav' },
-      dashboardOrigin,
-    );
+  const prepareTutorialStep = useCallback(() => {
+    tutorialTimers.current.forEach(window.clearTimeout);
+    tutorialTimers.current = [];
+    const step = tutorial.currentStep?.id;
+    const target = frameRef.current?.contentWindow;
+    if (!target) return;
+
+    const post = (message: object) => target.postMessage(message, dashboardOrigin);
+    let highlight: string | null = null;
+    if (step === 'dashboard-scenario') {
+      post({ type: 'jikken:tutorial:navigate', path: '/flags/simulate/dark-mode?scenario=conflict' });
+      highlight = 'scenario-context';
+    } else if (step === 'dashboard-impact') {
+      highlight = 'simulation-summary';
+    } else if (step === 'dashboard-decision') {
+      highlight = 'excluded-decision';
+    } else if (step === 'dashboard-history') {
+      post({ type: 'jikken:tutorial:navigate', path: '/flags/history' });
+      highlight = 'latest-history-row';
+    }
+    if (!highlight) return;
+    const message = { type: 'jikken:tutorial:highlight', anchor: highlight };
+    // Navigation and iframe rendering are asynchronous. Repeating this small,
+    // idempotent command makes the target appear as soon as its route mounts.
+    post(message);
+    tutorialTimers.current = [
+      window.setTimeout(() => post(message), 180),
+      window.setTimeout(() => post(message), 600),
+    ];
   }, [dashboardOrigin, tutorial.currentStep?.id]);
 
   useEffect(() => {
@@ -42,7 +66,13 @@ export function DashboardSurface() {
     return () => window.removeEventListener('message', receive);
   }, [dashboardOrigin, tutorial]);
 
-  useEffect(highlightHistory, [highlightHistory]);
+  useEffect(() => {
+    prepareTutorialStep();
+    return () => {
+      tutorialTimers.current.forEach(window.clearTimeout);
+      tutorialTimers.current = [];
+    };
+  }, [prepareTutorialStep]);
 
   return (
     <div data-tutorial="dashboard-frame" style={{ height: '100%', minHeight: 0, padding: '2rem', boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -52,7 +82,7 @@ export function DashboardSurface() {
             ref={frameRef}
             title="Jikken Dashboard"
             src={DASHBOARD_URL}
-            onLoad={highlightHistory}
+            onLoad={prepareTutorialStep}
             style={{ width: '100%', height: '100%', border: 'none', background: '#f9fafb' }}
           />
         ) : (

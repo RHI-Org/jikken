@@ -11,10 +11,10 @@
  */
 import { ChevronDown, ChevronRight, Copy, Download } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import type { SimulationResult } from '@jikken/shared';
-import { COLORS } from '@jikken/shared';
+import { COLORS, SCENARIOS, evaluateFlag, type ScenarioId } from '@jikken/shared';
 import { flagStore } from '@/store/flagStore';
 import { exportToPDF, formatResultForClipboard } from '@/utils/export';
 
@@ -30,7 +30,12 @@ const styleMap = {
 
 export default function SimulationView({ simulationResult: providedResult }: SimulationViewProps) {
   const params = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const flagId = params.id;
+  const scenarioParam = searchParams.get('scenario');
+  const demoScenario = scenarioParam && scenarioParam in SCENARIOS
+    ? SCENARIOS[scenarioParam as ScenarioId]
+    : null;
 
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [result, setResult] = useState<SimulationResult | undefined>(providedResult);
@@ -39,6 +44,11 @@ export default function SimulationView({ simulationResult: providedResult }: Sim
   const runSimulation = () => {
     if (!flagId) return;
     setRunning(true);
+    if (demoScenario) {
+      setResult(evaluateFlag(demoScenario.flag, demoScenario.users));
+      setRunning(false);
+      return;
+    }
     flagStore
       .runSimulation(flagId)
       .then((sim) => setResult(sim))
@@ -50,7 +60,13 @@ export default function SimulationView({ simulationResult: providedResult }: Sim
     if (!flagId) return;
     runSimulation();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [flagId]);
+  }, [flagId, scenarioParam]);
+
+  useEffect(() => {
+    if (!demoScenario || !result) return;
+    const firstExcluded = result.decisions.find((decision) => decision.decision === 'exclude');
+    if (firstExcluded) setExpanded(new Set([firstExcluded.user_id]));
+  }, [demoScenario, result?.simulation_id]);
 
   const toggleExpand = (userId: string) => {
     const next = new Set(expanded);
@@ -96,8 +112,26 @@ export default function SimulationView({ simulationResult: providedResult }: Sim
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
+      {demoScenario && (
+        <div data-tutorial="scenario-context" className="p-4 bg-gray-900 text-white rounded-lg shadow">
+          <div className="text-xs font-semibold uppercase tracking-wide text-gray-400">Proposed targeting change</div>
+          <div className="mt-1 text-lg font-semibold">{demoScenario.story.title}</div>
+          <p className="mt-1 text-sm text-gray-300">{demoScenario.story.summary}</p>
+          <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+            <div className="rounded bg-white/10 p-3">
+              <div className="text-xs uppercase tracking-wide text-gray-400">Live</div>
+              <div className="mt-1">Dark Mode is available to everyone.</div>
+            </div>
+            <div className="rounded bg-red-500/15 p-3">
+              <div className="text-xs uppercase tracking-wide text-red-300">Proposed</div>
+              <div className="mt-1">Exclude @internal.company.com accounts.</div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Summary Card — always visible first */}
-      <div className="p-4 bg-white rounded-lg shadow">
+      <div data-tutorial="simulation-summary" className="p-4 bg-white rounded-lg shadow">
         <div className="flex justify-between items-start mb-4">
           <div>
             <h3 className="text-lg font-semibold">Simulation Summary</h3>
@@ -166,6 +200,7 @@ export default function SimulationView({ simulationResult: providedResult }: Sim
             return (
               <div
                 key={dec.user_id}
+                data-tutorial={dec.decision === 'exclude' && decisions.find((item) => item.decision === 'exclude')?.user_id === dec.user_id ? 'excluded-decision' : undefined}
                 className={`border-l-4 pl-4 py-3 ${style.bg} ${style.border} rounded-r`}
               >
                 <div
