@@ -1,64 +1,183 @@
-# Jikken Project Implementation Plan (Ecosystem-First Edition)
+# Jikken — Implementation Plan (v2)
+
+**Project:** Feature Flag Lifecycle Tool — a cross-surface UX demonstration.
+**Spec:** `2026-07-12-spec` (v1.0 Final) is the source of truth for all product
+behavior — data model, CLI, Dashboard, SDK, CI/CD, and tests. This plan is the
+build order and the presentation-shell design that wraps it.
 
 ## 🎯 Objective
-Build a high-fidelity, multi-surface "Feature Flag Lifecycle" demo that proves "Cross-Surface Coherence." The project must demonstrate that a single design intent (colors, terminology, logic) can be seamlessly expressed across a CLI (Engineers), a Dashboard (PMs), and an SDK (Pipelines).
 
-**Goal:** A "Portfolio-Grade" interactive experience that feels like a single, living product.
+Prove **cross-surface coherence**: one design intent (colors, terminology,
+exit codes) expressed identically across a CLI (engineers), a Dashboard (PMs),
+and an SDK (pipelines) — and present it in a portfolio-grade shell modeled on
+the Retailor demo (`portfolio.experienceplus.ai/retailor-demo`): **split
+screen, live demo on the right, collapsible project-notes panel on the left.**
 
-## 🏗 Architecture: The Monorepo Ecosystem
-Using npm/pnpm workspaces to enforce a "Single Source of Truth" (SSoT).
+## 📝 Changes from v1 of this plan
 
-### Directory Structure
-- `packages/shared`: **The Authority.** Contains TypeScript types, `ExitCode` enums, and the `DesignSystem` (exact hex codes for Green/Red/Yellow, terminology mappings).
-- `packages/api`: **The Engine.** A Node.js/Supabase-backed simulation engine capable of "Scenario-based" deterministic playback.
-- `packages/cli`: **The Engineer Surface.** Built with Commander.js, using `shared` for ANSI color-matched output.
-- `packages/dashboard`: **The PM Surface.** React/Vite/Tailwind app using `shared` for design-system-matched UI.
-- `packages/sdk`: **The Pipeline Surface.** A "Developer-Empathy" first client with structured error objects and suggestion logic.
-- `packages/presentation`: **The Stage.** A dedicated "Portfolio Wrapper" app featuring a split-screen view: Design Thesis (Left) and Tabbed Live Demo (Right).
-- `data/`: Scenario definitions and mock datasets.
+| v1 said | v2 says | Why |
+|---|---|---|
+| Supabase backend (Postgres, Realtime, Edge Functions) | **Mock API server** (`mock-api-server/index.js`, localhost:8080) | Spec §2 decision table: "Real backend not needed. Focus on UX patterns, not infrastructure." Supabase is a stretch goal, not a phase. |
+| Generic "Sidebar + Tabbed View" presentation shell | **Retailor-demo shell** (detailed below) | Matches the established portfolio pattern; the shell is now a first-class deliverable with its own spec section. |
+| `packages/api` simulation engine w/ scenario playback | Deterministic **scenario engine inside the mock API** | Same capability (seeded, replayable runs), far less machinery. |
+| Vague phase goals | Phases keyed to spec sections + the spec's own hour estimates (§10.9) | Traceability. |
 
----
+Kept from v1: npm workspaces monorepo, `shared/` as the single source of truth,
+scenario-based deterministic playback (the spec's `Math.random()` simulator
+stub is replaced with a seeded engine so the demo is reproducible).
 
-## 🚀 Implementation Phases
+## 🏗 Architecture
 
-### Phase 1: The Unified Core (The "Single Source of Truth")
-**Goal:** Establish the design DNA and the workspace.
-1.  **Workspace Setup:** Initialize monorepo and package scaffolding.
-2.  **The Design Registry (`packages/shared`):** 
-    - Define `ExitCode` (0-6) and `DecisionStatus` (RECEIVE, EXCLUDE, PARTIAL).
-    - Define `DesignSystem` constants: `COLOR_MAP` (mapping status to both ANSI and Tailwind hex).
-    - Define core interfaces: `Flag`, `User`, `SimulationResult`.
-3.  **Data Engine:** Create `data/scenarios/` to define deterministic simulation runs.
-4.  **Presentation Shell:** Scaffold `packages/presentation` with the Sidebar + Tabbed View architecture to provide immediate visual progress.
+npm workspaces monorepo. Structure follows spec §2 with one addition
+(`presentation/` is promoted to a full app):
 
-### Phase 2: The Simulation Engine (The "Brain")
-**Goal:** Build the logic that powers all surfaces.
-1.  **API/Edge Function:** Implement the `simulate` endpoint.
-2.  **Scenario Logic:** The engine must accept a `scenario_id` to return deterministic results, allowing the Presentation UI to "play back" specific edge cases (e.g., "The High-Conflict Scenario").
-3.  **Supabase Integration:** Real-time storage for flag configurations and audit logs.
+```
+jikken/
+├── shared/            # THE AUTHORITY — types.ts, constants.ts (spec §3)
+├── mock-api-server/   # Express, localhost:8080 — seeded scenario engine (spec §2)
+├── cli/               # flagsim — Commander.js, exit codes 0–6 (spec §4)
+├── dashboard/         # React/Vite/Tailwind — 5 pages (spec §5)
+├── sdk/               # FlagClient + FlagApiError, TS (spec §6)
+├── presentation/      # THE STAGE — Retailor-style shell (this doc, §Shell)
+├── flags/             # dark-mode.json sample (spec §7.2)
+├── data/              # mock-users.json, mock-flags.json, scenarios/
+├── tests/integration/ # cross-surface consistency tests (spec §8.4)
+└── .github/workflows/ # flag-validation.yml (spec §7.1)
+```
 
-### Phase 3: Synchronized Surface Development
-**Goal:** Build the three tools in lockstep to ensure coherence.
-1.  **The CLI:** Focus on "Scannability" and "Exit-Code-First" design.
-2.  **The Dashboard:** Focus on "Progressive Disclosure" and "Visual Decision Tracing."
-3.  **The SDK:** Focus on "Developer Empathy" (e.g., `error.getFirstSuggestion()`).
+**Two design systems, deliberately:**
+- **The product** (CLI/Dashboard/SDK) uses the spec's functional palette —
+  green = receive, red = exclude, yellow = partial (spec §3.2 `COLORS`).
+  That palette *is* the thesis; do not stone-ify it.
+- **The shell** (presentation app) uses the portfolio language: stone palette,
+  white panel, Swiss/typographic (no decorative cards), IBM Plex, blue
+  `#2f6fed` reserved for numbered pins/markers only — exactly like
+  `RetailorDemo.tsx` in the folio repo.
 
-### Phase 4: The "Portfolio" Polish
-**Goal:** Transform the code into a world-class demonstration.
-1.  **Integration Testing:** Automated verification that a color change in `shared` reflects in all three surfaces.
-2.  **Presentation Orchestration:** Connect the `presentation` app to the `api` so the tabs feel like a real, interactive demo.
-3.  **CI/CD:** GitHub Actions for automated deployment of the Dashboard and Presentation surfaces.
+## 🖥 The Presentation Shell (replaces spec §9 layout)
 
----
+Reference implementation: `folio/src/pages/RetailorDemo.tsx`. Reproduce its
+anatomy, not just its idea:
 
-## 🛠 Tech Stack Summary
-- **Language/Runtime:** TypeScript, Node.js.
-- **Frontend:** React, Vite, Tailwind CSS.
-- **Backend/DB:** Supabase (PostgreSQL, Auth, Edge Functions, Realtime).
-- **CLI:** Commander.js, Chalk.
-- **Tooling:** npm/pnpm workspaces, Vitest, GitHub Actions.
+```
+┌─────────────────────┬──────────────────────────────────────────────┐
+│ Flag Lifecycle   [⇤]│              [CLI] [Dashboard] [SDK]         │
+│ One design, three   │                                              │
+│ surfaces            │                                              │
+│─────────────────────│                                              │
+│ Overview│Principles │        LIVE DEMO STAGE                       │
+│         │(10)│Tech  │        (active surface renders here,        │
+│─────────────────────│         real and interactive — not          │
+│ ▸ THE PROBLEM       │         screenshots)                        │
+│ ▸ THE APPROACH      │                                              │
+│ ① Scannable in 3s → │                                              │
+│ ② Functional color →│                                              │
+│ ③ Exit codes      → │                                              │
+│ ...                 │                                              │
+└─────────────────────┴──────────────────────────────────────────────┘
+   collapsed → vertical "PROJECT NOTES" edge tab at mid-left
+```
 
-## 🧪 Success Metrics (The "Thesis" Proof)
-1.  **Color Parity:** The Green in the CLI terminal is identical to the Green in the Dashboard.
-2.  **Terminology Parity:** "Excluded" in the CLI is "Excluded" in the Dashboard and `status: 'EXCLUDE'` in the SDK.
-3.  **Scenario Coherence:** Running `scenario: 'conflict'` produces the same outcome across all three surfaces simultaneously.
+### Left panel — project notes (collapsible)
+
+- White bg, `border-r border-stone-200`, width `min(440px, 40%)`.
+- **Header:** bold title (~1.2rem) + one-line muted subtitle +
+  `PanelLeftClose` button. Collapsed state re-opens via a vertical edge tab
+  (`writing-mode: vertical-rl`, "PROJECT NOTES") like Retailor standalone —
+  not a floating hamburger.
+- **Tabs** (text tabs, 2px bottom border on active, stone-900/stone-400):
+  1. **Overview** — 4-stat grid (`3 surfaces · 10 principles · 7 exit codes ·
+     1 source of truth`), THE PROBLEM / THE APPROACH as collapsible sections
+     with uppercase micro-labels (0.65rem, bold, tracked, stone-400,
+     ChevronRight rotating 90°).
+  2. **Principles (10)** — the spec §11.1 design principles as **numbered,
+     clickable items** (blue pin circle + text + ArrowRight affordance).
+     This is the signature interaction, ported from Retailor's Changes list:
+     clicking a principle **commands the demo** — switches the right stage to
+     the surface that demonstrates it and drops a matching numbered pin/marker
+     on the exact UI element (e.g. ② "Functional color" → Dashboard tab,
+     pin on the summary card; ③ "Exit codes" → CLI tab, pin on the exit-code
+     line). Each principle carries `{ surface, target, pin: [x%, y%] }`.
+  3. **Tech** — stack list in Retailor's format (bold name + one-line "why"
+     per row, bullet dots): shared types, Commander.js, React/Vite/Tailwind,
+     seeded scenario engine, GitHub Actions.
+- Small type throughout (0.7–0.9rem), generous line-height, no cards.
+
+### Right stage — the live demo
+
+- Surface switcher: **CLI / Dashboard / SDK** text tabs in the top bar.
+- **CLI tab:** an *interactive* terminal emulation (xterm.js or a faithful
+  styled pane) that actually runs `flagsim` commands against the mock API —
+  with 3–4 preset command chips (`simulate --rollout 25`, `--format json`,
+  invalid flag ID to show the "Did you mean?" suggestion). ANSI colors must
+  match the Dashboard hex values on screen — that's success metric #1.
+- **Dashboard tab:** the real dashboard app mounted in the stage (direct mount
+  or iframe), scaled to fit — not mock JSX previews like spec §9.2 has.
+- **SDK tab:** code sample with a "Run" affordance that executes the snippet
+  against the mock API and prints the live result beneath it.
+- A **scenario picker** (all-clear / conflict / warning) above the stage sets
+  the seeded scenario on the mock API, so all three tabs reflect the same
+  deterministic run — demonstrating success metric #3 live.
+- Restart control resets scenario + pins, like Retailor's session restart.
+- Desktop-first; ≤1024px the panel is hidden behind the edge tab (dashboard
+  targets desktop admins per spec §11.5 — no mobile chrome-drop needed).
+
+## 🚀 Phases
+
+### Phase 1 — Shared core + mock API (~5h) · spec §2, §3
+1. npm workspaces scaffold, root scripts (`npm run api|cli|dashboard|present|test`).
+2. `shared/types.ts` + `shared/constants.ts` verbatim from spec §3.
+3. Mock API server with **seeded scenario engine**: `POST /api/simulate`
+   accepts `scenario` (`all-clear` | `conflict` | `warning`) and returns
+   deterministic `SimulationResult`s. Replaces the spec's random stub.
+4. `data/mock-users.json`, `data/mock-flags.json`, `data/scenarios/`.
+
+### Phase 2 — CLI (~6h) · spec §4
+1. `flagsim simulate` + `flagsim validate` exactly per spec §4.2 (flags,
+   validation, "Did you mean?" suggestions, exit codes 0–6).
+2. Formatter per §4.3; point the simulator service at the mock API instead of
+   inlining random logic.
+3. Test suite per §8.1 (exit codes, JSON output, `--quiet`, error paths).
+
+### Phase 3 — Dashboard (~12h) · spec §5
+1. Five pages per §5.1: FlagList, FlagEditor (progressive disclosure,
+   live validation with suggestions), SimulationView (decision-trace tree,
+   copy + PDF export), History, Settings.
+2. API layer + `FlagApiError.getSuggestion()` per §5.7.
+3. Component tests per §8.2.
+
+### Phase 4 — SDK (~4h) · spec §6
+1. `FlagClient` (timeout via AbortController), `FlagApiError`
+   (`getFirstSuggestion`, `isRetryable`, `getRetryDelay`), `isSafeToDeploy()`.
+2. Tests per §8.3 including backoff math.
+
+### Phase 5 — CI/CD + integration (~3h) · spec §7, §8.4
+1. `.github/workflows/flag-validation.yml` on `flags/*.json` changes.
+2. Cross-surface integration tests: same scenario → same exit code and same
+   summary counts from CLI, Dashboard API layer, and SDK.
+3. **Color-parity test:** assert the hex behind each ANSI code equals the
+   Tailwind token hex in `shared/constants.ts` (guards the core thesis).
+
+### Phase 6 — Presentation shell + polish (~6h) · this doc §Shell
+1. Build the Retailor-style shell (panel, tabs, edge tab, pins).
+2. Wire principle-clicks → surface/tab/pin commands; scenario picker.
+3. README (quick start per spec §10.8), deploy the presentation + dashboard.
+
+**Total: ~36h (3.5–4.5 days).** Shell adds ~3h over the spec's §10.9 estimate.
+
+## 🧪 Definition of done (spec §1 + §11.4)
+
+1. **Color parity** — CLI green is the Dashboard green (automated test).
+2. **Terminology parity** — `rollout_percentage`, "Excluded", exit-code names
+   identical across surfaces (enforced by importing only from `shared/`).
+3. **Scenario coherence** — picking "conflict" in the shell produces the same
+   outcome in all three tabs simultaneously.
+4. **Every one of the 10 principles is clickable** in the notes panel and
+   lands a pin on real UI that demonstrates it.
+5. All test suites pass at spec §8.5 coverage minimums.
+
+## 🙅 Out of scope (spec §10.7 / §11.5)
+
+Auth, real database, deployment infra (K8s/Terraform), i18n, mobile
+responsive dashboard, formal threat model. **Stretch (post-v1):** swap the
+mock API for Supabase to add realtime audit-log streaming to the History page.
