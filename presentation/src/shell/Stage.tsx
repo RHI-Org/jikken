@@ -20,6 +20,31 @@ const SURFACES: { id: Surface; label: string }[] = [
   { id: 'ci', label: 'CI gate' },
 ];
 
+// Empty state for surfaces that need a situation before they render anything —
+// names exactly where to go, one click, instead of a dead-end placeholder.
+function NoSituationYet({ onOpenCommands }: { onOpenCommands: () => void }) {
+  return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.9rem', padding: '2rem' }}>
+      <span style={{ color: 'var(--portfolio-text-muted)', fontSize: '0.85rem' }}>Pick a situation to begin</span>
+      <button
+        onClick={onOpenCommands}
+        style={{
+          padding: '0.5rem 1rem',
+          borderRadius: '0.5rem',
+          border: 'none',
+          background: 'var(--portfolio-text-primary)',
+          color: '#fff',
+          fontSize: '0.8rem',
+          fontWeight: 'var(--font-weight-semibold)',
+          cursor: 'pointer',
+        }}
+      >
+        Open Commands
+      </button>
+    </div>
+  );
+}
+
 export function Stage({
   surface,
   onSurfaceChange,
@@ -29,6 +54,7 @@ export function Stage({
   cliInject,
   onCliResult,
   activePrinciple,
+  onOpenCommands,
 }: {
   surface: Surface;
   onSurfaceChange: (s: Surface) => void;
@@ -38,6 +64,7 @@ export function Stage({
   cliInject: CliInject | null;
   onCliResult: (r: SimulationResult, scenario: string | null) => void;
   activePrinciple: Principle | null;
+  onOpenCommands: () => void;
 }) {
   const showPin = activePrinciple !== null && activePrinciple.surface === surface;
   // The selected feature drives each surface's situation lookup, since each
@@ -100,9 +127,7 @@ export function Stage({
         {surface === 'sdk' && (
           <div style={{ position: 'absolute', inset: 0 }}>
             {scenario === null ? (
-              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--portfolio-text-faint)', fontSize: '0.85rem' }}>
-                Pick a situation to begin
-              </div>
+              <NoSituationYet onOpenCommands={onOpenCommands} />
             ) : (
               <SdkSurface scenario={scenario} />
             )}
@@ -111,9 +136,7 @@ export function Stage({
         {surface === 'ci' && (
           <div style={{ position: 'absolute', inset: 0 }}>
             {scenario === null ? (
-              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--portfolio-text-faint)', fontSize: '0.85rem' }}>
-                Pick a situation to begin
-              </div>
+              <NoSituationYet onOpenCommands={onOpenCommands} />
             ) : (
               <CiSurface scenario={featureDef.situations[scenario]} />
             )}
