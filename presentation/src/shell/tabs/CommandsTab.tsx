@@ -8,17 +8,25 @@ import { ArrowRight } from 'lucide-react';
 import { SCENARIO_IDS, type FeatureDef, type FeatureId, type ScenarioId } from '@jikken/shared';
 import { PRESET_COMMANDS } from '../cli-runtime';
 
+// Custom chevron (native carets can't be repositioned) — drawn in the same
+// muted tone as the faint text, shifted 10px left of the default edge inset.
+const CARET_SVG =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2378716c' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E";
+
 const SELECT_STYLE = {
   width: '100%',
-  padding: '0.45rem 0.6rem',
+  padding: '0.45rem 1.9rem 0.45rem 0.6rem',
   borderRadius: '0.4rem',
   border: '1px solid var(--portfolio-border)',
-  background: 'var(--portfolio-bg-card)',
+  background: `var(--portfolio-bg-card) url("${CARET_SVG}") no-repeat right 1.15rem center`,
   color: 'var(--portfolio-text-primary)',
   fontSize: '0.78rem',
   fontFamily: 'var(--font-mono)',
   fontWeight: 'var(--font-weight-semibold)',
   cursor: 'pointer',
+  appearance: 'none' as const,
+  WebkitAppearance: 'none' as const,
+  MozAppearance: 'none' as const,
 } as const;
 
 const MICRO_LABEL = {
