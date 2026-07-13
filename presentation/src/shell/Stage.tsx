@@ -28,6 +28,7 @@ export function Stage({
   cliInject,
   onCliResult,
   activePrinciple,
+  restartNonce,
 }: {
   surface: Surface;
   onSurfaceChange: (s: Surface) => void;
@@ -37,6 +38,7 @@ export function Stage({
   cliInject: CliInject | null;
   onCliResult: (r: SimulationResult, scenario: string | null) => void;
   activePrinciple: Principle | null;
+  restartNonce: number;
 }) {
   const showPin = activePrinciple !== null && activePrinciple.surface === surface;
 
@@ -57,7 +59,10 @@ export function Stage({
       >
         {/* Scenario picker */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ fontSize: '0.72rem', color: 'var(--portfolio-text-faint)', fontWeight: 'var(--font-weight-semibold)' }}>
+          <span
+            title="The shared situation. Sets the same deterministic input for the CLI, Dashboard, and SDK at once."
+            style={{ fontSize: '0.72rem', color: 'var(--portfolio-text-faint)', fontWeight: 'var(--font-weight-semibold)', cursor: 'help' }}
+          >
             scenario
           </span>
           <div style={{ display: 'flex', border: '1px solid var(--portfolio-border)', borderRadius: '0.5rem', overflow: 'hidden' }}>
@@ -85,7 +90,8 @@ export function Stage({
           </div>
           <button
             onClick={onRestart}
-            aria-label="Replay scenario"
+            aria-label="Replay the current surface"
+            title="Replay this surface"
             style={{ display: 'flex', padding: '0.35rem', borderRadius: '0.4rem', border: '1px solid var(--portfolio-border)', background: 'transparent', color: 'var(--portfolio-text-muted)', cursor: 'pointer' }}
           >
             <RotateCw size={13} />
@@ -127,12 +133,12 @@ export function Stage({
         </div>
         {surface === 'dashboard' && (
           <div style={{ position: 'absolute', inset: 0 }}>
-            <DashboardSurface />
+            <DashboardSurface key={restartNonce} />
           </div>
         )}
         {surface === 'sdk' && (
           <div style={{ position: 'absolute', inset: 0 }}>
-            <SdkSurface scenario={scenario} />
+            <SdkSurface key={restartNonce} scenario={scenario} />
           </div>
         )}
 

@@ -194,11 +194,17 @@ export function runCommand(line: string): RunOutput {
   return { text: output + '\r\n', exitCode: result.exit_code, result, scenario: resolved.scenario };
 }
 
-/** Preset command chips shown above the terminal. */
+/**
+ * Preset command chips shown above the terminal. These demonstrate the CLI's
+ * own capabilities — a real command, JSON output for machines, the CI
+ * validation gate, an error with a "did you mean?" suggestion, and help. They
+ * are deliberately NOT scenario switchers: the scenario (the shared situation
+ * across all three surfaces) is chosen once in the top bar, not down here.
+ */
 export const PRESET_COMMANDS: { label: string; command: string }[] = [
-  { label: 'all-clear', command: 'jikken simulate --scenario all-clear' },
-  { label: 'conflict', command: 'jikken simulate --scenario conflict' },
-  { label: 'warning', command: 'jikken simulate --scenario warning' },
-  { label: '--format json', command: 'jikken simulate --scenario all-clear --format json' },
-  { label: 'invalid id', command: 'jikken simulate --flag "Dark Mode!"' },
+  { label: 'simulate --flag dark-mode', command: 'jikken simulate --flag dark-mode --rollout 25' },
+  { label: '--format json', command: 'jikken simulate --flag dark-mode --rollout 25 --format json' },
+  { label: 'validate --strict', command: 'jikken validate --scenario conflict --strict' },
+  { label: '"did you mean?"', command: 'jikken simulate --flag "Dark Mode!"' },
+  { label: 'help', command: 'help' },
 ];

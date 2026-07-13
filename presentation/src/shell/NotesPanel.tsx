@@ -82,7 +82,7 @@ export function NotesPanel({
             Jikken
           </div>
           <div style={{ marginTop: '0.3rem', fontSize: '0.78rem', color: 'var(--portfolio-text-muted)' }}>
-            One design, three surfaces.
+            Let PMs ship features. Keep governance.
           </div>
         </div>
         <button

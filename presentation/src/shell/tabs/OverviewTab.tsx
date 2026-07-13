@@ -1,7 +1,7 @@
 /**
  * Overview tab — a concise operating guide for the live application.
  */
-import { INTRO, HOWTO } from '../data/overview';
+import { INTRO, PRODUCT_SECTIONS, HOWTO } from '../data/overview';
 
 const microLabel: React.CSSProperties = {
   fontSize: '0.65rem',
@@ -15,13 +15,24 @@ export function OverviewTab() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
       <div>
-        <div style={microLabel}>HOW THIS APPLICATION WORKS</div>
-        <p style={{ margin: '0.55rem 0 0', fontSize: '0.85rem', lineHeight: 1.65, color: 'var(--portfolio-text-secondary)' }}>
+        <div style={microLabel}>WHAT IT IS</div>
+        <p style={{ margin: '0.55rem 0 0', fontSize: '0.9rem', lineHeight: 1.65, color: 'var(--portfolio-text-primary)' }}>
           {INTRO}
         </p>
       </div>
 
-      <ol style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', margin: 0, padding: 0, listStyle: 'none' }}>
+      {PRODUCT_SECTIONS.map((section) => (
+        <div key={section.label} style={{ borderTop: '1px solid var(--portfolio-border-muted)', paddingTop: '0.85rem' }}>
+          <div style={microLabel}>{section.label}</div>
+          <p style={{ margin: '0.5rem 0 0', fontSize: '0.82rem', lineHeight: 1.65, color: 'var(--portfolio-text-secondary)' }}>
+            {section.body}
+          </p>
+        </div>
+      ))}
+
+      <div style={{ borderTop: '1px solid var(--portfolio-border-muted)', paddingTop: '0.85rem' }}>
+        <div style={{ ...microLabel, marginBottom: '0.85rem' }}>HOW TO EXPLORE THIS DEMO</div>
+        <ol style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', margin: 0, padding: 0, listStyle: 'none' }}>
         {HOWTO.map((step, index) => (
           <li key={step.title} style={{ display: 'grid', gridTemplateColumns: '1.45rem 1fr', gap: '0.65rem' }}>
             <span
@@ -50,7 +61,8 @@ export function OverviewTab() {
             </div>
           </li>
         ))}
-      </ol>
+        </ol>
+      </div>
     </div>
   );
 }

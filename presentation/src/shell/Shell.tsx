@@ -21,6 +21,7 @@ export function Shell() {
   const [scenario, setScenario] = useState<ScenarioId>('all-clear');
   const [activePrinciple, setActivePrinciple] = useState<Principle | null>(null);
   const [cliInject, setCliInject] = useState<CliInject | null>(null);
+  const [restartNonce, setRestartNonce] = useState(0);
   const nonce = useRef(0);
 
   const injectCli = useCallback((command: string) => {
@@ -39,8 +40,14 @@ export function Shell() {
     [surface, injectCli],
   );
 
+  // Replay the current surface. On the CLI we re-run the scenario (remounting
+  // the terminal would wipe its history); on the Dashboard/SDK we bump a nonce
+  // that re-keys the surface so it remounts fresh — visible feedback on every
+  // surface, not just the CLI.
   const restart = useCallback(() => {
+    setActivePrinciple(null);
     if (surface === 'cli') injectCli(`jikken simulate --scenario ${scenario}`);
+    else setRestartNonce((n) => n + 1);
   }, [surface, scenario, injectCli]);
 
   // A principle click commands the stage: switch to its surface, drop its pin.
@@ -99,6 +106,7 @@ export function Shell() {
         cliInject={cliInject}
         onCliResult={onCliResult}
         activePrinciple={activePrinciple}
+        restartNonce={restartNonce}
       />
     </div>
   );

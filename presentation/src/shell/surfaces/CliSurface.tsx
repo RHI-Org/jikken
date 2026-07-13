@@ -160,7 +160,19 @@ export function CliSurface({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
       {/* Preset command chips */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', padding: '0.75rem 0.9rem', borderBottom: '1px solid var(--portfolio-border-muted)' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem', padding: '0.75rem 0.9rem', borderBottom: '1px solid var(--portfolio-border-muted)' }}>
+        <span
+          style={{
+            fontSize: '0.62rem',
+            fontWeight: 'var(--font-weight-bold)',
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            color: 'var(--portfolio-text-faint)',
+            marginRight: '0.15rem',
+          }}
+        >
+          Try a command
+        </span>
         {PRESET_COMMANDS.map((c) => (
           <button
             key={c.label}

@@ -3,9 +3,22 @@
  */
 import type { OverviewSection, OverviewStat, HowToStep } from '../types';
 
-// What the app is and how to operate the live demo.
+// The product, stated first: who it's for and what it does for them.
 export const INTRO =
-  'Jikken lets you test the same feature-flag scenario through three working interfaces: a CLI, a dashboard, and an SDK. Use the controls above the stage to set the scenario, then explore how each surface reports the same result.';
+  'Jikken lets a product manager roll out a feature to a slice of real users — and see the impact before it ships — without waiting on an engineering ticket. The organization keeps its guardrails: every change is checked and logged. Self-serve, but never ungoverned.';
+
+// The product problem/approach — the front-door story (persona + governance),
+// distinct from the craft thesis (cross-surface coherence) in the Design tab.
+export const PRODUCT_SECTIONS: OverviewSection[] = [
+  {
+    label: 'THE PROBLEM',
+    body: "More and more, non-engineers own feature releases. But their options are bad: file a ticket and wait weeks, learn a platform built for engineers, or skip the process — and ship without governance.",
+  },
+  {
+    label: 'THE APPROACH',
+    body: 'Give the release to the people who own it. Self-serve setup, a simulation that shows impact before rollout, and guardrails — validation, an audit trail, CI checks — built in. Speed and control, not a trade between them.',
+  },
+];
 
 // A short, ordered guide to operating the application.
 export const HOWTO: HowToStep[] = [
