@@ -9,9 +9,9 @@
  * Design Principle: Consistency — same colors as CLI.
  * Design Principle: Transparent reasoning — every decision explained.
  */
-import { ChevronDown, ChevronRight, Copy, Download, RefreshCw } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, Copy, Download, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import type { SimulationResult } from '@jikken/shared';
 import { COLORS, DECISION_LABELS, SCENARIOS, evaluateFlag, type ScenarioId } from '@jikken/shared';
@@ -207,9 +207,25 @@ export default function SimulationView({ simulationResult: providedResult }: Sim
   }
 
   const { summary, decisions, flag_id } = result;
+  const flagTitle = demoScenario?.feature ?? flag_id
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
+      <header>
+        <Link
+          to="/"
+          className="mb-3 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-blue-700"
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          Back to Flags
+        </Link>
+        <h1 className="text-3xl font-semibold tracking-tight text-gray-900">{flagTitle}</h1>
+        <p className="mt-1 font-mono text-sm text-gray-500">{flag_id}</p>
+      </header>
+
       {demoScenario && (
         <div data-tutorial="scenario-context" className="p-4 bg-gray-900 text-white rounded-lg shadow">
           <div className="text-xs font-semibold uppercase tracking-wide text-gray-400">Proposed targeting change</div>
