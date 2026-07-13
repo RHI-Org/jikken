@@ -6,11 +6,11 @@
  * interactive, with a numbered pin overlay when a principle is selected from
  * the notes panel.
  */
+import { SCENARIO_IDS, type FeatureDef, type FeatureId, type ScenarioId, type SimulationResult } from '@jikken/shared';
 import { CliSurface, type CliInject } from './surfaces/CliSurface';
 import { SdkSurface } from './surfaces/SdkSurface';
 import { DashboardSurface } from './surfaces/DashboardSurface';
 import { CiSurface } from './surfaces/CiSurface';
-import type { FeatureDef, FeatureId, ScenarioId, SimulationResult } from '@jikken/shared';
 import type { Surface, Principle } from './types';
 
 const SURFACES: { id: Surface; label: string }[] = [
@@ -20,27 +20,85 @@ const SURFACES: { id: Surface; label: string }[] = [
   { id: 'ci', label: 'CI gate' },
 ];
 
+const MICRO_LABEL = {
+  fontSize: '0.62rem',
+  fontWeight: 'var(--font-weight-bold)',
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  color: 'var(--portfolio-text-faint)',
+} as const;
+
 // Empty state for surfaces that need a situation before they render anything —
-// names exactly where to go, one click, instead of a dead-end placeholder.
-function NoSituationYet({ onOpenCommands }: { onOpenCommands: () => void }) {
+// the picker itself lives here (feature select + situation chips), so there's
+// no click-through to another tab to get started.
+function NoSituationYet({
+  features,
+  feature,
+  featureDef,
+  onFeatureChange,
+  onScenarioChange,
+}: {
+  features: FeatureDef[];
+  feature: FeatureId;
+  featureDef: FeatureDef;
+  onFeatureChange: (f: FeatureId) => void;
+  onScenarioChange: (s: ScenarioId) => void;
+}) {
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.9rem', padding: '2rem' }}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.1rem', padding: '2rem' }}>
       <span style={{ color: 'var(--portfolio-text-muted)', fontSize: '0.85rem' }}>Pick a situation to begin</span>
-      <button
-        onClick={onOpenCommands}
-        style={{
-          padding: '0.5rem 1rem',
-          borderRadius: '0.5rem',
-          border: 'none',
-          background: 'var(--portfolio-text-primary)',
-          color: '#fff',
-          fontSize: '0.8rem',
-          fontWeight: 'var(--font-weight-semibold)',
-          cursor: 'pointer',
-        }}
-      >
-        Open Commands
-      </button>
+
+      <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem' }}>
+        <span style={MICRO_LABEL}>Feature</span>
+        <select
+          value={feature}
+          onChange={(e) => onFeatureChange(e.target.value as FeatureId)}
+          aria-label="Choose a feature"
+          style={{
+            padding: '0.4rem 0.6rem',
+            borderRadius: '0.4rem',
+            border: '1px solid var(--portfolio-border)',
+            background: 'var(--portfolio-bg-card)',
+            color: 'var(--portfolio-text-primary)',
+            fontSize: '0.78rem',
+            fontFamily: 'var(--font-mono)',
+            fontWeight: 'var(--font-weight-semibold)',
+            cursor: 'pointer',
+          }}
+        >
+          {features.map((f) => (
+            <option key={f.id} value={f.id}>
+              {f.label}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+        <span style={MICRO_LABEL}>Situation</span>
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem', maxWidth: '26rem' }}>
+          {SCENARIO_IDS.map((id) => (
+            <button
+              key={id}
+              onClick={() => onScenarioChange(id)}
+              title={featureDef.situations[id].description}
+              style={{
+                padding: '0.45rem 0.9rem',
+                borderRadius: '999px',
+                border: '1px solid var(--portfolio-border)',
+                background: 'var(--portfolio-bg-card)',
+                color: 'var(--portfolio-text-primary)',
+                fontSize: '0.78rem',
+                fontFamily: 'var(--font-mono)',
+                fontWeight: 'var(--font-weight-semibold)',
+                cursor: 'pointer',
+              }}
+            >
+              {featureDef.situations[id].label}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -50,21 +108,23 @@ export function Stage({
   onSurfaceChange,
   features,
   feature,
+  onFeatureChange,
   scenario,
+  onScenarioChange,
   cliInject,
   onCliResult,
   activePrinciple,
-  onOpenCommands,
 }: {
   surface: Surface;
   onSurfaceChange: (s: Surface) => void;
   features: FeatureDef[];
   feature: FeatureId;
+  onFeatureChange: (f: FeatureId) => void;
   scenario: ScenarioId | null;
+  onScenarioChange: (s: ScenarioId) => void;
   cliInject: CliInject | null;
   onCliResult: (r: SimulationResult, scenario: string | null) => void;
   activePrinciple: Principle | null;
-  onOpenCommands: () => void;
 }) {
   const showPin = activePrinciple !== null && activePrinciple.surface === surface;
   // The selected feature drives each surface's situation lookup, since each
@@ -127,7 +187,13 @@ export function Stage({
         {surface === 'sdk' && (
           <div style={{ position: 'absolute', inset: 0 }}>
             {scenario === null ? (
-              <NoSituationYet onOpenCommands={onOpenCommands} />
+              <NoSituationYet
+                features={features}
+                feature={feature}
+                featureDef={featureDef}
+                onFeatureChange={onFeatureChange}
+                onScenarioChange={onScenarioChange}
+              />
             ) : (
               <SdkSurface scenario={scenario} />
             )}
@@ -136,7 +202,13 @@ export function Stage({
         {surface === 'ci' && (
           <div style={{ position: 'absolute', inset: 0 }}>
             {scenario === null ? (
-              <NoSituationYet onOpenCommands={onOpenCommands} />
+              <NoSituationYet
+                features={features}
+                feature={feature}
+                featureDef={featureDef}
+                onFeatureChange={onFeatureChange}
+                onScenarioChange={onScenarioChange}
+              />
             ) : (
               <CiSurface scenario={featureDef.situations[scenario]} />
             )}

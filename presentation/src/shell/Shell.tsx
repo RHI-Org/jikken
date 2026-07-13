@@ -90,13 +90,6 @@ export function Shell() {
     [injectCli],
   );
 
-  // Empty-state escape hatch (SDK / CI gate before a situation is chosen):
-  // open the notes panel straight to Commands, where Feature/Situation live.
-  const openCommands = useCallback(() => {
-    setPanelOpen(true);
-    setNotesTab('commands');
-  }, []);
-
   // ★ The hand-off centerpiece: run the scenario in the CLI, then auto-switch
   // to the CI gate, where the same engine run either ships the change or
   // visibly blocks the deploy — the governance layer as the demo's climax.
@@ -147,11 +140,12 @@ export function Shell() {
         onSurfaceChange={changeSurface}
         features={catalog}
         feature={feature}
+        onFeatureChange={changeFeature}
         scenario={scenario}
+        onScenarioChange={changeScenario}
         cliInject={cliInject}
         onCliResult={onCliResult}
         activePrinciple={activePrinciple}
-        onOpenCommands={openCommands}
       />
     </div>
   );
