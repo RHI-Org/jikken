@@ -46,6 +46,7 @@ export function Shell() {
   const tutorialCliRan = useRef(false);
 
   const injectCli = useCallback((command: string) => {
+    setSurface('cli');
     nonce.current += 1;
     setCliInject({ command, nonce: nonce.current });
   }, []);

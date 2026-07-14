@@ -4,6 +4,8 @@
 
 One design intent, four surfaces. A feature-flag lifecycle tool built as a cross-surface UX demonstration.
 
+**Jikken** (実験) is Japanese for **experiment**. The name reflects the app's purpose: test a proposed feature-flag change against a representative audience before it reaches production. Jikken turns that experiment into a governed decision by showing who gains access, who is excluded, and which changes need review—then carries the same verdict into the CLI, Dashboard, SDK, and CI gate.
+
 Developer tooling can keep one coherent design language across every surface it touches. Green means "receives the flag" everywhere. Red means "excluded" everywhere. Yellow means "needs review" everywhere. The field is spelled `rollout_percentage` on every surface. Exit code 1 means the same conflict in the CLI, Dashboard, SDK, and CI gate. The hard part is not building one good interface — it is building four that feel like they came from the same mind.
 
 ### Why the domain is a stand-in
@@ -115,6 +117,7 @@ jikken/
 ├── dashboard/       # React/Vite/Tailwind — five pages
 ├── sdk/             # @jikken/sdk — FlagClient + FlagApiError
 ├── presentation/    # the stage — guided demo shell with a live terminal (xterm.js)
+├── docs/            # product walkthrough images and planning documents
 ├── supabase/        # Edge Function (simulate) + migrations
 ├── flags/           # sample flag JSON
 ├── data/            # seeded mock users
@@ -129,7 +132,7 @@ A guided walkthrough shell with the real CLI running in the browser and the real
 `.github/workflows/flag-validation.yml` runs all unit and coherence suites. The pipeline's pass/fail status is determined by the CLI's own exit code, run against the shared engine.
 
 ## How this was built
-This project used an AI-native workflow: a written product spec (2026-07-12-spec) led to an implementation plan and design review (`IMPLEMENTATION_PLAN.md`). Claude Code acted as architect, delegating boilerplate to a smaller open model via `scripts/gemma.mjs`. Every delegated artifact was reviewed and typechecked before integration. Total time from spec to deployed product was roughly one working day.
+This project used an AI-native workflow: a written [product spec](docs/planning/2026-07-12-spec) led to an [implementation plan and design review](docs/planning/IMPLEMENTATION_PLAN.md). Claude Code acted as architect, delegating boilerplate to a smaller open model via `scripts/gemma.mjs`. Every delegated artifact was reviewed and typechecked before integration. Total time from spec to deployed product was roughly one working day.
 
 ## Design principles
 Ten principles guide the UX: scannable in 3 seconds; colors functional, not decorative; exit codes are the real product; suggestions beat diagnoses; consistency is the hardest feature; transparent reasoning; explicit role division; intentional restraint; validate before you compute; graceful failure is a feature.
