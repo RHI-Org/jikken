@@ -30,6 +30,9 @@ jobs:
       - name: Install workspaces
         run: npm ci
 
+      - name: Lint — all surfaces
+        run: npm run lint
+
       - name: Unit tests — all surfaces
         run: npm test
 
