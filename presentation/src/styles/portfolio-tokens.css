@@ -122,8 +122,9 @@ body {
   flex-direction: column;
   align-items: center;
   font-family: var(--font-mono);
-  font-size: clamp(1.35rem, 1.6vw, 1.65rem);
-  line-height: 1.2;
+  font-size: clamp(2rem, 2.8vw, 2.75rem);
+  font-weight: 500;
+  line-height: 1.08;
   transition: transform 50ms linear;
 }
 .jk-ascii__character--0 { color: var(--stone-200); }
