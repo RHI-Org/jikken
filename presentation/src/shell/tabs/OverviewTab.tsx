@@ -61,15 +61,15 @@ export function OverviewTab({
       </section>
 
       {videoOpen && (
-        <div role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setVideoOpen(false); }} style={{ position: 'fixed', inset: 0, zIndex: 20_000, display: 'grid', placeItems: 'center', padding: '1.5rem', background: 'rgba(12, 10, 9, 0.78)' }}>
-          <div role="dialog" aria-modal="true" aria-labelledby="walkthrough-video-title" style={{ width: 'min(1100px, 94vw, calc((92vh - 64px) * 353 / 270))', padding: '0.75rem', borderRadius: '0.75rem', background: '#1c1917', boxShadow: '0 24px 80px rgba(0, 0, 0, 0.5)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', padding: '0.15rem 0.15rem 0.7rem 0.35rem', color: '#fafaf9' }}>
+        <div role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setVideoOpen(false); }} style={{ position: 'fixed', inset: 0, zIndex: 20_000, display: 'grid', placeItems: 'center', padding: '1.5rem', background: 'rgba(250, 250, 249, 0.88)', backdropFilter: 'blur(8px)' }}>
+          <div role="dialog" aria-modal="true" aria-labelledby="walkthrough-video-title" style={{ width: 'min(1100px, 94vw, calc((92vh - 64px) * 353 / 270))', overflow: 'hidden', border: '1px solid var(--portfolio-border)', borderRadius: '0.75rem', background: '#fff', boxShadow: '0 24px 80px rgba(28, 25, 23, 0.24)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', padding: '0.65rem 0.75rem', color: 'var(--portfolio-text-primary)', background: '#fff', borderBottom: '1px solid var(--portfolio-border-muted)' }}>
               <div id="walkthrough-video-title" style={{ fontSize: '0.85rem', fontWeight: 'var(--font-weight-semibold)' }}>Jikken product walkthrough · 83 sec</div>
-              <button type="button" autoFocus onClick={() => setVideoOpen(false)} aria-label="Close walkthrough video" style={{ display: 'grid', placeItems: 'center', width: 30, height: 30, padding: 0, border: '1px solid #57534e', borderRadius: '0.4rem', background: '#292524', color: '#fafaf9', cursor: 'pointer' }}>
+              <button type="button" autoFocus onClick={() => setVideoOpen(false)} aria-label="Close walkthrough video" style={{ display: 'grid', placeItems: 'center', width: 30, height: 30, padding: 0, border: '1px solid var(--portfolio-border)', borderRadius: '0.4rem', background: 'var(--portfolio-bg-card-alt)', color: 'var(--portfolio-text-primary)', cursor: 'pointer' }}>
                 <X size={16} />
               </button>
             </div>
-            <video autoPlay controls playsInline preload="metadata" poster="/media/jikken-walkthrough-poster-upscaled.png" style={{ display: 'block', width: '100%', aspectRatio: '353 / 270', objectFit: 'contain', borderRadius: '0.45rem', background: '#000' }} aria-label="Narrated Jikken product walkthrough">
+            <video autoPlay controls playsInline preload="metadata" poster="/media/jikken-walkthrough-poster-upscaled.png" style={{ display: 'block', width: '100%', aspectRatio: '353 / 270', objectFit: 'contain', background: '#fff' }} aria-label="Narrated Jikken product walkthrough">
               <source src="/media/jikken-walkthrough.mp4" type="video/mp4" />
               Your browser does not support embedded video. <a href="/media/jikken-walkthrough.mp4">Open the walkthrough video</a>.
             </video>
