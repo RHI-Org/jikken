@@ -94,9 +94,9 @@ export function TutorialOverlay() {
   // screen for exactly one recording-length pass.
   useEffect(() => {
     const togglePlayback = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement | null;
-      const isFormControl = target?.matches('input, textarea, select, [contenteditable="true"]');
-      if (event.code !== 'KeyP' || event.ctrlKey || event.metaKey || event.altKey || isFormControl) return;
+      // This must remain global even when xterm's hidden textarea owns focus;
+      // the CLI intentionally focuses itself on load for immediate typing.
+      if (event.code !== 'KeyP' || event.ctrlKey || event.metaKey || event.altKey) return;
       event.preventDefault();
       if (!active) {
         start();
