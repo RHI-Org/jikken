@@ -9,7 +9,7 @@ Govern feature-flag changes across CLI, Dashboard, SDK, and CI—preview audienc
 See one targeting decision move through the CLI, Dashboard, SDK, and CI gate in this narrated 83-second walkthrough.
 
 <a href="https://jk.experienceplus.ai/walkthrough">
-  <img src="docs/images/00-video-walkthrough-native.jpg" alt="Watch the narrated Jikken product walkthrough" width="760">
+  <img src="docs/images/00-video-walkthrough-upscaled.png" alt="Watch the narrated Jikken product walkthrough" width="760">
 </a>
 
 [▶ Watch the walkthrough](https://jk.experienceplus.ai/walkthrough)
@@ -41,49 +41,49 @@ The flow starts with a developer checking a proposed targeting change and ends w
 
 The diff identifies exactly which users would lose access and returns exit code 1.
 
-![Jikken CLI showing a conflict diff and three users losing access](docs/images/01-cli-conflict.jpg)
+![Jikken CLI showing a conflict diff and three users losing access](docs/images/b2b-mockups/01-cli-conflict-b2b.jpg)
 
 ### 2. Review the flag portfolio
 
 The Dashboard summarizes flag status and rollout exposure before a reviewer opens a specific flag.
 
-![Feature Flags landing page with portfolio charts and rollout bars](docs/images/02-flags-portfolio.jpg)
+![Feature Flags landing page with portfolio charts and rollout bars](docs/images/b2b-mockups/02-flags-portfolio-b2b.jpg)
 
 ### 3. Inspect audience impact
 
 The flag detail view translates the result into decision counts, governance signals, audience provenance, and per-user reasoning.
 
-![Flag simulation detail with decision mix and governance charts](docs/images/03-flag-simulation.jpg)
+![Flag simulation detail with decision mix and governance charts](docs/images/b2b-mockups/03-flag-simulation-b2b.jpg)
 
 ### 4. Preserve the audit trail
 
 Simulation History keeps every verdict searchable and expands each run to show metadata and decision details.
 
-![Expanded Simulation History row with exit code, latency, audience, and decisions](docs/images/04-simulation-history.jpg)
+![Expanded Simulation History row with exit code, latency, audience, and decisions](docs/images/b2b-mockups/04-simulation-history-b2b.jpg)
 
 ### 5. Verify workspace configuration
 
 Settings makes the active data source, deployment environments, and shared authentication model explicit.
 
-![Settings page showing Supabase connection, environments, and authentication](docs/images/05-settings.jpg)
+![Settings page showing Supabase connection, environments, and authentication](docs/images/b2b-mockups/05-settings-b2b.jpg)
 
 ### 6. Use the same contract from the SDK
 
 The SDK asks the same safety question in application code and maps the result directly to process behavior.
 
-![SDK example using FlagClient to gate a deployment](docs/images/06-sdk-contract.jpg)
+![SDK example using FlagClient to gate a deployment](docs/images/b2b-mockups/06-sdk-contract-b2b.jpg)
 
 ### 7. Inspect the machine response
 
 The live response exposes the same simulation ID, conflict verdict, exit code, and audience summary without requiring automation to parse presentation text.
 
-![SDK live response showing the shared simulation contract](docs/images/07-sdk-response.jpg)
+![SDK live response showing the shared simulation contract](docs/images/b2b-mockups/07-sdk-response-b2b.jpg)
 
 ### 8. Enforce the decision in CI
 
 The CI gate consumes exit code 1, blocks production, and prevents the risky change from reaching users.
 
-![CI pipeline with the Jikken gate blocking deployment to production](docs/images/08-ci-gate.jpg)
+![CI pipeline with the Jikken gate blocking deployment to production](docs/images/b2b-mockups/08-ci-gate-b2b.jpg)
 
 ## The thesis is executable
 The `tests/integration/coherence.test.ts` suite enforces design consistency through code:
