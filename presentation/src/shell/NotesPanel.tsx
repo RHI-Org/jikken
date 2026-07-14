@@ -78,7 +78,7 @@ export function NotesPanel({
   onHandoff: () => void;
   onRunCommand: (command: string) => void;
   features: FeatureDef[];
-  feature: FeatureId;
+  feature: FeatureId | null;
   onFeatureChange: (f: FeatureId) => void;
   scenario: ScenarioId | null;
   onScenarioChange: (s: ScenarioId) => void;
@@ -104,7 +104,7 @@ export function NotesPanel({
             <span>Jikken</span>
           </div>
           <div style={{ marginTop: '0.3rem', fontSize: '0.78rem', color: 'var(--portfolio-text-muted)' }}>
-            Preview who a feature reaches — and stop risky changes before they ship.
+            Preview who a feature reaches and stop risky changes before they ship.
           </div>
         </div>
         <button

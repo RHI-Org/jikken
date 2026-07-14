@@ -42,20 +42,20 @@ function NoSituationYet({
   onScenarioChange,
 }: {
   features: FeatureDef[];
-  feature: FeatureId;
+  feature: FeatureId | null;
   featureDef: FeatureDef;
   onFeatureChange: (f: FeatureId) => void;
   onScenarioChange: (s: ScenarioId) => void;
 }) {
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.1rem', padding: '2rem' }}>
-      <span style={{ color: 'var(--portfolio-text-muted)', fontSize: '0.85rem' }}>Pick a scenario to begin</span>
+      <span style={{ color: 'var(--portfolio-text-muted)', fontSize: '0.85rem' }}>Pick a feature and scenario to begin</span>
 
       <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem' }}>
         <span style={MICRO_LABEL}>Feature</span>
         <select
-          value={feature}
-          onChange={(e) => onFeatureChange(e.target.value as FeatureId)}
+          value={feature ?? ''}
+          onChange={(e) => e.target.value && onFeatureChange(e.target.value as FeatureId)}
           aria-label="Choose a feature"
           style={{
             padding: '0.4rem 0.6rem',
@@ -69,6 +69,7 @@ function NoSituationYet({
             cursor: 'pointer',
           }}
         >
+          <option value="" disabled>Pick a feature…</option>
           {features.map((f) => (
             <option key={f.id} value={f.id}>
               {f.label}
@@ -83,6 +84,7 @@ function NoSituationYet({
           {SCENARIO_IDS.map((id) => (
             <button
               key={id}
+              disabled={!feature}
               onClick={() => onScenarioChange(id)}
               title={featureDef.situations[id].description}
               style={{
@@ -94,7 +96,8 @@ function NoSituationYet({
                 fontSize: '0.78rem',
                 fontFamily: 'var(--font-mono)',
                 fontWeight: 'var(--font-weight-semibold)',
-                cursor: 'pointer',
+                cursor: feature ? 'pointer' : 'not-allowed',
+                opacity: feature ? 1 : 0.5,
               }}
             >
               {SCENARIO_NAMES[id]}
@@ -125,7 +128,7 @@ export function Stage({
   surface: Surface;
   onSurfaceChange: (s: Surface) => void;
   features: FeatureDef[];
-  feature: FeatureId;
+  feature: FeatureId | null;
   onFeatureChange: (f: FeatureId) => void;
   scenario: ScenarioId | null;
   onScenarioChange: (s: ScenarioId) => void;
@@ -260,7 +263,7 @@ export function Stage({
         )}
         {surface === 'sdk' && (
           <div style={{ position: 'absolute', inset: 0 }}>
-            {scenario === null ? (
+            {feature === null || scenario === null ? (
               <NoSituationYet
                 features={features}
                 feature={feature}
@@ -275,7 +278,7 @@ export function Stage({
         )}
         {surface === 'ci' && (
           <div style={{ position: 'absolute', inset: 0 }}>
-            {scenario === null ? (
+            {feature === null || scenario === null ? (
               <NoSituationYet
                 features={features}
                 feature={feature}

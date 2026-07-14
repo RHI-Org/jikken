@@ -10,7 +10,8 @@ export type TutorialAnchor = (typeof TUTORIAL_ANCHORS)[keyof typeof TUTORIAL_ANC
 
 type TutorialCommand =
   | { type: 'jikken:tutorial:navigate'; path: TutorialPath }
-  | { type: 'jikken:tutorial:highlight'; anchor: TutorialAnchor };
+  | { type: 'jikken:tutorial:highlight'; anchor: TutorialAnchor }
+  | { type: 'jikken:tutorial:clear-highlight' };
 
 export type TutorialEvent =
   | { type: 'jikken:tutorial:event'; event: 'history-opened' }
@@ -67,6 +68,8 @@ function isTutorialCommand(value: unknown): value is TutorialCommand {
     return Object.values(TUTORIAL_ANCHORS).includes(message.anchor as TutorialAnchor);
   }
 
+  if (message.type === 'jikken:tutorial:clear-highlight') return true;
+
   return false;
 }
 
@@ -103,8 +106,10 @@ export function connectTutorialBridge(navigate: (path: string) => void): () => v
     trustedParentOrigin = event.origin;
     if (event.data.type === 'jikken:tutorial:navigate') {
       navigate(event.data.path);
-    } else {
+    } else if (event.data.type === 'jikken:tutorial:highlight') {
       highlightAnchor(event.data.anchor);
+    } else {
+      clearHighlight?.();
     }
   };
 

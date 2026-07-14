@@ -14,7 +14,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import type { SimulationResult } from '@jikken/shared';
-import { COLORS, DECISION_LABELS, SCENARIOS, evaluateFlag, type ScenarioId } from '@jikken/shared';
+import { COLORS, DECISION_LABELS, FEATURES, SCENARIOS, evaluateFlag, type ScenarioId } from '@jikken/shared';
 import { flagStore } from '@/store/flagStore';
 import { exportToPDF, formatResultForClipboard } from '@/utils/export';
 
@@ -125,8 +125,15 @@ export default function SimulationView({ simulationResult: providedResult }: Sim
   const [searchParams] = useSearchParams();
   const flagId = params.id;
   const scenarioParam = searchParams.get('scenario');
-  const demoScenario = scenarioParam && scenarioParam in SCENARIOS
-    ? SCENARIOS[scenarioParam as ScenarioId]
+  const catalogFeature = FEATURES.find((candidate) => candidate.id === flagId);
+  const scenarioId = scenarioParam && scenarioParam in SCENARIOS
+    ? scenarioParam as ScenarioId
+    : catalogFeature
+      ? 'conflict'
+      : null;
+  const demoScenario = scenarioId
+    ? catalogFeature?.situations[scenarioId]
+      ?? (SCENARIOS[scenarioId].flag.id === flagId ? SCENARIOS[scenarioId] : null)
     : null;
 
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -233,11 +240,11 @@ export default function SimulationView({ simulationResult: providedResult }: Sim
           <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
             <div className="rounded bg-white/10 p-3">
               <div className="text-xs uppercase tracking-wide text-gray-400">Live</div>
-              <div className="mt-1">Dark Mode is available to everyone.</div>
+              <div className="mt-1">{demoScenario.baseline.rollout_percentage}% rollout · {demoScenario.baseline.audience_rules?.length ?? 0} targeting rules</div>
             </div>
             <div className="rounded bg-red-500/15 p-3">
               <div className="text-xs uppercase tracking-wide text-red-300">Proposed</div>
-              <div className="mt-1">Exclude @internal.company.com accounts.</div>
+              <div className="mt-1">{demoScenario.flag.rollout_percentage}% rollout · {demoScenario.flag.audience_rules?.length ?? 0} targeting rules</div>
             </div>
           </div>
         </div>

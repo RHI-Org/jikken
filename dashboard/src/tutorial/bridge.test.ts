@@ -85,4 +85,18 @@ describe('dashboard tutorial bridge', () => {
     expect(row.style.outlineOffset).toBe('1px');
     expect(row.style.boxShadow).toBe('1px 1px black');
   });
+
+  it('clears the active highlight when the walkthrough exits', () => {
+    const row = document.createElement('div');
+    row.dataset.tutorial = TUTORIAL_ANCHORS.scenarioContext;
+    document.body.append(row);
+    connect();
+
+    send({ type: 'jikken:tutorial:highlight', anchor: TUTORIAL_ANCHORS.scenarioContext });
+    expect(row.style.outline).toContain('#2563eb');
+
+    send({ type: 'jikken:tutorial:clear-highlight' });
+    expect(row.style.outline).toBe('');
+    expect(row.style.boxShadow).toBe('');
+  });
 });

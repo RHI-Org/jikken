@@ -81,8 +81,12 @@ export function DashboardSurface() {
     return () => {
       tutorialTimers.current.forEach(window.clearTimeout);
       tutorialTimers.current = [];
+      frameRef.current?.contentWindow?.postMessage(
+        { type: 'jikken:tutorial:clear-highlight' },
+        dashboardOrigin,
+      );
     };
-  }, [prepareTutorialStep]);
+  }, [dashboardOrigin, prepareTutorialStep]);
 
   return (
     <div data-tutorial="dashboard-frame" style={{ height: '100%', minHeight: 0, padding: '2rem', boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

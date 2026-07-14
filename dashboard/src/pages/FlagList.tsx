@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
-import type { FlagConfig } from '@jikken/shared';
+import { FEATURES, type FlagConfig } from '@jikken/shared';
 import { flagStore } from '@/store/flagStore';
 
 function FlagPortfolioCharts({ flags }: { flags: FlagConfig[] }) {
@@ -120,6 +120,7 @@ export default function FlagList() {
   }, []);
 
   const filteredFlags = filterFlags(flags, query);
+  const catalogFlagIds = new Set<string>(FEATURES.map((feature) => feature.id));
 
   return (
     <div className="max-w-4xl mx-auto px-8 pt-10 pb-8">
@@ -167,7 +168,7 @@ export default function FlagList() {
             {filteredFlags.map((flag) => (
               <Link
                 key={flag.id}
-                to={`/flags/simulate/${flag.id}`}
+                to={`/flags/simulate/${flag.id}${catalogFlagIds.has(flag.id) ? '?scenario=conflict' : ''}`}
                 className="block p-4 bg-white rounded-lg shadow hover:shadow-md transition"
               >
                 <div className="flex justify-between items-center">

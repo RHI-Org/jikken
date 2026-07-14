@@ -23,7 +23,7 @@ export function Shell() {
   const [notesTab, setNotesTab] = useState<NotesTab>('overview');
   const [surface, setSurface] = useState<Surface>('cli');
   const [catalog, setCatalog] = useState<FeatureDef[]>(BUNDLED_CATALOG);
-  const [feature, setFeature] = useState<FeatureId>('dark-mode');
+  const [feature, setFeature] = useState<FeatureId | null>(null);
   const [scenario, setScenario] = useState<ScenarioId | null>(null);
 
   // Load the Feature × Situation catalog from Supabase; falls back to the
@@ -79,6 +79,7 @@ export function Shell() {
   // shows the exact menu selection rather than stale terminal output.
   const changeScenario = useCallback(
     (s: ScenarioId) => {
+      if (!feature) return;
       setScenario(s);
       setActivePrinciple(null);
       injectCli(`jikken diff --feature ${feature} --scenario ${s}`);
@@ -132,7 +133,7 @@ export function Shell() {
   // to the CI gate, where the same engine run either ships the change or
   // visibly blocks the deploy — the governance layer as the demo's climax.
   const handoff = useCallback(() => {
-    if (!scenario) return; // hand-off needs a chosen situation to replay
+    if (!feature || !scenario) return; // hand-off needs both inputs to replay
     setActivePrinciple(null);
     setSurface('cli');
     injectCli(`jikken diff --feature ${feature} --scenario ${scenario}`);

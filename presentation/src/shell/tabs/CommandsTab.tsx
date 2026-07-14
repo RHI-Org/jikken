@@ -103,7 +103,7 @@ export function CommandsTab({
   onRunCommand,
 }: {
   features: FeatureDef[];
-  feature: FeatureId;
+  feature: FeatureId | null;
   onFeatureChange: (f: FeatureId) => void;
   scenario: ScenarioId | null;
   onScenarioChange: (s: ScenarioId) => void;
@@ -135,19 +135,20 @@ export function CommandsTab({
               <select
                 id="feature-menu"
                 data-tutorial="feature-select"
-                value={feature}
-                onChange={(e) => onFeatureChange(e.target.value as FeatureId)}
+                value={feature ?? ''}
+                onChange={(e) => e.target.value && onFeatureChange(e.target.value as FeatureId)}
                 aria-label="Choose a feature"
                 title={featureDef.description}
                 style={{ ...SELECT_STYLE, minWidth: 0, flex: 1 }}
               >
+                <option value="" disabled>Pick a feature…</option>
                 {features.map((f) => (
                   <option key={f.id} value={f.id}>
                     {f.label}
                   </option>
                 ))}
               </select>
-              <CopyButton label="Copy feature simulation command" text={`jikken simulate --flag ${feature}`} />
+              <CopyButton label="Copy feature simulation command" text={feature ? `jikken simulate --flag ${feature}` : ''} disabled={!feature} />
               <InfoTip label="About the Feature menu" text="Choose the product capability controlled by the flag. Each feature carries its own audience attributes and scenarios." />
             </div>
           </div>
@@ -160,9 +161,10 @@ export function CommandsTab({
                 data-tutorial="scenario-select"
                 value={scenario ?? ''}
                 onChange={(e) => e.target.value && onScenarioChange(e.target.value as ScenarioId)}
+                disabled={!feature}
                 aria-label="Choose a scenario"
                 title={scenario ? featureDef.situations[scenario].description : 'Pick a scenario to begin'}
-                style={{ ...SELECT_STYLE, minWidth: 0, flex: 1, color: scenario ? 'var(--portfolio-text-primary)' : 'var(--portfolio-text-muted)' }}
+                style={{ ...SELECT_STYLE, minWidth: 0, flex: 1, color: scenario ? 'var(--portfolio-text-primary)' : 'var(--portfolio-text-muted)', cursor: feature ? 'pointer' : 'not-allowed', opacity: feature ? 1 : 0.65 }}
               >
                 <option value="" disabled>
                   Pick a scenario…
@@ -173,7 +175,7 @@ export function CommandsTab({
                   </option>
                 ))}
               </select>
-              <CopyButton label="Copy scenario simulation command" text={scenario ? `jikken simulate --feature ${feature} --scenario ${scenario}` : ''} disabled={!scenario} />
+              <CopyButton label="Copy scenario simulation command" text={feature && scenario ? `jikken simulate --feature ${feature} --scenario ${scenario}` : ''} disabled={!feature || !scenario} />
               <InfoTip label="About the Scenario menu" text={`Choose the proposed targeting change to evaluate. Menu names map directly to CLI values: ${scenarioMap}.`} />
             </div>
           </div>
