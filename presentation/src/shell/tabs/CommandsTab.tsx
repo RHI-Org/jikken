@@ -138,7 +138,7 @@ export function CommandsTab({
             <path
               d="M15 1H9C5 1 4 4 4 9V42C4 47 2 50 0 50C2 50 4 53 4 58V91C4 96 5 99 9 99H15"
               fill="none"
-              stroke="#2563eb"
+              stroke="#1c1917"
               strokeWidth="1.5"
               vectorEffect="non-scaling-stroke"
               strokeLinecap="round"
