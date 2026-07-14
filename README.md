@@ -4,6 +4,16 @@
 
 One design intent, four surfaces. A feature-flag lifecycle tool built as a cross-surface UX demonstration.
 
+**Current case-study release: v1.1.0** — an iteration driven by explicitly labeled AI-simulated UX research and followed by full automated verification.
+
+### What changed in v1.1
+
+- A persistent run-context strip proves which feature, scenario, environment, verdict, simulation ID, and result source are moving across all four surfaces.
+- Feature and scenario selection now prepares shared context; an explicit Run action executes the CLI diff without surprising navigation.
+- The Dashboard identifies audience provenance and supports a review lifecycle with actor, policy version, rationale, approval or denial, and a contextual access check.
+- The recommended first run is clearer, narrow-screen navigation behaves as a drawer, and the walkthrough labels its research-driven additions as AI-simulated hypotheses—not real-user validation.
+- Security constraints appear in the workflow, and the case study records where human evaluation corrected AI-generated implementation.
+
 **Jikken** (実験) is Japanese for **experiment**. The name reflects the app's purpose: test a proposed feature-flag change against a representative audience before it reaches production. Jikken turns that experiment into a governed decision by showing who gains access, who is excluded, and which changes need review—then carries the same verdict into the CLI, Dashboard, SDK, and CI gate.
 
 Developer tooling can keep one coherent design language across every surface it touches. Green means "receives the flag" everywhere. Red means "excluded" everywhere. Yellow means "needs review" everywhere. The field is spelled `rollout_percentage` on every surface. Exit code 1 means the same conflict in the CLI, Dashboard, SDK, and CI gate. The hard part is not building one good interface — it is building four that feel like they came from the same mind.
@@ -170,6 +180,8 @@ A guided walkthrough shell with the real CLI running in the browser and the real
 
 ## How this was built
 This project used an AI-native workflow: a written [product spec](docs/planning/2026-07-12-spec) led to an [implementation plan and design review](docs/planning/IMPLEMENTATION_PLAN.md). Claude Code acted as architect, delegating boilerplate to a smaller open model via `scripts/gemma.mjs`. Every delegated artifact was reviewed and typechecked before integration. Total time from spec to deployed product was roughly one working day.
+
+The workflow was not “AI generated it, therefore it shipped.” Intent was specified first, implementation was delegated across Claude Code, Codex, and Gemma, and every result was evaluated against the running interaction and shared contract. Model output was rejected or revised when it invented the wrong tutorial protocol, allowed early command injection to disappear before the terminal mounted, or used internal scenario names that conflicted with user-facing menu language. Human judgment set the product direction; tests, builds, and direct walkthrough checks determined what was accepted.
 
 The repository also includes [AI-simulated synthetic UX research](docs/research/AI_SIMULATED_UX_RESEARCH.md) using product, platform-engineering, security, and hiring-reviewer personas. It is explicitly a hypothesis-generating cognitive walkthrough—not real-user research—and includes a prioritized list of possible fixes plus a plan for human validation.
 

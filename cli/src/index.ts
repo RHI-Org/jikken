@@ -164,7 +164,7 @@ const program = new Command();
 program
   .name('jikken')
   .description('Feature flag lifecycle tool — simulate and validate flag configurations')
-  .version('1.0.0');
+  .version('1.1.0');
 
 // ─── Simulate Command ───
 program

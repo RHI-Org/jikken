@@ -17,6 +17,23 @@ The synthetic panel predicts that the core thesis will land with technical evalu
 
 The largest remaining risk is proof, not concept. Jikken says the same run crosses four surfaces, but a reviewer must infer continuity because the selected feature, scenario, verdict, and simulation ID are not persistently visible together across the entire handoff. A second risk is evaluation cost: the overview, commands, walkthrough, UX rationale, and surface navigation offer several valid entry points without making one recommended first path dominant enough for a time-constrained portfolio reviewer.
 
+## v1.1 implementation response
+
+The findings below are the original AI-simulated hypotheses. Version 1.1 implements a product response to all eight themes; this is evidence of iteration, not proof that the hypotheses were correct:
+
+| Research theme | v1.1 response |
+| --- | --- |
+| Cross-surface continuity | Added a persistent context strip with feature, scenario, environment, verdict, simulation ID, provenance, copy, and persisted-run History link. |
+| Competing first steps | Made the guided risky-change path the dominant first-run action and kept free exploration secondary. |
+| Surprise navigation | Made feature/scenario selection side-effect free and added an explicit Run selected diff in CLI action. |
+| Incomplete review lifecycle | Added pending, approved, and denied review states with actor, policy version, rationale, and timestamp. |
+| Unclear audience source | Added audience provenance, cohort size, evaluated attributes, freshness, and an explicit deterministic-demo-data label. |
+| Detached security explanation | Added a contextual production-access check that denies unresolved changes and explains recovery, plus a least-privilege walkthrough note. |
+| Responsive density | Added a narrow-screen notes drawer, backdrop, responsive stage controls, and mobile-safe walkthrough positioning. |
+| Under-explained AI judgment | Documented concrete rejected/revised AI output and prominently labeled this study as AI-simulated rather than human validation. |
+
+The success signals in this report still require real participants. Shipping these responses closes the implementation loop, not the validation loop.
+
 ## Method
 
 This study used an AI-generated persona panel and a structured cognitive walkthrough. Each persona was assigned realistic goals, prior knowledge, and time pressure. The review considered:
