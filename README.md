@@ -96,6 +96,43 @@ Defined in `shared/src/constants.ts`.
 | 5 | `DEPRECATED` | Flag uses a deprecated config pattern |
 | 6 | `QUOTA_EXCEEDED` | Rate limit hit |
 
+## API contract
+
+The SDK and CI surface the same evaluation over one HTTP endpoint. The contract is designed to be **discoverable from an error** — every failure names the field at fault and how to fix it, so a caller can recover without reading these docs.
+
+**Endpoint** — `POST /functions/v1/jikken-simulate` (Supabase Edge Function; the same seeded engine as the CLI).
+
+**Auth (dual, by caller type)** — a machine key header `x-jikken-key: <key>` for CI/SDK, *or* a Supabase user JWT in `Authorization: Bearer <token>` for browser callers. The key is checked in constant time.
+
+**Request**
+
+```jsonc
+// Either a registered flag…            …or a named scenario:
+{ "flag_id": "dark-mode",               { "scenario": "conflict" }
+  "mock_users": [ /* ≤ 500 */ ],
+  "surface": "sdk" }                     // surface is optional, for the audit row
+```
+
+**Success — `200`** returns the `SimulationResult`: the machine-readable verdict is `exit_code` (the table above); humans read `summary` and the per-user `decisions[]`. `simulation_id` is a hash of the inputs, so identical requests are provably identical across surfaces.
+
+```jsonc
+{ "flag_id": "dark-mode", "simulation_id": "sim_49c2eec8",
+  "result": "conflict", "exit_code": 1,
+  "summary": { "passed": 7, "conflicted": 3, "warned": 0, "total": 10 },
+  "decisions": [ { "user_id": "user_004", "decision": "exclude",
+                   "reason": "User excluded by audience rule (…)",
+                   "rule_sources": ["flags/dark-mode.json:14"] } ] }
+```
+
+**Error — `4xx/5xx`** returns a uniform, teachable shape (never a bare string): a stable `code`, a human `message`, and `details[]` each carrying the offending `field` and a concrete `suggestion`.
+
+```jsonc
+{ "error": { "code": "FLAG_NOT_FOUND", "message": "Flag 'dark-mode' is not registered",
+             "details": [ { "field": "flag_id", "suggestion": "Check that the flag is registered" } ] } }
+```
+
+**Client ergonomics** — `@jikken/sdk`'s `FlagClient` wraps this: `simulate()` throws a typed `FlagApiError` exposing `getFirstSuggestion()`, `isRetryable()`, and `getRetryDelay(attempt)` (exponential backoff, capped at 10s); a request aborts after `timeoutMs`. `isSafeToDeploy()` collapses the whole result to one boolean for a pipeline gate — the API meets the caller at the altitude they need.
+
 ## Quick start
 Node 20+ required.
 
