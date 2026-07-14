@@ -4,6 +4,14 @@
 
 Govern feature-flag changes across CLI, Dashboard, SDK, and CI—preview audience impact, preserve explainable decisions, and block risky rollouts.
 
+## Watch the product walkthrough
+
+See one targeting decision move through the CLI, Dashboard, SDK, and CI gate in this narrated 83-second walkthrough.
+
+[![Watch the narrated Jikken product walkthrough](docs/images/00-video-walkthrough.jpg)](presentation/public/media/jikken-walkthrough.mp4)
+
+[▶ Watch the walkthrough](presentation/public/media/jikken-walkthrough.mp4)
+
 **Current release: v1.1.0** — an iteration driven by explicitly labeled AI-simulated UX research and followed by full automated verification.
 
 **Jikken** is Japanese for **experiment**. The name reflects the app's purpose: test a proposed feature-flag change against a representative audience before it reaches production. Jikken turns that experiment into a governed decision by showing who gains access, who is excluded, and which changes need review—then carries the same verdict into the CLI, Dashboard, SDK, and CI gate.

@@ -28,6 +28,25 @@ export function OverviewTab({
         </p>
       </div>
 
+      <section aria-labelledby="video-walkthrough-heading" style={{ padding: '0.85rem', border: '1px solid var(--portfolio-border)', borderRadius: '0.65rem', background: 'var(--portfolio-bg-card-alt)', boxShadow: '0 1px 3px rgba(12, 10, 9, 0.08)' }}>
+        <div style={microLabel}>Narrated walkthrough · 83 sec</div>
+        <div id="video-walkthrough-heading" style={{ margin: '0.35rem 0 0.65rem', fontFamily: 'var(--font-serif)', fontSize: '1.05rem', fontWeight: 'var(--font-weight-semibold)', color: 'var(--portfolio-text-primary)' }}>
+          Watch Jikken end to end
+        </div>
+        <video
+          controls
+          playsInline
+          preload="metadata"
+          poster="/media/jikken-walkthrough-poster.jpg"
+          style={{ display: 'block', width: '100%', aspectRatio: '16 / 9', borderRadius: '0.45rem', background: '#1c1917' }}
+          aria-label="Narrated Jikken product walkthrough"
+        >
+          <source src="/media/jikken-walkthrough.mp4" type="video/mp4" />
+          Your browser does not support embedded video.{' '}
+          <a href="/media/jikken-walkthrough.mp4">Open the walkthrough video</a>.
+        </video>
+      </section>
+
       <section aria-labelledby="first-run-heading" style={{ padding: '1rem', border: '1px solid #bfdbfe', borderRadius: '0.65rem', background: '#eff6ff', boxShadow: '0 1px 3px rgba(37, 99, 235, 0.12)' }}>
         <div style={{ ...microLabel, color: '#1d4ed8' }}>Recommended first run</div>
         <div id="first-run-heading" style={{ marginTop: '0.35rem', fontFamily: 'var(--font-serif)', fontSize: '1.05rem', fontWeight: 'var(--font-weight-semibold)', color: 'var(--portfolio-text-primary)' }}>
