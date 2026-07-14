@@ -6,14 +6,6 @@ Govern feature-flag changes across CLI, Dashboard, SDK, and CI—preview audienc
 
 **Current release: v1.1.0** — an iteration driven by explicitly labeled AI-simulated UX research and followed by full automated verification.
 
-### What changed in v1.1
-
-- A persistent run-context strip proves which feature, scenario, environment, verdict, simulation ID, and result source are moving across all four surfaces.
-- Feature and scenario selection now prepares shared context; an explicit Run action executes the CLI diff without surprising navigation.
-- The Dashboard identifies audience provenance and supports a review lifecycle with actor, policy version, rationale, approval or denial, and a contextual access check.
-- The recommended first run is clearer, narrow-screen navigation behaves as a drawer, and the walkthrough labels its research-driven additions as AI-simulated hypotheses—not real-user validation.
-- Security constraints appear in the workflow, and the project record shows where human evaluation corrected AI-generated implementation.
-
 **Jikken** is Japanese for **experiment**. The name reflects the app's purpose: test a proposed feature-flag change against a representative audience before it reaches production. Jikken turns that experiment into a governed decision by showing who gains access, who is excluded, and which changes need review—then carries the same verdict into the CLI, Dashboard, SDK, and CI gate.
 
 Developer tooling can keep one coherent design language across every surface it touches. Green means "receives the flag" everywhere. Red means "excluded" everywhere. Yellow means "needs review" everywhere. The field is spelled `rollout_percentage` on every surface. Exit code 1 means the same conflict in the CLI, Dashboard, SDK, and CI gate. The hard part is not building one good interface — it is building four that feel like they came from the same mind.
@@ -184,6 +176,14 @@ This project used an AI-native workflow: a written [product spec](docs/planning/
 The workflow was not “AI generated it, therefore it shipped.” Intent was specified first, implementation was delegated across Claude Code, Codex, and Gemma, and every result was evaluated against the running interaction and shared contract. Model output was rejected or revised when it invented the wrong tutorial protocol, allowed early command injection to disappear before the terminal mounted, or used internal scenario names that conflicted with user-facing menu language. Human judgment set the product direction; tests, builds, and direct walkthrough checks determined what was accepted.
 
 The repository also includes [AI-simulated synthetic UX research](docs/research/AI_SIMULATED_UX_RESEARCH.md) using product, platform-engineering, security, and hiring-reviewer personas. It is explicitly a hypothesis-generating cognitive walkthrough—not real-user research—and includes a prioritized list of possible fixes plus a plan for human validation.
+
+## What changed in v1.1
+
+- A persistent run-context strip proves which feature, scenario, environment, verdict, simulation ID, and result source are moving across all four surfaces.
+- Feature and scenario selection now prepares shared context; an explicit Run action executes the CLI diff without surprising navigation.
+- The Dashboard identifies audience provenance and supports a review lifecycle with actor, policy version, rationale, approval or denial, and a contextual access check.
+- The recommended first run is clearer, narrow-screen navigation behaves as a drawer, and the walkthrough labels its research-driven additions as AI-simulated hypotheses—not real-user validation.
+- Security constraints appear in the workflow, and the project record shows where human evaluation corrected AI-generated implementation.
 
 ## Design principles
 Ten principles guide the UX: scannable in 3 seconds; colors functional, not decorative; exit codes are the real product; suggestions beat diagnoses; consistency is the hardest feature; transparent reasoning; explicit role division; intentional restraint; validate before you compute; graceful failure is a feature.
