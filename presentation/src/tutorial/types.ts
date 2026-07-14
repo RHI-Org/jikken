@@ -24,6 +24,8 @@ export interface TutorialStep {
   securityNote?: string;
   /** Vertical breathing room around the highlighted anchor. Defaults to 6px. */
   spotlightVerticalPadding?: number;
+  /** Vertical offset applied to the spotlight. Negative values move it up. */
+  spotlightOffsetY?: number;
   nextLabel?: string;
   placement?: TutorialPlacement;
   title: string;

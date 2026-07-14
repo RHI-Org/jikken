@@ -178,6 +178,7 @@ export function TutorialOverlay() {
   const showNext = currentStep.allowNext === true;
   const dimBackground = currentStep.dimBackground !== false;
   const spotlightVerticalPadding = currentStep.spotlightVerticalPadding ?? 6;
+  const spotlightOffsetY = currentStep.spotlightOffsetY ?? 0;
 
   return createPortal(
     <div
@@ -199,7 +200,7 @@ export function TutorialOverlay() {
             left: anchorBox.left - 6,
             pointerEvents: 'none',
             position: 'fixed',
-            top: anchorBox.top - spotlightVerticalPadding,
+            top: anchorBox.top - spotlightVerticalPadding + spotlightOffsetY,
             transition: reducedMotion ? 'none' : 'all 180ms ease-out',
             width: anchorBox.width + 12,
           }}
