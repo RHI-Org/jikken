@@ -33,7 +33,17 @@ export function CliSurface({
   const fitRef = useRef<FitAddon | null>(null);
   const lineRef = useRef('');
   const onResultRef = useRef(onResult);
+  const injectRef = useRef(inject);
+  const lastInjectedNonceRef = useRef<number | null>(null);
   onResultRef.current = onResult;
+  injectRef.current = inject;
+
+  const applyInjection = (value: CliInject, term: Terminal) => {
+    if (lastInjectedNonceRef.current === value.nonce) return;
+    lastInjectedNonceRef.current = value.nonce;
+    term.write(colorizeCommand(value.command));
+    (term as unknown as { _runLine: (line: string) => void })._runLine(value.command);
+  };
 
   // ── Terminal lifecycle ──
   // Deferred init: React StrictMode (dev) mounts → unmounts → remounts effects.
@@ -141,6 +151,9 @@ export function CliSurface({
 
     // expose a programmatic runner for chips / scenario picker / hand-off
     (term as unknown as { _runLine: (l: string) => void })._runLine = runLine;
+    // A menu can be used during the deferred xterm mount. Replay its latest
+    // command now instead of dropping the update before termRef is ready.
+    if (injectRef.current) applyInjection(injectRef.current, term);
 
     const ro = new ResizeObserver(() => safeFit());
     ro.observe(host);
@@ -155,10 +168,7 @@ export function CliSurface({
   // ── React to injected commands (chips, scenario picker, hand-off) ──
   useEffect(() => {
     if (!inject || !termRef.current) return;
-    const term = termRef.current;
-    // echo the command as if typed (with keyword/flag hierarchy), then run it
-    term.write(colorizeCommand(inject.command));
-    (term as unknown as { _runLine: (l: string) => void })._runLine(inject.command);
+    applyInjection(inject, termRef.current);
   }, [inject]);
 
   // The window floats on the stage with breathing room on every side, so it

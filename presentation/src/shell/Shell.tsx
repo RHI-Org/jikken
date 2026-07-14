@@ -74,16 +74,17 @@ export function Shell() {
     setCliInject({ command, nonce: nonce.current });
   }, []);
 
-  // Scenario picker: sets the seed for every surface. On the CLI tab it runs
-  // the scenario immediately so the change is visible; SDK/Dashboard read it.
+  // Scenario picker sets the seed for every surface and always queues the
+  // matching CLI diff. The CLI stays mounted while hidden, so switching back
+  // shows the exact menu selection rather than stale terminal output.
   const changeScenario = useCallback(
     (s: ScenarioId) => {
       setScenario(s);
       setActivePrinciple(null);
-      if (surface === 'cli') injectCli(`jikken diff --feature ${feature} --scenario ${s}`);
+      injectCli(`jikken diff --feature ${feature} --scenario ${s}`);
       if (s === 'conflict') tutorial.emit(TUTORIAL_EVENTS.excludeEmployeesSelected);
     },
-    [surface, feature, injectCli, tutorial],
+    [feature, injectCli, tutorial],
   );
 
   // Feature picker: the second dimension. Switching feature re-runs the current
@@ -92,10 +93,10 @@ export function Shell() {
     (f: FeatureId) => {
       setFeature(f);
       setActivePrinciple(null);
-      if (surface === 'cli' && scenario) injectCli(`jikken diff --feature ${f} --scenario ${scenario}`);
+      if (scenario) injectCli(`jikken diff --feature ${f} --scenario ${scenario}`);
       if (f === 'dark-mode') tutorial.emit(TUTORIAL_EVENTS.darkModeSelected);
     },
-    [surface, scenario, injectCli, tutorial],
+    [scenario, injectCli, tutorial],
   );
 
   const changeNotesTab = useCallback((tab: NotesTab) => {
