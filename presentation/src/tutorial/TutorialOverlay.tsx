@@ -74,71 +74,19 @@ function positionCallout(
 }
 
 export function TutorialOverlay() {
-  const { active, back, currentIndex, currentStep, finish, next, reducedMotion, skip, start, totalSteps } =
+  const { active, back, currentIndex, currentStep, finish, next, reducedMotion, skip, totalSteps } =
     useTutorial();
   const [anchorBox, setAnchorBox] = useState<Box | null>(null);
   const [calloutBox, setCalloutBox] = useState<Box>(EMPTY_BOX);
   const [copied, setCopied] = useState(false);
-  const [autoPlaying, setAutoPlaying] = useState(false);
   const calloutRef = useRef<HTMLDivElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
   const centered = !currentStep?.anchor || currentStep.placement === 'center';
-  // Capture mode keeps the walkthrough choreography and spotlight targets but
-  // removes explanatory chrome from the recorded product surface. Navigation
-  // remains available through the existing left/right arrow bindings.
+  // Capture mode keeps the walkthrough choreography but removes explanatory
+  // chrome from the recorded surface. Navigation remains manual through the
+  // existing left/right arrow bindings.
   const recordingMode = typeof window !== 'undefined'
     && new URLSearchParams(window.location.search).get('recording') === '1';
-
-  // In capture mode, the existing Start guided walkthrough / replay control
-  // doubles as Play: starting a session immediately begins the timed run.
-  useEffect(() => {
-    if (recordingMode && active) setAutoPlaying(true);
-  }, [active, recordingMode]);
-
-  // P starts or pauses a complete 90-second run. Dividing the duration by the
-  // number of steps keeps the full sequence—including the closing frame—on
-  // screen for exactly one recording-length pass.
-  useEffect(() => {
-    const togglePlayback = (event: KeyboardEvent) => {
-      // This must remain global even when xterm's hidden textarea owns focus;
-      // the CLI intentionally focuses itself on load for immediate typing.
-      if (event.code !== 'KeyP' || event.ctrlKey || event.metaKey || event.altKey) return;
-      event.preventDefault();
-      if (!active) {
-        start();
-        setAutoPlaying(true);
-        return;
-      }
-      setAutoPlaying((playing) => !playing);
-    };
-    window.addEventListener('keydown', togglePlayback);
-    return () => window.removeEventListener('keydown', togglePlayback);
-  }, [active, start]);
-
-  useEffect(() => {
-    if (!active || !autoPlaying || totalSteps === 0) return;
-    // Recording mode hides the first narrative cards, so move through those
-    // setup frames quickly; otherwise Play appears broken for ~17 seconds.
-    // The remaining frames share the balance and the complete run stays 90s.
-    const hiddenSetupSteps = Math.min(3, totalSteps);
-    const setupStepMs = 500;
-    const setupDuration = hiddenSetupSteps * setupStepMs;
-    const remainingSteps = Math.max(1, totalSteps - hiddenSetupSteps);
-    const delay = recordingMode && currentIndex < hiddenSetupSteps
-      ? setupStepMs
-      : recordingMode
-        ? (90_000 - setupDuration) / remainingSteps
-        : 90_000 / totalSteps;
-    const timer = window.setTimeout(() => {
-      if (currentIndex === totalSteps - 1) {
-        setAutoPlaying(false);
-        finish();
-      } else {
-        next();
-      }
-    }, delay);
-    return () => window.clearTimeout(timer);
-  }, [active, autoPlaying, currentIndex, finish, next, recordingMode, totalSteps]);
 
   const measure = useCallback(() => {
     if (!currentStep?.anchor) {
