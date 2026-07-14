@@ -230,6 +230,8 @@ export class SupabaseFlagStore implements FlagStore {
   }
 
   async saveFlag(config: FlagConfig): Promise<void> {
+    const { data: auth, error: authError } = await this.db.auth.getUser();
+    if (authError || !auth.user) throw new Error('An authenticated user is required to save a flag');
     const { error } = await this.db.from('jikken_flags').upsert(
       {
         id: config.id,
@@ -239,6 +241,7 @@ export class SupabaseFlagStore implements FlagStore {
         rollout_percentage: config.rollout_percentage,
         audience_rules: config.audience_rules ?? [],
         environment: config.environment,
+        created_by: auth.user.id,
         updated_at: now(),
       },
       { onConflict: 'id' },

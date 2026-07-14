@@ -129,6 +129,7 @@ describe('SupabaseFlagStore', () => {
     expect(up.id).toBe('new-checkout');
     expect(up.audience_rules).toEqual([]);
     expect(up.description).toBeNull();
+    expect(up.created_by).toBe('user-uuid');
   });
 
   it('runSimulation evaluates with the shared engine and inserts an audit row', async () => {
