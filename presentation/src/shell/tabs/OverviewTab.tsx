@@ -2,7 +2,7 @@
  * Overview tab — a concise operating guide for the live application.
  */
 import { INTRO, PRODUCT_SECTIONS, HOWTO } from '../data/overview';
-import { ArrowRight, FlaskConical, Play } from 'lucide-react';
+import { ArrowRight, Play } from 'lucide-react';
 
 const microLabel: React.CSSProperties = {
   fontSize: '0.65rem',
@@ -44,10 +44,6 @@ export function OverviewTab({
           <Play size={14} fill="currentColor" />
           Start guided walkthrough
         </button>
-        <div style={{ display: 'grid', gridTemplateColumns: '16px 1fr', gap: '0.45rem', marginTop: '0.7rem', color: '#1e40af', fontSize: '0.68rem', lineHeight: 1.45 }}>
-          <FlaskConical size={14} aria-hidden="true" style={{ marginTop: 1 }} />
-          <span><strong>Research note:</strong> This walkthrough came from AI-simulated synthetic UX research. It demonstrates iteration on synthetic data and hypotheses—not real-user validation.</span>
-        </div>
       </section>
 
       <button

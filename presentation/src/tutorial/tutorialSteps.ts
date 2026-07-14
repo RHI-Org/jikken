@@ -28,7 +28,7 @@ export function createJikkenTutorialSteps(
       id: 'welcome',
       title: 'Catch a risky change before it ships',
       body: 'Follow one Dark Mode change from the command line to a blocked deployment.',
-      researchNote: 'This walkthrough came from AI-simulated synthetic UX research. It demonstrates iteration on synthetic data and hypotheses—not real-user validation.',
+      researchNote: 'AI-simulated synthetic UX research made rapid multi-persona testing possible, surfaced friction, and turned those hypotheses into the v1.1 improvements you will see in this walkthrough.',
       placement: 'center',
       allowNext: true,
       nextLabel: 'Start walkthrough',

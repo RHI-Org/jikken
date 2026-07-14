@@ -37,8 +37,9 @@ describe('Jikken tutorial contract', () => {
     const [welcome] = createJikkenTutorialSteps();
 
     expect(welcome.researchNote).toContain('AI-simulated synthetic UX research');
-    expect(welcome.researchNote).toContain('synthetic data and hypotheses');
-    expect(welcome.researchNote).toContain('not real-user validation');
+    expect(welcome.researchNote).toContain('rapid multi-persona testing');
+    expect(welcome.researchNote).toContain('v1.1 improvements');
+    expect(welcome.researchNote).not.toContain('not real-user validation');
   });
 
   it('explains least-privilege security when the walkthrough reaches CI', () => {

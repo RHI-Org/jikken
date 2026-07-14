@@ -255,7 +255,7 @@ export function TutorialOverlay() {
         {currentStep.researchNote && (
           <div data-testid="tutorial-research-note" style={{ display: 'grid', gridTemplateColumns: '18px 1fr', gap: 8, marginTop: 12, padding: '0.65rem 0.7rem', border: `1px solid ${ACCENT_SOFT}`, borderRadius: 7, background: '#eff6ff', color: ACCENT_DARK, fontSize: 11.5, lineHeight: 1.5 }}>
             <FlaskConical size={16} aria-hidden="true" style={{ marginTop: 1 }} />
-            <span><strong>Research note.</strong> {currentStep.researchNote}</span>
+            <span><strong>UXR iteration.</strong> {currentStep.researchNote}</span>
           </div>
         )}
         {currentStep.securityNote && (
