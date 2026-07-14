@@ -89,6 +89,12 @@ export function TutorialOverlay() {
   const recordingMode = typeof window !== 'undefined'
     && new URLSearchParams(window.location.search).get('recording') === '1';
 
+  // In capture mode, the existing Start guided walkthrough / replay control
+  // doubles as Play: starting a session immediately begins the timed run.
+  useEffect(() => {
+    if (recordingMode && active) setAutoPlaying(true);
+  }, [active, recordingMode]);
+
   // P starts or pauses a complete 90-second run. Dividing the duration by the
   // number of steps keeps the full sequence—including the closing frame—on
   // screen for exactly one recording-length pass.
