@@ -250,7 +250,7 @@ function App() {
         </section>
 
         <section className="section system" id="system">
-          <div className="wrap section-heading dark-copy"><Reveal><p className="eyebrow dark">The system</p><h2>One engine, three runtimes,<br />four ways to consume it.</h2></Reveal></div>
+          <div className="wrap section-heading dark-copy"><Reveal><p className="eyebrow dark">The system</p><h2>One engine,<br />three runtimes, four ways to consume it.</h2></Reveal></div>
           <div className="wrap runtime-grid">
             <Reveal><Terminal /><span>01</span><h3>CLI</h3><p>Fast, terse, machine-readable. The real process exit code is part of the interface.</p></Reveal>
             <Reveal><CircleDot /><span>02</span><h3>Dashboard</h3><p>Review audience impact, provenance, and history without hiding the rules underneath.</p></Reveal>
