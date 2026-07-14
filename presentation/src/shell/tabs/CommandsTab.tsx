@@ -133,7 +133,7 @@ export function CommandsTab({
             aria-hidden="true"
             viewBox="0 0 16 100"
             preserveAspectRatio="none"
-            style={{ position: 'absolute', left: 0, top: '0.15rem', width: '0.85rem', height: 'calc(100% - 0.3rem)', overflow: 'visible' }}
+            style={{ position: 'absolute', left: 0, top: '1.95rem', width: '0.85rem', height: 'calc(100% - 2.85rem)', overflow: 'visible' }}
           >
             <path
               d="M15 1H9C5 1 4 4 4 9V42C4 47 2 50 0 50C2 50 4 53 4 58V91C4 96 5 99 9 99H15"
