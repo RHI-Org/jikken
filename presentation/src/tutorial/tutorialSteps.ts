@@ -162,7 +162,7 @@ export function createJikkenTutorialSteps(
       placement: 'center',
       allowNext: true,
       nextLabel: 'Finish',
-      dimBackground: false,
+      dimBackground: true,
     },
   ];
 }

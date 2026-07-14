@@ -61,12 +61,14 @@ describe('Jikken tutorial contract', () => {
     expect(steps.filter((step) => visibleSteps.includes(step.id)).every((step) => step.dimBackground === false)).toBe(true);
   });
 
-  it('keeps the CI gate visible throughout steps 14–15', () => {
+  it('keeps the CI verdict visible, then restores the completion overlay', () => {
     const steps = createJikkenTutorialSteps();
-    const visibleSteps = ['ci-verdict', 'complete'];
+    const ciVerdict = steps.find((step) => step.id === 'ci-verdict');
+    const complete = steps.find((step) => step.id === 'complete');
 
-    expect(steps.filter((step) => visibleSteps.includes(step.id)).every((step) => step.dimBackground === false)).toBe(true);
-    expect(steps.find((step) => step.id === 'ci-verdict')?.spotlightVerticalPadding).toBe(2);
-    expect(steps.find((step) => step.id === 'ci-verdict')?.spotlightOffsetY).toBe(-7);
+    expect(ciVerdict?.dimBackground).toBe(false);
+    expect(complete?.dimBackground).toBe(true);
+    expect(ciVerdict?.spotlightVerticalPadding).toBe(2);
+    expect(ciVerdict?.spotlightOffsetY).toBe(-7);
   });
 });
