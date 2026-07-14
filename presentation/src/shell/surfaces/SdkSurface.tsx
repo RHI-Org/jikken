@@ -43,6 +43,12 @@ function CodeSample({ scenario }: { scenario: ScenarioId }) {
         ...T.base,
       }}
     >
+      {/* The raw HTTP contract the client wraps — so the API is visible, not just the SDK sugar. */}
+      <div style={{ ...T.comment, paddingBottom: '0.9rem', marginBottom: '0.5rem', borderBottom: '1px solid #292524', whiteSpace: 'pre-wrap' }}>
+        {'POST /functions/v1/jikken-simulate\n'}
+        {'auth: x-jikken-key  |  Authorization: Bearer <jwt>\n'}
+        {'body: { scenario } | { flag_id, mock_users } · errors: { code, message, details[].suggestion }'}
+      </div>
       <CodeLine n={1}><span style={T.kw}>import</span> <span style={T.punct}>{'{'}</span> FlagClient <span style={T.punct}>{'}'}</span> <span style={T.kw}>from</span> <span style={T.str}>'@jikken/sdk'</span>;</CodeLine>
       <CodeLine n={2}>{' '}</CodeLine>
       <CodeLine n={3}><span style={T.kw}>const</span> flags = <span style={T.kw}>new</span> FlagClient(<span style={T.punct}>{'{'}</span></CodeLine>
