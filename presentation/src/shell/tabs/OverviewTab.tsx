@@ -3,6 +3,7 @@
  */
 import { INTRO, PRODUCT_SECTIONS, HOWTO } from '../data/overview';
 import { ArrowRight, Play } from 'lucide-react';
+import { useState } from 'react';
 
 const microLabel: React.CSSProperties = {
   fontSize: '0.65rem',
@@ -19,6 +20,8 @@ export function OverviewTab({
   onStartTutorial: () => void;
   onOpenCommands: () => void;
 }) {
+  const [walkthroughMode, setWalkthroughMode] = useState<'video' | 'interactive'>('video');
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
       <div>
@@ -28,41 +31,53 @@ export function OverviewTab({
         </p>
       </div>
 
-      <section aria-labelledby="video-walkthrough-heading" style={{ padding: '0.85rem', border: '1px solid var(--portfolio-border)', borderRadius: '0.65rem', background: 'var(--portfolio-bg-card-alt)', boxShadow: '0 1px 3px rgba(12, 10, 9, 0.08)' }}>
-        <div style={microLabel}>Narrated walkthrough · 83 sec</div>
-        <div id="video-walkthrough-heading" style={{ margin: '0.35rem 0 0.65rem', fontFamily: 'var(--font-serif)', fontSize: '1.05rem', fontWeight: 'var(--font-weight-semibold)', color: 'var(--portfolio-text-primary)' }}>
-          Watch Jikken end to end
+      <section style={{ border: '1px solid var(--portfolio-border)', borderRadius: '0.65rem', overflow: 'hidden', background: 'var(--portfolio-bg-card-alt)', boxShadow: '0 1px 3px rgba(12, 10, 9, 0.08)' }}>
+        <div role="tablist" aria-label="Choose a walkthrough format" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', padding: '0.3rem', gap: '0.25rem', background: 'var(--portfolio-bg-muted)', borderBottom: '1px solid var(--portfolio-border)' }}>
+          {(['video', 'interactive'] as const).map((mode) => {
+            const selected = walkthroughMode === mode;
+            return (
+              <button
+                key={mode}
+                id={`walkthrough-${mode}-tab`}
+                role="tab"
+                aria-selected={selected}
+                aria-controls={`walkthrough-${mode}-panel`}
+                type="button"
+                onClick={() => setWalkthroughMode(mode)}
+                style={{ padding: '0.5rem 0.6rem', border: selected ? '1px solid var(--portfolio-border)' : '1px solid transparent', borderRadius: '0.4rem', background: selected ? 'var(--portfolio-bg-card-alt)' : 'transparent', color: selected ? 'var(--portfolio-text-primary)' : 'var(--portfolio-text-muted)', cursor: 'pointer', fontSize: '0.74rem', fontWeight: selected ? 'var(--font-weight-semibold)' : 'var(--font-weight-regular)', boxShadow: selected ? '0 1px 2px rgba(12, 10, 9, 0.08)' : 'none' }}
+              >
+                {mode === 'video' ? 'Video' : 'Interactive walkthrough'}
+              </button>
+            );
+          })}
         </div>
-        <video
-          controls
-          playsInline
-          preload="metadata"
-          poster="/media/jikken-walkthrough-poster.jpg"
-          style={{ display: 'block', width: '100%', aspectRatio: '16 / 9', borderRadius: '0.45rem', background: '#1c1917' }}
-          aria-label="Narrated Jikken product walkthrough"
-        >
-          <source src="/media/jikken-walkthrough.mp4" type="video/mp4" />
-          Your browser does not support embedded video.{' '}
-          <a href="/media/jikken-walkthrough.mp4">Open the walkthrough video</a>.
-        </video>
-      </section>
 
-      <section aria-labelledby="first-run-heading" style={{ padding: '1rem', border: '1px solid #bfdbfe', borderRadius: '0.65rem', background: '#eff6ff', boxShadow: '0 1px 3px rgba(37, 99, 235, 0.12)' }}>
-        <div style={{ ...microLabel, color: '#1d4ed8' }}>Recommended first run</div>
-        <div id="first-run-heading" style={{ marginTop: '0.35rem', fontFamily: 'var(--font-serif)', fontSize: '1.05rem', fontWeight: 'var(--font-weight-semibold)', color: 'var(--portfolio-text-primary)' }}>
-          Follow one risky change end to end
-        </div>
-        <p style={{ margin: '0.35rem 0 0.8rem', fontSize: '0.78rem', lineHeight: 1.55, color: 'var(--portfolio-text-secondary)' }}>
-          The guided path connects the CLI, Dashboard, SDK, and CI gate in about 90 seconds.
-        </p>
-        <button
-          type="button"
-          onClick={onStartTutorial}
-          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.45rem', padding: '0.72rem 0.9rem', border: 0, borderRadius: '0.45rem', background: '#2563eb', boxShadow: '0 1px 2px rgba(37, 99, 235, 0.3)', color: '#fff', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 'var(--font-weight-semibold)' }}
-        >
-          <Play size={14} fill="currentColor" />
-          Start guided walkthrough
-        </button>
+        {walkthroughMode === 'video' ? (
+          <div id="walkthrough-video-panel" role="tabpanel" aria-labelledby="walkthrough-video-tab" style={{ padding: '0.85rem' }}>
+            <div style={microLabel}>Narrated walkthrough · 83 sec</div>
+            <div style={{ margin: '0.35rem 0 0.65rem', fontFamily: 'var(--font-serif)', fontSize: '1.05rem', fontWeight: 'var(--font-weight-semibold)', color: 'var(--portfolio-text-primary)' }}>
+              Watch Jikken end to end
+            </div>
+            <video controls playsInline preload="metadata" poster="/media/jikken-walkthrough-poster.jpg" style={{ display: 'block', width: '100%', aspectRatio: '16 / 9', borderRadius: '0.45rem', background: '#1c1917' }} aria-label="Narrated Jikken product walkthrough">
+              <source src="/media/jikken-walkthrough.mp4" type="video/mp4" />
+              Your browser does not support embedded video. <a href="/media/jikken-walkthrough.mp4">Open the walkthrough video</a>.
+            </video>
+          </div>
+        ) : (
+          <div id="walkthrough-interactive-panel" role="tabpanel" aria-labelledby="walkthrough-interactive-tab" style={{ padding: '1rem', background: '#eff6ff' }}>
+            <div style={{ ...microLabel, color: '#1d4ed8' }}>Guided product tour · about 90 sec</div>
+            <div style={{ marginTop: '0.35rem', fontFamily: 'var(--font-serif)', fontSize: '1.05rem', fontWeight: 'var(--font-weight-semibold)', color: 'var(--portfolio-text-primary)' }}>
+              Follow one risky change end to end
+            </div>
+            <p style={{ margin: '0.35rem 0 0.8rem', fontSize: '0.78rem', lineHeight: 1.55, color: 'var(--portfolio-text-secondary)' }}>
+              Move through the CLI, Dashboard, SDK, and CI gate at your own pace.
+            </p>
+            <button type="button" onClick={onStartTutorial} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.45rem', padding: '0.72rem 0.9rem', border: 0, borderRadius: '0.45rem', background: '#2563eb', boxShadow: '0 1px 2px rgba(37, 99, 235, 0.3)', color: '#fff', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 'var(--font-weight-semibold)' }}>
+              <Play size={14} fill="currentColor" />
+              Start interactive walkthrough
+            </button>
+          </div>
+        )}
       </section>
 
       <button
