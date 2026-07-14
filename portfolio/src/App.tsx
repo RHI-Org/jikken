@@ -6,6 +6,7 @@ import {
   CircleDot,
   Code2,
   ExternalLink,
+  Flag,
   Github,
   Menu,
   Play,
@@ -43,6 +44,53 @@ const principles = [
 
 function Reveal({ children, className = '' }: { children: ReactNode; className?: string }) {
   return <div className={`reveal ${className}`}>{children}</div>;
+}
+
+const terminalCommand = 'jikken diff dark-mode --rollout 25';
+
+function AnimatedTerminal() {
+  const [typed, setTyped] = useState(0);
+  const [lines, setLines] = useState(0);
+
+  useEffect(() => {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) {
+      setTyped(terminalCommand.length);
+      setLines(5);
+      return;
+    }
+    let timer = 0;
+    let cancelled = false;
+    const wait = (fn: () => void, delay: number) => { timer = window.setTimeout(() => !cancelled && fn(), delay); };
+    const type = (index: number) => {
+      setTyped(index);
+      if (index < terminalCommand.length) wait(() => type(index + 1), 38 + Math.random() * 34);
+      else reveal(1);
+    };
+    const reveal = (count: number) => {
+      wait(() => {
+        setLines(count);
+        if (count < 5) reveal(count + 1);
+        else wait(() => { setLines(0); type(0); }, 3200);
+      }, count === 1 ? 600 : 430);
+    };
+    wait(() => type(1), 700);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, []);
+
+  return (
+    <Reveal className="hero-terminal">
+      <div className="terminal-bar"><i /><i /><i /><span>jikken — simulate</span></div>
+      <div className="terminal-body" aria-live="polite">
+        <p><b>$</b> {terminalCommand.slice(0, typed)}<span className="cursor" /></p>
+        <p className={`dim terminal-line ${lines >= 1 ? 'shown' : ''}`}>Evaluating 10 representative users…</p>
+        <div className={`terminal-rule terminal-line ${lines >= 2 ? 'shown' : ''}`} />
+        <p className={`terminal-line ${lines >= 3 ? 'shown' : ''}`}><span className="good">7 receive</span> · <span className="bad">3 excluded</span></p>
+        <p className={`bad terminal-line ${lines >= 4 ? 'shown' : ''}`}>CONFLICT — deployment held</p>
+        <p className={`dim terminal-line ${lines >= 5 ? 'shown' : ''}`}>exit code 1 · sim_49c2eec8</p>
+      </div>
+    </Reveal>
+  );
 }
 
 function MeshBackground() {
@@ -127,7 +175,7 @@ function Header() {
   return (
     <header className="site-header">
       <div className="header-inner">
-        <a className="wordmark" href="#top" aria-label="Jikken home"><span className="mark">実験</span><span>Jikken</span></a>
+        <a className="wordmark" href="#top" aria-label="Jikken home"><span className="mark"><Flag size={18} /></span><span>Jikken</span></a>
         <nav className={open ? 'nav open' : 'nav'} aria-label="Main navigation">
           {nav.map(([label, href]) => <a key={href} href={href} onClick={() => setOpen(false)}>{label}</a>)}
           <a className="nav-cta" href={PRODUCT_URL} target="_blank" rel="noreferrer">Open product <ExternalLink size={14} /></a>
@@ -169,17 +217,7 @@ function App() {
                 <a className="button ghost" href="#story">Read the case study <ArrowRight size={17} /></a>
               </div>
             </Reveal>
-            <Reveal className="hero-terminal">
-              <div className="terminal-bar"><i /><i /><i /><span>jikken — simulate</span></div>
-              <div className="terminal-body">
-                <p><b>$</b> jikken diff dark-mode --rollout 25</p>
-                <p className="dim">Evaluating 10 representative users…</p>
-                <div className="terminal-rule" />
-                <p><span className="good">7 receive</span> · <span className="bad">3 excluded</span></p>
-                <p className="bad">CONFLICT — deployment held</p>
-                <p className="dim">exit code 1 · sim_49c2eec8</p>
-              </div>
-            </Reveal>
+            <AnimatedTerminal />
           </div>
           <a className="scroll-cue" href="#story">Scroll to the story <span /></a>
         </section>
@@ -247,7 +285,7 @@ function App() {
         </section>
       </main>
 
-      <footer><div className="wrap"><a className="wordmark" href="#top"><span className="mark">実験</span><span>Jikken</span></a><p>A product engineering and UX systems case study.</p><span>© 2026 Ryan Hanau</span></div></footer>
+      <footer><div className="wrap"><a className="wordmark" href="#top"><span className="mark"><Flag size={18} /></span><span>Jikken</span></a><p>A product engineering and UX systems case study.</p><span>© 2026 Ryan Hanau</span></div></footer>
     </div>
   );
 }
