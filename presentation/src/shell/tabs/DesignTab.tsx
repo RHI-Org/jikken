@@ -20,7 +20,7 @@ function Section({ label, body }: { label: string; body: string }) {
     <div style={{ borderTop: '1px solid var(--portfolio-border-muted)', paddingTop: '0.85rem' }}>
       <button
         onClick={() => setOpen((value) => !value)}
-        style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: 0, border: 'none', background: 'none', cursor: 'pointer', ...microLabel }}
+        style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: 0, border: 'none', background: 'none', cursor: 'pointer', ...microLabel, color: 'var(--portfolio-text-primary)' }}
       >
         <ChevronRight size={11} style={{ transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }} />
         {label}

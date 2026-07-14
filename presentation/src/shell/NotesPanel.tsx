@@ -25,8 +25,8 @@ const TABS: { id: NotesTab; label: string }[] = [
   { id: 'security', label: 'Security' },
 ];
 
-// Collapsible section inside the UX tab. Design starts open because it carries
-// the product thesis and hand-off; Principles remains optional reference.
+// Collapsible sections inside the UX tab start open so the product thesis and
+// its supporting principles are visible without an extra discovery step.
 function DetailsSection({ label, defaultOpen = false, children }: { label: string; defaultOpen?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
@@ -171,7 +171,7 @@ export function NotesPanel({
             <DetailsSection label="Design" defaultOpen>
               <DesignTab onHandoff={onHandoff} />
             </DetailsSection>
-            <DetailsSection label="Principles (10)">
+            <DetailsSection label="Principles (10)" defaultOpen>
               <PrinciplesTab activeNumber={activePrinciple} onSelect={onSelectPrinciple} />
             </DetailsSection>
           </div>
