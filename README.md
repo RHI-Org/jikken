@@ -41,49 +41,49 @@ The flow starts with a developer checking a proposed targeting change and ends w
 
 The diff identifies exactly which users would lose access and returns exit code 1.
 
-![Jikken CLI showing a conflict diff and three users losing access](docs/images/b2b-mockups/01-cli-conflict-b2b.jpg)
+![Jikken CLI showing a conflict diff and three users losing access](docs/images/b2b-mockups/01-cli-conflict-gradient.jpg)
 
 ### 2. Review the flag portfolio
 
 The Dashboard summarizes flag status and rollout exposure before a reviewer opens a specific flag.
 
-![Feature Flags landing page with portfolio charts and rollout bars](docs/images/b2b-mockups/02-flags-portfolio-b2b.jpg)
+![Feature Flags landing page with portfolio charts and rollout bars](docs/images/b2b-mockups/02-flags-portfolio-gradient.jpg)
 
 ### 3. Inspect audience impact
 
 The flag detail view translates the result into decision counts, governance signals, audience provenance, and per-user reasoning.
 
-![Flag simulation detail with decision mix and governance charts](docs/images/b2b-mockups/03-flag-simulation-b2b.jpg)
+![Flag simulation detail with decision mix and governance charts](docs/images/b2b-mockups/03-flag-simulation-gradient.jpg)
 
 ### 4. Preserve the audit trail
 
 Simulation History keeps every verdict searchable and expands each run to show metadata and decision details.
 
-![Expanded Simulation History row with exit code, latency, audience, and decisions](docs/images/b2b-mockups/04-simulation-history-b2b.jpg)
+![Expanded Simulation History row with exit code, latency, audience, and decisions](docs/images/b2b-mockups/04-simulation-history-gradient.jpg)
 
 ### 5. Verify workspace configuration
 
 Settings makes the active data source, deployment environments, and shared authentication model explicit.
 
-![Settings page showing Supabase connection, environments, and authentication](docs/images/b2b-mockups/05-settings-b2b.jpg)
+![Settings page showing Supabase connection, environments, and authentication](docs/images/b2b-mockups/05-settings-gradient.jpg)
 
 ### 6. Use the same contract from the SDK
 
 The SDK asks the same safety question in application code and maps the result directly to process behavior.
 
-![SDK example using FlagClient to gate a deployment](docs/images/b2b-mockups/06-sdk-contract-b2b.jpg)
+![SDK example using FlagClient to gate a deployment](docs/images/b2b-mockups/06-sdk-contract-gradient.jpg)
 
 ### 7. Inspect the machine response
 
 The live response exposes the same simulation ID, conflict verdict, exit code, and audience summary without requiring automation to parse presentation text.
 
-![SDK live response showing the shared simulation contract](docs/images/b2b-mockups/07-sdk-response-b2b.jpg)
+![SDK live response showing the shared simulation contract](docs/images/b2b-mockups/07-sdk-response-gradient.jpg)
 
 ### 8. Enforce the decision in CI
 
 The CI gate consumes exit code 1, blocks production, and prevents the risky change from reaching users.
 
-![CI pipeline with the Jikken gate blocking deployment to production](docs/images/b2b-mockups/08-ci-gate-b2b.jpg)
+![CI pipeline with the Jikken gate blocking deployment to production](docs/images/b2b-mockups/08-ci-gate-gradient.jpg)
 
 ## The thesis is executable
 The `tests/integration/coherence.test.ts` suite enforces design consistency through code:
