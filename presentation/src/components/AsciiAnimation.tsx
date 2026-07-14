@@ -45,7 +45,9 @@ export default function AsciiAnimation() {
 
   useEffect(() => {
     if (!containerRef.current) return;
-    setColumns(Array.from({ length: 30 }, (_, index) => makeColumn(index)));
+    // Fewer, larger columns keep the field visually full-sized on a half-screen
+    // login panel instead of reading like a scaled-down texture.
+    setColumns(Array.from({ length: 24 }, (_, index) => makeColumn(index)));
   }, []);
 
   useEffect(() => {
