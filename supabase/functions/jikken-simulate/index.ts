@@ -31,6 +31,26 @@ function json(status: number, body: unknown): Response {
   });
 }
 
+/** Largest mock_users array a caller may submit — bounds engine work and audit-row size. */
+const MAX_MOCK_USERS = 500;
+
+/**
+ * Constant-time key comparison: compare SHA-256 digests byte-by-byte so the
+ * check's duration doesn't depend on how much of the key prefix matches.
+ */
+async function timingSafeKeyMatch(provided: string, expected: string): Promise<boolean> {
+  const enc = new TextEncoder();
+  const [a, b] = await Promise.all([
+    crypto.subtle.digest('SHA-256', enc.encode(provided)),
+    crypto.subtle.digest('SHA-256', enc.encode(expected)),
+  ]);
+  const av = new Uint8Array(a);
+  const bv = new Uint8Array(b);
+  let diff = 0;
+  for (let i = 0; i < av.length; i++) diff |= av[i] ^ bv[i];
+  return diff === 0;
+}
+
 function defaultUsers(count = 25): MockUser[] {
   const segments = ['early_adopter', 'standard', 'premium', 'enterprise'];
   const countries = ['US', 'CA', 'UK', 'DE', 'FR'];
@@ -59,7 +79,7 @@ Deno.serve(async (req: Request) => {
   let userId: string | null = null;
   const apiKey = req.headers.get('x-jikken-key');
   const expectedKey = Deno.env.get('JIKKEN_API_KEY');
-  if (apiKey && expectedKey && apiKey === expectedKey) {
+  if (apiKey && expectedKey && (await timingSafeKeyMatch(apiKey, expectedKey))) {
     // machine caller — authorized
   } else {
     const authHeader = req.headers.get('authorization') ?? '';
@@ -94,6 +114,18 @@ Deno.serve(async (req: Request) => {
         details: [{ field: 'body', suggestion: 'Send {"flag_id":"dark-mode"} or {"scenario":"conflict"}' }],
       },
     });
+  }
+
+  if (body.mock_users !== undefined) {
+    if (!Array.isArray(body.mock_users) || body.mock_users.length === 0 || body.mock_users.length > MAX_MOCK_USERS) {
+      return json(400, {
+        error: {
+          code: 'INVALID_INPUT',
+          message: `mock_users must be a non-empty array of at most ${MAX_MOCK_USERS} users`,
+          details: [{ field: 'mock_users', suggestion: `Send 1–${MAX_MOCK_USERS} users, or omit the field for defaults` }],
+        },
+      });
+    }
   }
 
   let flag: FlagConfig;
