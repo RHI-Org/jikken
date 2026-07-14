@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 
 const PRODUCT_URL = 'https://jk.experienceplus.ai';
+const WALKTHROUGH_URL = 'https://jk.experienceplus.ai/walkthrough';
 const REPO_URL = 'https://github.com/RHI-Org/jikken';
 
 const walkthrough = [
@@ -81,7 +82,7 @@ function AnimatedTerminal() {
   return (
     <Reveal className="hero-terminal">
       <div className="terminal-bar"><i /><i /><i /><span>jikken — simulate</span></div>
-      <div className="terminal-body" aria-live="polite">
+      <div className="terminal-body" aria-label="Example Jikken command showing a deployment conflict with exit code 1">
         <p><b>$</b> {terminalCommand.slice(0, typed)}<span className="cursor" /></p>
         <p className={`dim terminal-line ${lines >= 1 ? 'shown' : ''}`}>Evaluating 10 representative users…</p>
         <div className={`terminal-rule terminal-line ${lines >= 2 ? 'shown' : ''}`} />
@@ -213,7 +214,7 @@ function App() {
               <p className="hero-lede">Jikken governs feature-flag changes across CLI, Dashboard, SDK, and CI—so a decision keeps the same meaning everywhere it is read.</p>
               <div className="pills"><span>Seeded engine</span><span>Explainable decisions</span><span>Governed rollout</span></div>
               <div className="actions">
-                <a className="button light" href={PRODUCT_URL} target="_blank" rel="noreferrer"><Play size={17} fill="currentColor" /> Explore the product</a>
+                <a className="button light" href={WALKTHROUGH_URL} target="_blank" rel="noreferrer"><Play size={17} fill="currentColor" /> Watch the 83-sec walkthrough</a>
                 <a className="button ghost" href="#story">Read the case study <ArrowRight size={17} /></a>
               </div>
             </Reveal>
@@ -233,6 +234,11 @@ function App() {
             <Reveal><strong>0–6</strong><span>defined process exit codes</span></Reveal>
             <Reveal><strong>1 day</strong><span>from spec to deployed product</span></Reveal>
           </div>
+          <Reveal className="wrap project-role">
+            <div><span>Role</span><strong>Product design + engineering</strong></div>
+            <div><span>Scope</span><strong>Research, UX systems, frontend, SDK + CI</strong></div>
+            <div><span>Contribution</span><strong>Designed and built end to end by Ryan Hanau</strong></div>
+          </Reveal>
         </section>
 
         <section className="section dark-section" id="product">
@@ -276,7 +282,7 @@ function App() {
         <section className="section ai-section">
           <div className="wrap ai-card">
             <Reveal><p className="eyebrow">How it was built</p><h2>AI-native.<br />Human-governed.</h2></Reveal>
-            <Reveal className="ai-copy"><p>A written spec led to an implementation plan, agentic build, design review, and automated verification in roughly one working day.</p><p>Models produced options and implementation. Human judgment set the architecture, rejected incoherent output, and decided what was ready to ship.</p><div className="build-flow"><span>Specify</span><ArrowRight /><span>Delegate</span><ArrowRight /><span>Evaluate</span><ArrowRight /><span>Verify</span></div></Reveal>
+            <Reveal className="ai-copy"><p>A written spec led to an implementation plan, agentic build, design review, and automated verification in roughly one working day.</p><p>Models produced options and implementation. Human judgment set the architecture, rejected incoherent output, and decided what was ready to ship.</p><div className="build-flow"><span>Specify</span><ArrowRight /><span>Delegate</span><ArrowRight /><span>Evaluate</span><ArrowRight /><span>Verify</span></div><p className="research-note"><strong>Research status:</strong> UX findings are AI-simulated hypotheses, not real-user validation. <a href={`${REPO_URL}/blob/main/docs/research/AI_SIMULATED_PORTFOLIO_UX_REVIEW.md`} target="_blank" rel="noreferrer">Read the review <ExternalLink size={13} /></a></p></Reveal>
           </div>
         </section>
 
