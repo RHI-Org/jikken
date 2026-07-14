@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Check, Copy } from 'lucide-react';
+import { Check, Copy, FlaskConical, ShieldCheck } from 'lucide-react';
 import { useTutorial } from './TutorialProvider';
 import type { TutorialPlacement } from './types';
 
@@ -39,7 +39,19 @@ function positionCallout(
   if (!anchor || placement === 'center') {
     return {
       left: Math.max(VIEWPORT_GAP, (window.innerWidth - width) / 2),
-      top: Math.max(VIEWPORT_GAP, (window.innerHeight - height) / 2),
+      top: Math.max(VIEWPORT_GAP, Math.min((window.innerHeight - height) / 2, window.innerHeight - height - VIEWPORT_GAP)),
+    };
+  }
+
+  // On a narrow viewport, keep the callout at the opposite edge from the
+  // target's center. Side placement would cover both the target and controls.
+  if (window.innerWidth < 640) {
+    const targetCenter = anchor.top + anchor.height / 2;
+    return {
+      left: Math.max(12, (window.innerWidth - width) / 2),
+      top: targetCenter < window.innerHeight / 2
+        ? Math.max(12, window.innerHeight - height - 12)
+        : 12,
     };
   }
 
@@ -57,7 +69,7 @@ function positionCallout(
 
   return {
     left: Math.min(Math.max(VIEWPORT_GAP, left), window.innerWidth - width - VIEWPORT_GAP),
-    top: Math.min(Math.max(VIEWPORT_GAP, top), window.innerHeight - height - VIEWPORT_GAP),
+    top: Math.min(Math.max(VIEWPORT_GAP, top), Math.max(VIEWPORT_GAP, window.innerHeight - height - VIEWPORT_GAP)),
   };
 }
 
@@ -88,6 +100,19 @@ export function TutorialOverlay() {
   }, [active, currentStep?.id, measure]);
 
   useEffect(() => setCopied(false), [currentStep?.id]);
+
+  useEffect(() => {
+    if (!active || !currentStep?.anchor) return;
+    const frame = requestAnimationFrame(() => {
+      const target = findAnchor(currentStep.anchor!);
+      if (!target) return;
+      const rect = target.getBoundingClientRect();
+      if (rect.top < 0 || rect.bottom > window.innerHeight || rect.left < 0 || rect.right > window.innerWidth) {
+        target.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: reducedMotion ? 'auto' : 'smooth' });
+      }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [active, currentStep?.anchor, currentStep?.id, reducedMotion]);
 
   useEffect(() => {
     if (!active) return;
@@ -198,12 +223,14 @@ export function TutorialOverlay() {
           color: 'var(--portfolio-text-primary, #1c1917)',
           left: calloutPosition.left,
           maxWidth: 'calc(100vw - 32px)',
+          maxHeight: 'calc(100dvh - 24px)',
+          overflowY: 'auto',
           padding: '1rem',
           pointerEvents: 'auto',
           position: 'fixed',
           top: calloutPosition.top,
           transition: reducedMotion ? 'none' : 'left 180ms ease-out, top 180ms ease-out',
-          width: 360,
+          width: 'min(360px, calc(100vw - 24px))',
         }}
       >
         <div style={{ alignItems: 'center', display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -225,6 +252,18 @@ export function TutorialOverlay() {
         <div id={`tutorial-body-${currentStep.id}`} style={{ color: 'var(--portfolio-text-secondary, #44403c)', fontSize: 14, lineHeight: 1.55 }}>
           {currentStep.body}
         </div>
+        {currentStep.researchNote && (
+          <div data-testid="tutorial-research-note" style={{ display: 'grid', gridTemplateColumns: '18px 1fr', gap: 8, marginTop: 12, padding: '0.65rem 0.7rem', border: `1px solid ${ACCENT_SOFT}`, borderRadius: 7, background: '#eff6ff', color: ACCENT_DARK, fontSize: 11.5, lineHeight: 1.5 }}>
+            <FlaskConical size={16} aria-hidden="true" style={{ marginTop: 1 }} />
+            <span><strong>Research note.</strong> {currentStep.researchNote}</span>
+          </div>
+        )}
+        {currentStep.securityNote && (
+          <div data-testid="tutorial-security-note" style={{ display: 'grid', gridTemplateColumns: '18px 1fr', gap: 8, marginTop: 12, padding: '0.65rem 0.7rem', border: '1px solid #bbf7d0', borderRadius: 7, background: '#f0fdf4', color: '#166534', fontSize: 11.5, lineHeight: 1.5 }}>
+            <ShieldCheck size={16} aria-hidden="true" style={{ marginTop: 1 }} />
+            <span><strong>Security context.</strong> {currentStep.securityNote}</span>
+          </div>
+        )}
         {currentStep.copyText && (
           <button
             type="button"

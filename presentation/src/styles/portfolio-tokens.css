@@ -147,3 +147,61 @@ body {
 .jk-pin-pulse {
   animation: jk-pin-pulse 1.4s ease-out 2;
 }
+
+/* Presentation shell: notes stay side-by-side on desktop and become a drawer
+   on narrow screens so the live surface and walkthrough targets retain width. */
+.jk-notes-backdrop {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .jk-shell {
+    min-height: 100dvh;
+  }
+
+  .jk-notes-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    padding: 0;
+    border: 0;
+    background: rgba(12, 10, 9, 0.48);
+  }
+
+  .jk-notes-panel {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 40;
+    box-sizing: border-box;
+    width: min(92vw, 400px) !important;
+    min-width: 0 !important;
+    max-width: 100%;
+    box-shadow: 12px 0 32px rgba(12, 10, 9, 0.24);
+  }
+
+  .jk-stage {
+    width: 100%;
+  }
+
+  .jk-stage-topbar {
+    align-items: stretch !important;
+    gap: 0.45rem !important;
+    padding: 0.55rem 0.7rem !important;
+  }
+
+  .jk-stage-brand,
+  .jk-stage-actions {
+    width: 100%;
+  }
+
+  .jk-stage-actions {
+    justify-content: space-between;
+    gap: 0.55rem !important;
+  }
+
+  .jk-stage-divider,
+  .jk-logout-label {
+    display: none;
+  }
+}

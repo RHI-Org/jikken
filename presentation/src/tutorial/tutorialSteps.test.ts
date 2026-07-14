@@ -33,6 +33,23 @@ describe('Jikken tutorial contract', () => {
     expect(resetDemo).toHaveBeenCalledOnce();
   });
 
+  it('discloses the synthetic-research basis at the first walkthrough step', () => {
+    const [welcome] = createJikkenTutorialSteps();
+
+    expect(welcome.researchNote).toContain('AI-simulated synthetic UX research');
+    expect(welcome.researchNote).toContain('synthetic data and hypotheses');
+    expect(welcome.researchNote).toContain('not real-user validation');
+  });
+
+  it('explains least-privilege security when the walkthrough reaches CI', () => {
+    const steps = createJikkenTutorialSteps();
+    const ciTransition = steps.find((step) => step.id === 'open-ci');
+
+    expect(ciTransition?.securityNote).toContain('read-only');
+    expect(ciTransition?.securityNote).toContain('without holding repository write access');
+    expect(ciTransition?.securityNote).toContain('never in the browser');
+  });
+
   it('keeps the SDK visible throughout steps 10–13', () => {
     const steps = createJikkenTutorialSteps();
     const visibleSteps = ['sdk-contract', 'run-sdk', 'sdk-result', 'open-ci'];

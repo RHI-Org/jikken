@@ -18,6 +18,10 @@ export interface TutorialStep {
   id: string;
   /** Keep the surrounding product surface visible instead of dimming it. */
   dimBackground?: boolean;
+  /** Discloses when a tutorial decision came from synthetic research. */
+  researchNote?: string;
+  /** Explains a security boundary at the moment it becomes relevant. */
+  securityNote?: string;
   nextLabel?: string;
   placement?: TutorialPlacement;
   title: string;
