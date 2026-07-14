@@ -47,6 +47,7 @@ export function Shell() {
   const [cliInject, setCliInject] = useState<CliInject | null>(null);
   const nonce = useRef(0);
   const persistenceNonce = useRef(0);
+  const cliTransitionTimer = useRef<number | null>(null);
   const tutorialCliRan = useRef(false);
   const [narrowScreen, setNarrowScreen] = useState(() => window.matchMedia('(max-width: 760px)').matches);
 
@@ -66,6 +67,10 @@ export function Shell() {
     window.addEventListener('keydown', closeOnEscape);
     return () => window.removeEventListener('keydown', closeOnEscape);
   }, [pendingCliCommand]);
+
+  useEffect(() => () => {
+    if (cliTransitionTimer.current !== null) window.clearTimeout(cliTransitionTimer.current);
+  }, []);
 
   const injectCli = useCallback((command: string) => {
     setSurface('cli');
@@ -292,7 +297,7 @@ export function Shell() {
               Open the CLI to run this command?
             </h2>
             <p id="cli-transition-description" style={{ color: 'var(--portfolio-text-secondary)', fontSize: '0.82rem', lineHeight: 1.6, margin: '0.65rem 0 0' }}>
-              This command runs in the CLI. Jikken will open the CLI and run it there so you can see the exact output and exit code.
+              This command runs in the CLI. Jikken will open the terminal, pause briefly so you can see the prompt, then run the command and show its exact output and exit code.
             </p>
             <code style={{ background: 'var(--portfolio-bg-card-alt)', border: '1px solid var(--portfolio-border-muted)', borderRadius: '0.4rem', color: 'var(--portfolio-text-primary)', display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.72rem', marginTop: '0.85rem', overflowX: 'auto', padding: '0.65rem', whiteSpace: 'nowrap' }}>
               {pendingCliCommand}
@@ -311,7 +316,13 @@ export function Shell() {
                 onClick={() => {
                   const command = pendingCliCommand;
                   setPendingCliCommand(null);
-                  injectCli(command);
+                  setActivePrinciple(null);
+                  setSurface('cli');
+                  if (cliTransitionTimer.current !== null) window.clearTimeout(cliTransitionTimer.current);
+                  cliTransitionTimer.current = window.setTimeout(() => {
+                    cliTransitionTimer.current = null;
+                    injectCli(command);
+                  }, 1800);
                 }}
                 style={{ background: '#2563eb', border: 0, borderRadius: '0.4rem', color: '#fff', cursor: 'pointer', fontWeight: 'var(--font-weight-semibold)', padding: '0.5rem 0.8rem' }}
               >
