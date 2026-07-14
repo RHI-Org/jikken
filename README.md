@@ -1,4 +1,4 @@
-# Jikken (実験)
+# Jikken
 
 [![Flag Validation](https://github.com/RHI-Org/jikken/actions/workflows/flag-validation.yml/badge.svg)](https://github.com/RHI-Org/jikken/actions/workflows/flag-validation.yml)
 
@@ -14,7 +14,7 @@ One design intent, four surfaces. A feature-flag lifecycle tool built as a cross
 - The recommended first run is clearer, narrow-screen navigation behaves as a drawer, and the walkthrough labels its research-driven additions as AI-simulated hypotheses—not real-user validation.
 - Security constraints appear in the workflow, and the case study records where human evaluation corrected AI-generated implementation.
 
-**Jikken** (実験) is Japanese for **experiment**. The name reflects the app's purpose: test a proposed feature-flag change against a representative audience before it reaches production. Jikken turns that experiment into a governed decision by showing who gains access, who is excluded, and which changes need review—then carries the same verdict into the CLI, Dashboard, SDK, and CI gate.
+**Jikken** is Japanese for **experiment**. The name reflects the app's purpose: test a proposed feature-flag change against a representative audience before it reaches production. Jikken turns that experiment into a governed decision by showing who gains access, who is excluded, and which changes need review—then carries the same verdict into the CLI, Dashboard, SDK, and CI gate.
 
 Developer tooling can keep one coherent design language across every surface it touches. Green means "receives the flag" everywhere. Red means "excluded" everywhere. Yellow means "needs review" everywhere. The field is spelled `rollout_percentage` on every surface. Exit code 1 means the same conflict in the CLI, Dashboard, SDK, and CI gate. The hard part is not building one good interface — it is building four that feel like they came from the same mind.
 
