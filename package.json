@@ -20,11 +20,15 @@
     "vercel-build": "npm run build:present && npm run build:dashboard && node scripts/assemble-dist.mjs",
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "test:integration": "vitest run tests/integration"
+    "test:integration": "vitest run tests/integration",
+    "lint": "eslint ."
   },
   "devDependencies": {
-    "vitest": "^2.1.9",
+    "eslint": "^9.15.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
     "tsx": "^4.19.2",
-    "typescript": "^5.5.3"
+    "typescript": "^5.5.3",
+    "typescript-eslint": "^8.15.0",
+    "vitest": "^3.2.6"
   }
 }
