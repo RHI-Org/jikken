@@ -106,6 +106,9 @@ export function CliSurface({
     term.writeln('\x1b[1m\x1b[38;5;232mjikken v1.0.0\x1b[0m\x1b[38;5;244m — feature flag lifecycle tool\x1b[0m');
     term.writeln('\x1b[38;5;245mType a command, or open Commands for shortcuts. `help` for options.\x1b[0m');
     term.write('\r\n' + PROMPT);
+    // The CLI is the default surface, so make its first prompt ready to type
+    // immediately and render xterm's configured blinking cursor as active.
+    term.focus();
 
     const runLine = (line: string) => {
       const { text, result, scenario, clear } = runCommand(line);
