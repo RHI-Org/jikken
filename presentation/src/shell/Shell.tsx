@@ -45,6 +45,11 @@ export function Shell() {
   const nonce = useRef(0);
   const tutorialCliRan = useRef(false);
 
+  const injectCli = useCallback((command: string) => {
+    nonce.current += 1;
+    setCliInject({ command, nonce: nonce.current });
+  }, []);
+
   // Keep the manual walkthrough deterministic while leaving command entry to
   // the viewer. Later steps prepare their surface when Next is used.
   useEffect(() => {
@@ -67,12 +72,7 @@ export function Shell() {
     } else if (step === 'ci-verdict') {
       setSurface('ci');
     }
-  }, [tutorial.active, tutorial.currentStep?.id, tutorial.state.session]);
-
-  const injectCli = useCallback((command: string) => {
-    nonce.current += 1;
-    setCliInject({ command, nonce: nonce.current });
-  }, []);
+  }, [tutorial.active, tutorial.currentStep?.id, tutorial.state.session, injectCli]);
 
   // Scenario picker sets the seed for every surface and always queues the
   // matching CLI diff. The CLI stays mounted while hidden, so switching back

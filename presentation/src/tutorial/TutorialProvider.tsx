@@ -108,7 +108,7 @@ export function TutorialProvider({
     void Promise.resolve(currentStep.prepare()).catch(() => {
       // Preparation is best-effort; the callout remains usable if demo setup fails.
     });
-  }, [currentStep?.id, state.session]);
+  }, [currentStep, state.session]);
 
   useEffect(() => {
     if (autoStarted.current) return;

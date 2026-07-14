@@ -171,7 +171,7 @@ export default function SimulationView({ simulationResult: providedResult }: Sim
     if (!demoScenario || !result) return;
     const firstExcluded = result.decisions.find((decision) => decision.decision === 'exclude');
     if (firstExcluded) setExpanded(new Set([firstExcluded.user_id]));
-  }, [demoScenario, result?.simulation_id]);
+  }, [demoScenario, result]);
 
   const toggleExpand = (userId: string) => {
     const next = new Set(expanded);

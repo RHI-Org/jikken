@@ -77,11 +77,14 @@ export function DashboardSurface() {
   }, [dashboardOrigin, tutorial]);
 
   useEffect(() => {
+    // Capture the frame at effect time: cleanup must message the iframe that
+    // was live when this step ran, not whatever frameRef points to at unmount.
+    const frame = frameRef.current;
     prepareTutorialStep();
     return () => {
       tutorialTimers.current.forEach(window.clearTimeout);
       tutorialTimers.current = [];
-      frameRef.current?.contentWindow?.postMessage(
+      frame?.contentWindow?.postMessage(
         { type: 'jikken:tutorial:clear-highlight' },
         dashboardOrigin,
       );
