@@ -181,7 +181,7 @@ function resolveInput(opts: Record<string, string | true>):
 
   // A pattern-valid but unknown ID must not silently simulate a made-up flag:
   // "validate before you compute." Same wording and suggestion as the Node CLI.
-  const known = activeCatalog.map((f) => f.id);
+  const known: string[] = activeCatalog.map((f) => f.id);
   if (!known.includes(flagId)) {
     const suggestion = closestMatch(flagId, known);
     return {

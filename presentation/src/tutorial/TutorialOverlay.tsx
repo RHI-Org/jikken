@@ -251,9 +251,11 @@ export function TutorialOverlay() {
           </p>
         )}
         <div style={{ alignItems: 'center', display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16 }}>
-          <span style={{ marginRight: 'auto', color: 'var(--portfolio-text-subtle, #78716c)', fontFamily: 'var(--font-mono, monospace)', fontSize: 10 }}>
-            ← → navigate
-          </span>
+          {currentIndex === 0 && (
+            <span style={{ marginRight: 'auto', color: 'var(--portfolio-text-subtle, #78716c)', fontFamily: 'var(--font-mono, monospace)', fontSize: 10 }}>
+              ← → navigate
+            </span>
+          )}
           {currentIndex > 0 && (
             <button onClick={back} style={{ background: 'transparent', border: '1px solid var(--portfolio-border, #d6d3d1)', borderRadius: 6, color: 'inherit', cursor: 'pointer', padding: '7px 11px' }} type="button">
               Back

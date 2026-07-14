@@ -9,5 +9,7 @@ export const TECH: TechItem[] = [
   { name: "Commander.js", why: "Parses the CLI, powers 'Did you mean?' suggestions and exit codes 0–6." },
   { name: "React + Vite + Tailwind", why: "The Dashboard and this presentation shell; Tailwind tokens resolve to the same hex the CLI prints." },
   { name: "Supabase", why: "Postgres, Realtime, Edge Functions, and the shared .experienceplus.ai SSO cookie." },
-  { name: "GitHub Actions", why: "flag-validation.yml runs the SDK against the Edge Function on every flag change." }
+  { name: "GitHub Actions", why: "flag-validation.yml runs the SDK against the Edge Function on every flag change." },
+  { name: "AI development — Anthropic, Codex, Claude Code", why: "Used during implementation for code generation, review, iteration, and debugging." },
+  { name: "Vercel", why: "Hosts the production presentation and Dashboard surfaces." }
 ];
