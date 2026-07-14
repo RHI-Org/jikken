@@ -8,10 +8,11 @@
  */
 import { useEffect, useState } from 'react';
 import { Play, Loader2 } from 'lucide-react';
-import { EXIT_CODE_MESSAGES, COLORS, SCENARIOS, evaluateFlag, type ScenarioId, type SimulationResult } from '@jikken/shared';
+import { EXIT_CODE_MESSAGES, COLORS, evaluateFlag, type Scenario, type ScenarioId, type SimulationResult } from '@jikken/shared';
 import { supabase } from '@/integrations/supabase/client';
 import { TerminalWindow } from '../TerminalWindow';
 import { TUTORIAL_EVENTS, useTutorial } from '@/tutorial';
+import type { RunProvenance } from '../run-context';
 
 // ── Monochrome editor tokens (dark stone; hierarchy from weight, not hue) ──
 const T = {
@@ -63,26 +64,50 @@ function CodeSample({ scenario }: { scenario: ScenarioId }) {
   );
 }
 
-export function SdkSurface({ scenario }: { scenario: ScenarioId }) {
+export function SdkSurface({
+  scenario,
+  onResult,
+}: {
+  scenario: Scenario;
+  onResult?: (result: SimulationResult, provenance: RunProvenance) => void;
+}) {
   const tutorial = useTutorial();
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<SimulationResult | null>(null);
+  const [provenance, setProvenance] = useState<RunProvenance | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const run = async () => {
     setRunning(true);
     setResult(null);
+    setProvenance(null);
     setError(null);
+    if (scenario.flag.id !== 'dark-mode') {
+      const local = evaluateFlag(scenario.flag, scenario.users);
+      setResult(local);
+      setProvenance('local-replay');
+      setError('This catalog feature is not deployed in the remote fixture — showing the exact deterministic local replay.');
+      onResult?.(local, 'local-replay');
+      setRunning(false);
+      tutorial.emit(TUTORIAL_EVENTS.sdkRunComplete);
+      return;
+    }
     try {
       const { data, error: fnError } = await supabase.functions.invoke('jikken-simulate', {
-        body: { scenario, surface: 'sdk' },
+        body: { scenario: scenario.id, surface: 'sdk' },
       });
       if (fnError) throw fnError;
-      setResult(data as SimulationResult);
+      const liveResult = data as SimulationResult;
+      setResult(liveResult);
+      setProvenance('live-persisted');
+      onResult?.(liveResult, 'live-persisted');
     } catch (e) {
       // The browser demo remains deterministic when the optional remote
       // function is unavailable: this is the exact same shared engine/input.
-      setResult(evaluateFlag(SCENARIOS[scenario].flag, SCENARIOS[scenario].users));
+      const local = evaluateFlag(scenario.flag, scenario.users);
+      setResult(local);
+      setProvenance('local-replay');
+      onResult?.(local, 'local-replay');
       setError(
         e instanceof Error
           ? `${e.message} — showing the identical local-engine result.`
@@ -95,6 +120,12 @@ export function SdkSurface({ scenario }: { scenario: ScenarioId }) {
       tutorial.emit(TUTORIAL_EVENTS.sdkRunComplete);
     }
   };
+
+  useEffect(() => {
+    setResult(null);
+    setProvenance(null);
+    setError(null);
+  }, [scenario.flag.id, scenario.id]);
 
   useEffect(() => {
     if (tutorial.currentStep?.id === 'sdk-result' && !result && !running) void run();
@@ -129,7 +160,9 @@ export function SdkSurface({ scenario }: { scenario: ScenarioId }) {
         }}
       >
         {running ? <Loader2 size={14} className="jk-spin" /> : <Play size={14} />}
-        {running ? 'Calling Edge Function…' : 'Run against live Edge Function'}
+        {running
+          ? scenario.flag.id === 'dark-mode' ? 'Calling Edge Function…' : 'Running local replay…'
+          : scenario.flag.id === 'dark-mode' ? 'Run against live Edge Function' : 'Run deterministic local replay'}
       </button>
       {error && (
         <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: 'var(--portfolio-text-muted)' }}>{error}</span>
@@ -148,10 +181,14 @@ export function SdkSurface({ scenario }: { scenario: ScenarioId }) {
     <div style={{ height: '100%', minHeight: 0, padding: '2rem', boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <TerminalWindow title="deploy-gate.ts — jikken sdk" footer={footer}>
         <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', background: '#1c1917' }}>
-          <CodeSample scenario={scenario} />
+          <CodeSample scenario={scenario.id} />
           {result && (
             <div data-tutorial="sdk-result" style={{ padding: '0 1.3rem 1.3rem', fontFamily: 'var(--font-mono)', fontSize: '0.72rem', lineHeight: 1.6 }}>
-              <div style={{ color: '#78716c', paddingBottom: '0.3rem' }}>{'// live response'}</div>
+              <div style={{ color: '#78716c', paddingBottom: '0.3rem' }}>
+                {provenance === 'live-persisted'
+                  ? '// live persisted API response'
+                  : '// deterministic local replay (not persisted)'}
+              </div>
               <pre style={{ margin: 0, color: '#d6d3d1', whiteSpace: 'pre-wrap' }}>
                 {JSON.stringify(
                   { simulation_id: result.simulation_id, result: result.result, exit_code: result.exit_code, summary: result.summary },

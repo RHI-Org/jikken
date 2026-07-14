@@ -13,6 +13,8 @@ import { CliSurface, type CliInject } from './surfaces/CliSurface';
 import { SdkSurface } from './surfaces/SdkSurface';
 import { DashboardSurface } from './surfaces/DashboardSurface';
 import { CiSurface } from './surfaces/CiSurface';
+import { RunContextBar } from './RunContextBar';
+import type { RunProvenance, RunRecord } from './run-context';
 import type { Surface, Principle } from './types';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -119,6 +121,8 @@ export function Stage({
   onScenarioChange,
   cliInject,
   onCliResult,
+  onSurfaceResult,
+  run,
   activePrinciple,
   panelOpen,
   onOpenPanel,
@@ -133,7 +137,9 @@ export function Stage({
   scenario: ScenarioId | null;
   onScenarioChange: (s: ScenarioId) => void;
   cliInject: CliInject | null;
-  onCliResult: (r: SimulationResult, scenario: string | null) => void;
+  onCliResult: (r: SimulationResult, scenario: ScenarioId | null) => void;
+  onSurfaceResult: (r: SimulationResult, provenance: RunProvenance) => void;
+  run: RunRecord | null;
   activePrinciple: Principle | null;
   panelOpen: boolean;
   onOpenPanel: () => void;
@@ -148,9 +154,10 @@ export function Stage({
   const featureDef = features.find((f) => f.id === feature) ?? features[0];
 
   return (
-    <div style={{ flex: 1, minWidth: 0, height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--portfolio-page-bg)' }}>
+    <div className="jk-stage" style={{ flex: 1, minWidth: 0, height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--portfolio-page-bg)' }}>
       {/* Top bar */}
       <div
+        className="jk-stage-topbar"
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -162,7 +169,7 @@ export function Stage({
           flexWrap: 'wrap',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
+        <div className="jk-stage-brand" style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
           {!panelOpen && (
             <button
               onClick={onOpenPanel}
@@ -204,7 +211,7 @@ export function Stage({
         </div>
 
         {/* Surface switcher */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div className="jk-stage-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           {SURFACES.map((s) => {
             const active = s.id === surface;
             return (
@@ -227,7 +234,7 @@ export function Stage({
               </button>
             );
           })}
-          <span aria-hidden="true" style={{ width: 1, height: '1.1rem', background: 'var(--portfolio-border)' }} />
+          <span className="jk-stage-divider" aria-hidden="true" style={{ width: 1, height: '1.1rem', background: 'var(--portfolio-border)' }} />
           <button
             type="button"
             disabled={signingOut}
@@ -244,10 +251,17 @@ export function Stage({
             style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.25rem 0', border: 0, background: 'none', color: 'var(--portfolio-text-muted)', cursor: signingOut ? 'default' : 'pointer', fontSize: '0.75rem', fontWeight: 'var(--font-weight-medium)', opacity: signingOut ? 0.6 : 1 }}
           >
             <LogOut size={13} />
-            {signingOut ? 'Logging out…' : 'Log out of demo'}
+            <span className="jk-logout-label">{signingOut ? 'Logging out…' : 'Log out of demo'}</span>
           </button>
         </div>
       </div>
+
+      <RunContextBar
+        features={features}
+        feature={feature}
+        scenario={scenario}
+        run={run}
+      />
 
       {/* Surface stage (pin overlay lives here) */}
       <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
@@ -272,7 +286,10 @@ export function Stage({
                 onScenarioChange={onScenarioChange}
               />
             ) : (
-              <SdkSurface scenario={scenario} />
+              <SdkSurface
+                scenario={featureDef.situations[scenario]}
+                onResult={onSurfaceResult}
+              />
             )}
           </div>
         )}
@@ -287,7 +304,10 @@ export function Stage({
                 onScenarioChange={onScenarioChange}
               />
             ) : (
-              <CiSurface scenario={featureDef.situations[scenario]} />
+              <CiSurface
+                scenario={featureDef.situations[scenario]}
+                onResult={(result) => onSurfaceResult(result, 'local-replay')}
+              />
             )}
           </div>
         )}

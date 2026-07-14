@@ -5,7 +5,7 @@
  * command shortcut in the terminal.
  */
 import { useState } from 'react';
-import { ArrowRight, Check, Copy, Info } from 'lucide-react';
+import { ArrowRight, Check, Copy, Info, Play } from 'lucide-react';
 import { SCENARIO_IDS, SCENARIO_NAMES, type FeatureDef, type FeatureId, type ScenarioId } from '@jikken/shared';
 import { PRESET_COMMANDS } from '../cli-runtime';
 
@@ -100,6 +100,7 @@ export function CommandsTab({
   onFeatureChange,
   scenario,
   onScenarioChange,
+  onRunSelected,
   onRunCommand,
 }: {
   features: FeatureDef[];
@@ -107,6 +108,7 @@ export function CommandsTab({
   onFeatureChange: (f: FeatureId) => void;
   scenario: ScenarioId | null;
   onScenarioChange: (s: ScenarioId) => void;
+  onRunSelected: () => void;
   onRunCommand: (command: string) => void;
 }) {
   const featureDef = features.find((f) => f.id === feature) ?? features[0];
@@ -195,6 +197,20 @@ export function CommandsTab({
               <InfoTip label="About the Scenario menu" text={`Choose the proposed targeting change to evaluate. Menu names map directly to CLI values: ${scenarioMap}.`} />
             </div>
           </div>
+
+          <button
+            type="button"
+            data-tutorial="run-conflict-command"
+            disabled={!feature || !scenario}
+            onClick={onRunSelected}
+            style={{ alignItems: 'center', alignSelf: 'stretch', background: 'var(--portfolio-text-primary)', border: 0, borderRadius: '0.45rem', color: 'var(--portfolio-btn-text)', cursor: feature && scenario ? 'pointer' : 'not-allowed', display: 'flex', fontSize: '0.76rem', fontWeight: 'var(--font-weight-semibold)', gap: '0.4rem', justifyContent: 'center', marginTop: '0.15rem', opacity: feature && scenario ? 1 : 0.45, padding: '0.55rem 0.8rem' }}
+          >
+            <Play aria-hidden="true" size={13} />
+            Run in CLI
+          </button>
+          <p style={{ color: 'var(--portfolio-text-faint)', fontSize: '0.66rem', lineHeight: 1.45, margin: '-0.2rem 0 0' }}>
+            Selecting inputs only updates the shared context. Run explicitly when you are ready.
+          </p>
         </div>
       </section>
 
@@ -216,7 +232,6 @@ export function CommandsTab({
                   <div key={c.label} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                     <div style={{ minWidth: 0, flex: 1, padding: '0.25rem 0.35rem 0.25rem 0.7rem', borderRadius: '0.5rem', border: '1px solid var(--portfolio-border)', background: 'var(--portfolio-bg-card)' }}>
                       <button
-                        data-tutorial={c.command.includes('diff') && c.command.includes('conflict') ? 'run-conflict-command' : undefined}
                         onClick={() => onRunCommand(c.command)}
                         style={{ width: '100%', minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.7rem', padding: '0.4rem 0', border: 0, background: 'none', cursor: 'pointer', textAlign: 'left' }}
                       >

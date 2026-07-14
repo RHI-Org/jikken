@@ -70,6 +70,7 @@ export function NotesPanel({
   onFeatureChange,
   scenario,
   onScenarioChange,
+  onRunSelected,
   onStartTutorial,
 }: {
   tab: NotesTab;
@@ -84,10 +85,13 @@ export function NotesPanel({
   onFeatureChange: (f: FeatureId) => void;
   scenario: ScenarioId | null;
   onScenarioChange: (s: ScenarioId) => void;
+  onRunSelected: () => void;
   onStartTutorial: () => void;
 }) {
   return (
     <aside
+      className="jk-notes-panel"
+      aria-label="Project notes"
       style={{
         width: 'min(440px, 40%)',
         minWidth: 320,
@@ -181,6 +185,7 @@ export function NotesPanel({
             onFeatureChange={onFeatureChange}
             scenario={scenario}
             onScenarioChange={onScenarioChange}
+            onRunSelected={onRunSelected}
             onRunCommand={onRunCommand}
           />
         )}

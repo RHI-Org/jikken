@@ -7,9 +7,9 @@
  * The gate's colors are the canonical COLORS hexes, so the red that blocks
  * the deploy here is byte-for-byte the red the CLI prints for [FAIL].
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Check, X, AlertTriangle, Loader2, CircleDashed, Ban, RotateCcw } from 'lucide-react';
-import { COLORS, EXIT_CODE_MESSAGES, SCENARIO_NAMES, diffSimulations, type Scenario } from '@jikken/shared';
+import { COLORS, EXIT_CODE_MESSAGES, SCENARIO_NAMES, diffSimulations, type Scenario, type SimulationResult } from '@jikken/shared';
 import { TerminalWindow } from '../TerminalWindow';
 import { TUTORIAL_EVENTS, useTutorial } from '@/tutorial';
 
@@ -50,18 +50,31 @@ function StepIcon({ state, tone }: { state: StepState; tone: 'ok' | 'warn' | 'fa
   return <X size={15} style={{ color: COLORS.EXCLUDE.hex }} strokeWidth={2.6} />;
 }
 
-export function CiSurface({ scenario }: { scenario: Scenario }) {
+export function CiSurface({
+  scenario,
+  onResult,
+}: {
+  scenario: Scenario;
+  onResult?: (result: SimulationResult) => void;
+}) {
   const tutorial = useTutorial();
   // Deterministic: the same engine call every surface makes.
-  const diff = diffSimulations(scenario.baseline, scenario.flag, scenario.users);
+  const diff = useMemo(
+    () => diffSimulations(scenario.baseline, scenario.flag, scenario.users),
+    [scenario],
+  );
+  const onResultRef = useRef(onResult);
+  onResultRef.current = onResult;
   const exit = diff.exit_code;
   const outcome: 'ok' | 'warn' | 'fail' = exit === 0 ? 'ok' : exit === 2 ? 'warn' : 'fail';
 
   const { resolved, showBanner, rerun } = useStagedRun(`${scenario.feature}:${scenario.id}`);
 
   useEffect(() => {
-    if (showBanner) tutorial.emit(TUTORIAL_EVENTS.ciVerdictVisible);
-  }, [showBanner, tutorial]);
+    if (!showBanner) return;
+    tutorial.emit(TUTORIAL_EVENTS.ciVerdictVisible);
+    onResultRef.current?.(diff.after);
+  }, [diff.after, showBanner, tutorial]);
   const stateAt = (i: number): StepState => (resolved > i ? 'done' : resolved === i ? 'running' : 'pending');
 
   const gateDetail =

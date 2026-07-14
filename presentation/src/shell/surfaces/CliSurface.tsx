@@ -9,7 +9,7 @@ import { useEffect, useRef } from 'react';
 import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
-import { COLORS, type SimulationResult } from '@jikken/shared';
+import { COLORS, type ScenarioId, type SimulationResult } from '@jikken/shared';
 import { runCommand, colorizeCommand } from '../cli-runtime';
 import { TerminalWindow } from '../TerminalWindow';
 import { Trash2 } from 'lucide-react';
@@ -26,7 +26,7 @@ export function CliSurface({
   onResult,
 }: {
   inject: CliInject | null;
-  onResult?: (r: SimulationResult, scenario: string | null) => void;
+  onResult?: (r: SimulationResult, scenario: ScenarioId | null) => void;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const termRef = useRef<Terminal | null>(null);
