@@ -213,6 +213,7 @@ describe('SimulationView', () => {
 
     expect(screen.getByText('Copy')).toBeInTheDocument();
     expect(screen.getByText('PDF')).toBeInTheDocument();
+    expect(screen.queryByText('Re-run simulation')).not.toBeInTheDocument();
   });
 
   it('copies a plain-text report to the clipboard', async () => {
