@@ -130,23 +130,7 @@ export function CommandsTab({
           exact same input.
         </p>
 
-        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: '0.7rem', paddingLeft: '1.25rem' }}>
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 16 100"
-            preserveAspectRatio="none"
-            style={{ position: 'absolute', left: 0, top: '1.95rem', width: '0.85rem', height: 'calc(100% - 2.85rem)', overflow: 'visible' }}
-          >
-            <path
-              d="M15 1H9C5 1 4 4 4 9V42C4 47 2 50 0 50C2 50 4 53 4 58V91C4 96 5 99 9 99H15"
-              fill="none"
-              stroke="#1c1917"
-              strokeWidth="1.5"
-              vectorEffect="non-scaling-stroke"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
             <label htmlFor="feature-menu" style={MICRO_LABEL}>Feature</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -208,9 +192,6 @@ export function CommandsTab({
             <Play aria-hidden="true" size={13} />
             Run in CLI
           </button>
-          <p style={{ color: 'var(--portfolio-text-faint)', fontSize: '0.66rem', lineHeight: 1.45, margin: '-0.2rem 0 0' }}>
-            Selecting inputs only updates the shared context. Run explicitly when you are ready.
-          </p>
         </div>
       </section>
 

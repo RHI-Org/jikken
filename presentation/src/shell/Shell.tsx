@@ -27,6 +27,7 @@ export function Shell() {
   const [feature, setFeature] = useState<FeatureId | null>(null);
   const [scenario, setScenario] = useState<ScenarioId | null>(null);
   const [lastRun, setLastRun] = useState<RunRecord | null>(null);
+  const [pendingCliCommand, setPendingCliCommand] = useState<string | null>(null);
 
   // Load the Feature × Situation catalog from Supabase; falls back to the
   // bundled catalog (already the initial state) if the table isn't provisioned.
@@ -56,6 +57,15 @@ export function Shell() {
     query.addEventListener('change', update);
     return () => query.removeEventListener('change', update);
   }, []);
+
+  useEffect(() => {
+    if (!pendingCliCommand) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setPendingCliCommand(null);
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [pendingCliCommand]);
 
   const injectCli = useCallback((command: string) => {
     setSurface('cli');
@@ -133,21 +143,28 @@ export function Shell() {
     if (s === 'ci') tutorial.emit(TUTORIAL_EVENTS.ciOpened);
   }, [tutorial]);
 
-  // Command shortcut (from the Commands tab): switch to the CLI and run it.
-  const runCommandShortcut = useCallback(
+  // Commands requested from another surface explain the transition before
+  // moving the viewer. Commands requested on the CLI run immediately.
+  const requestCliRun = useCallback(
     (command: string) => {
       setActivePrinciple(null);
-      setSurface('cli');
-      injectCli(command);
+      if (surface === 'cli') {
+        injectCli(command);
+        return;
+      }
+      setPendingCliCommand(command);
     },
-    [injectCli],
+    [injectCli, surface],
   );
+
+  const runCommandShortcut = useCallback((command: string) => {
+    requestCliRun(command);
+  }, [requestCliRun]);
 
   const runSelected = useCallback(() => {
     if (!feature || !scenario) return;
-    setActivePrinciple(null);
-    injectCli(`jikken diff --feature ${feature} --scenario ${scenario}`);
-  }, [feature, injectCli, scenario]);
+    requestCliRun(`jikken diff --feature ${feature} --scenario ${scenario}`);
+  }, [feature, requestCliRun, scenario]);
 
   // The hand-off centerpiece: run the scenario in the CLI, then auto-switch
   // to the CI gate, where the same engine run either ships the change or
@@ -233,10 +250,10 @@ export function Shell() {
             features={catalog}
             feature={feature}
             onFeatureChange={changeFeature}
-          scenario={scenario}
-          onScenarioChange={changeScenario}
-          onRunSelected={runSelected}
-          onStartTutorial={tutorial.start}
+            scenario={scenario}
+            onScenarioChange={changeScenario}
+            onRunSelected={runSelected}
+            onStartTutorial={tutorial.start}
           />
         </>
       )}
@@ -259,6 +276,51 @@ export function Shell() {
         tutorialCompleted={tutorial.completed && !tutorial.active}
         onStartTutorial={tutorial.restart}
       />
+      {pendingCliCommand && (
+        <div
+          role="presentation"
+          style={{ alignItems: 'center', background: 'rgba(12, 10, 9, 0.62)', display: 'flex', inset: 0, justifyContent: 'center', padding: '1rem', position: 'fixed', zIndex: 9000 }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cli-transition-title"
+            aria-describedby="cli-transition-description"
+            style={{ background: 'var(--portfolio-bg-card)', border: '1px solid var(--portfolio-border)', borderRadius: '0.7rem', boxShadow: '0 20px 60px rgba(12, 10, 9, 0.28)', maxWidth: '28rem', padding: '1.25rem', width: '100%' }}
+          >
+            <h2 id="cli-transition-title" style={{ color: 'var(--portfolio-text-primary)', fontFamily: 'var(--font-serif)', fontSize: '1.15rem', margin: 0 }}>
+              Open the CLI to run this command?
+            </h2>
+            <p id="cli-transition-description" style={{ color: 'var(--portfolio-text-secondary)', fontSize: '0.82rem', lineHeight: 1.6, margin: '0.65rem 0 0' }}>
+              This command runs in the CLI. Jikken will open the CLI and run it there so you can see the exact output and exit code.
+            </p>
+            <code style={{ background: 'var(--portfolio-bg-card-alt)', border: '1px solid var(--portfolio-border-muted)', borderRadius: '0.4rem', color: 'var(--portfolio-text-primary)', display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.72rem', marginTop: '0.85rem', overflowX: 'auto', padding: '0.65rem', whiteSpace: 'nowrap' }}>
+              {pendingCliCommand}
+            </code>
+            <div style={{ display: 'flex', gap: '0.55rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+              <button
+                type="button"
+                onClick={() => setPendingCliCommand(null)}
+                style={{ background: 'transparent', border: '1px solid var(--portfolio-border)', borderRadius: '0.4rem', color: 'var(--portfolio-text-secondary)', cursor: 'pointer', padding: '0.5rem 0.75rem' }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                autoFocus
+                onClick={() => {
+                  const command = pendingCliCommand;
+                  setPendingCliCommand(null);
+                  injectCli(command);
+                }}
+                style={{ background: '#2563eb', border: 0, borderRadius: '0.4rem', color: '#fff', cursor: 'pointer', fontWeight: 'var(--font-weight-semibold)', padding: '0.5rem 0.8rem' }}
+              >
+                Open CLI and run
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
