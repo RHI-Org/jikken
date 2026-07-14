@@ -31,7 +31,7 @@ export default function Walkthrough() {
         </section>
 
         <div style={{ padding: 'clamp(0.45rem, 1vw, 0.75rem)', border: '1px solid var(--portfolio-border)', borderRadius: '0.9rem', background: '#1c1917', boxShadow: '0 24px 70px rgba(28, 25, 23, 0.18)' }}>
-          <video controls playsInline preload="metadata" poster="/media/jikken-walkthrough-poster.jpg" style={{ display: 'block', width: '100%', aspectRatio: '1211 / 926', objectFit: 'contain', borderRadius: '0.55rem', background: '#000' }} aria-label="Narrated Jikken product walkthrough">
+          <video controls playsInline preload="metadata" poster="/media/jikken-walkthrough-poster.jpg" style={{ display: 'block', width: '100%', aspectRatio: '353 / 270', objectFit: 'contain', borderRadius: '0.55rem', background: '#000' }} aria-label="Narrated Jikken product walkthrough">
             <source src="/media/jikken-walkthrough.mp4" type="video/mp4" />
             Your browser does not support embedded video. <a href="/media/jikken-walkthrough.mp4">Open the walkthrough video</a>.
           </video>
