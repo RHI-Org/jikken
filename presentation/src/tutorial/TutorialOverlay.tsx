@@ -74,11 +74,12 @@ function positionCallout(
 }
 
 export function TutorialOverlay() {
-  const { active, back, currentIndex, currentStep, finish, next, reducedMotion, skip, totalSteps } =
+  const { active, back, currentIndex, currentStep, finish, next, reducedMotion, skip, start, totalSteps } =
     useTutorial();
   const [anchorBox, setAnchorBox] = useState<Box | null>(null);
   const [calloutBox, setCalloutBox] = useState<Box>(EMPTY_BOX);
   const [copied, setCopied] = useState(false);
+  const [autoPlaying, setAutoPlaying] = useState(false);
   const calloutRef = useRef<HTMLDivElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
   const centered = !currentStep?.anchor || currentStep.placement === 'center';
@@ -87,6 +88,39 @@ export function TutorialOverlay() {
   // remains available through the existing left/right arrow bindings.
   const recordingMode = typeof window !== 'undefined'
     && new URLSearchParams(window.location.search).get('recording') === '1';
+
+  // P starts or pauses a complete 90-second run. Dividing the duration by the
+  // number of steps keeps the full sequence—including the closing frame—on
+  // screen for exactly one recording-length pass.
+  useEffect(() => {
+    const togglePlayback = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const isFormControl = target?.matches('input, textarea, select, [contenteditable="true"]');
+      if (event.code !== 'KeyP' || event.ctrlKey || event.metaKey || event.altKey || isFormControl) return;
+      event.preventDefault();
+      if (!active) {
+        start();
+        setAutoPlaying(true);
+        return;
+      }
+      setAutoPlaying((playing) => !playing);
+    };
+    window.addEventListener('keydown', togglePlayback);
+    return () => window.removeEventListener('keydown', togglePlayback);
+  }, [active, start]);
+
+  useEffect(() => {
+    if (!active || !autoPlaying || totalSteps === 0) return;
+    const timer = window.setTimeout(() => {
+      if (currentIndex === totalSteps - 1) {
+        setAutoPlaying(false);
+        finish();
+      } else {
+        next();
+      }
+    }, 90_000 / totalSteps);
+    return () => window.clearTimeout(timer);
+  }, [active, autoPlaying, currentIndex, finish, next, totalSteps]);
 
   const measure = useCallback(() => {
     if (!currentStep?.anchor) {
