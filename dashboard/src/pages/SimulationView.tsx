@@ -9,7 +9,7 @@
  * Design Principle: Consistency — same colors as CLI.
  * Design Principle: Transparent reasoning — every decision explained.
  */
-import { ArrowLeft, ChevronDown, ChevronRight, Copy, Download, RefreshCw } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, Copy, Database, Download, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -218,6 +218,12 @@ export default function SimulationView({ simulationResult: providedResult }: Sim
     .split('-')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
+  const audienceAttributes = demoScenario
+    ? Array.from(new Set(demoScenario.users.flatMap((user) => [
+        ...Object.keys(user).filter((key) => !['user_id', 'email', 'attributes'].includes(key)),
+        ...Object.keys(user.attributes ?? {}),
+      ]))).sort()
+    : [];
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
@@ -314,6 +320,30 @@ export default function SimulationView({ simulationResult: providedResult }: Sim
       </div>
 
       <AudienceCharts summary={summary} />
+
+      <section className="rounded-lg border border-blue-200 bg-blue-50/60 p-4" aria-labelledby="audience-provenance-title">
+        <div className="flex items-start gap-3">
+          <Database className="mt-0.5 h-5 w-5 shrink-0 text-blue-700" aria-hidden="true" />
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 id="audience-provenance-title" className="font-semibold text-gray-900">Audience provenance</h3>
+              <span className="rounded-full bg-blue-100 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-blue-800">
+                {demoScenario ? 'Deterministic demo data' : 'Recorded input snapshot'}
+              </span>
+            </div>
+            <p className="mt-1 text-sm text-gray-600">
+              {demoScenario
+                ? 'Bundled fixture users—not live customer records. The same fixed cohort is replayed across every Jikken surface.'
+                : 'The audit result retains decisions and counts; raw audience attributes are not stored with this record.'}
+            </p>
+            <dl className="mt-3 grid gap-3 text-xs sm:grid-cols-3">
+              <div><dt className="font-semibold uppercase tracking-wide text-gray-500">Cohort size</dt><dd className="mt-1 text-gray-800">{summary.total} users</dd></div>
+              <div><dt className="font-semibold uppercase tracking-wide text-gray-500">Attributes evaluated</dt><dd className="mt-1 text-gray-800">{audienceAttributes.length > 0 ? audienceAttributes.join(', ') : 'Not retained in audit result'}</dd></div>
+              <div><dt className="font-semibold uppercase tracking-wide text-gray-500">Freshness</dt><dd className="mt-1 text-gray-800">{demoScenario ? `Fixed snapshot · ${new Date(demoScenario.flag.updated_at).toLocaleString()}` : `Evaluated · ${new Date(result.evaluated_at).toLocaleString()}`}</dd></div>
+            </dl>
+          </div>
+        </div>
+      </section>
 
       {/* Decision Trace Tree */}
       <div>

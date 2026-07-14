@@ -11,7 +11,7 @@
  */
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, ChevronRight, Search, X } from 'lucide-react';
+import { CheckCircle2, ChevronDown, ChevronRight, Search, ShieldAlert, X, XCircle } from 'lucide-react';
 import type { SimulationResult } from '@jikken/shared';
 import { COLORS, DECISION_LABELS } from '@jikken/shared';
 import { flagStore } from '@/store/flagStore';
@@ -19,6 +19,12 @@ import {
   emitTutorialEvent,
   TUTORIAL_ANCHORS,
 } from '@/tutorial/bridge';
+import {
+  getGovernanceReview,
+  resolveGovernanceReview,
+  REVIEWER,
+  type GovernanceReview,
+} from '@/governance/reviewStore';
 
 const RESULT_STYLE: Record<SimulationResult['result'], { bg: string; text: string; label: string }> = {
   all_clear: { bg: COLORS.RECEIVE.bg, text: COLORS.RECEIVE.text, label: 'ALL CLEAR' },
@@ -45,6 +51,9 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [reviews, setReviews] = useState<Record<string, GovernanceReview>>({});
+  const [resolutionReasons, setResolutionReasons] = useState<Record<string, string>>({});
+  const [accessMessages, setAccessMessages] = useState<Record<string, { allowed: boolean; text: string }>>({});
   // simulation_ids that just arrived via Realtime — drives the pulse class.
   const [pulsing, setPulsing] = useState<Set<string>>(new Set());
   const pulseTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
@@ -109,6 +118,32 @@ export default function HistoryPage() {
     }
   };
 
+  const reviewFor = (sim: SimulationResult) => reviews[sim.simulation_id]
+    ?? getGovernanceReview(sim.simulation_id, sim.evaluated_at);
+
+  const resolveReview = (sim: SimulationResult, status: 'approved' | 'denied') => {
+    const reason = resolutionReasons[sim.simulation_id]?.trim();
+    if (!reason) return;
+    const review = resolveGovernanceReview(sim.simulation_id, sim.evaluated_at, status, reason);
+    setReviews((current) => ({ ...current, [sim.simulation_id]: review }));
+    setAccessMessages((current) => {
+      const next = { ...current };
+      delete next[sim.simulation_id];
+      return next;
+    });
+  };
+
+  const checkProductionAccess = (sim: SimulationResult) => {
+    const review = reviewFor(sim);
+    const allowed = review.status === 'approved';
+    const text = allowed
+      ? `Access check passed. ${review.resolvedBy} approved this audience under ${review.policyVersion}. No deployment was started.`
+      : review.status === 'denied'
+        ? `Production deployment denied. ${review.resolvedBy} denied this review: ${review.resolutionReason}. Recovery: address the rationale, record a new approval, then retry.`
+        : `Production deployment denied. ${review.policyVersion} requires an approved review for partial audience matches. Recovery: add a resolution reason and approve the review below, then retry.`;
+    setAccessMessages((current) => ({ ...current, [sim.simulation_id]: { allowed, text } }));
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-2xl font-semibold mb-6">Simulation History</h1>
@@ -157,6 +192,7 @@ export default function HistoryPage() {
                 const style = RESULT_STYLE[sim.result];
                 const isPulsing = pulsing.has(sim.simulation_id);
                 const isExpanded = expanded.has(sim.simulation_id);
+                const review = sim.result === 'warning' ? reviewFor(sim) : null;
                 return (
                   <Fragment key={sim.simulation_id}>
                     <tr
@@ -185,6 +221,7 @@ export default function HistoryPage() {
                         <span className={`inline-flex whitespace-nowrap px-2 py-1 rounded text-xs font-medium ${style.bg} ${style.text}`}>
                           {style.label}
                         </span>
+                        {review && <div className="mt-1 text-[10px] font-medium capitalize text-gray-500">Review: {review.status}</div>}
                       </td>
                       <td className="px-4 py-2 text-gray-600">
                         {sim.summary.passed} / {sim.summary.conflicted} / {sim.summary.warned}
@@ -223,6 +260,52 @@ export default function HistoryPage() {
                                 </div>
                               )}
                             </div>
+                            {review && (
+                              <section className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4" aria-label={`Governance review for ${sim.simulation_id}`}>
+                                <div className="flex flex-wrap items-start justify-between gap-3">
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <ShieldAlert className="h-4 w-4 text-amber-700" aria-hidden="true" />
+                                      <h3 className="font-semibold text-gray-900">Governance review</h3>
+                                    </div>
+                                    <p className="mt-1 text-xs text-gray-600">{review.reason}</p>
+                                  </div>
+                                  <span className={`rounded-full px-2 py-1 text-xs font-semibold ${review.status === 'approved' ? 'bg-green-100 text-green-700' : review.status === 'denied' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800'}`}>
+                                    {review.status === 'pending' ? 'Pending review' : review.status === 'approved' ? 'Approved' : 'Denied'}
+                                  </span>
+                                </div>
+                                <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
+                                  <div><dt className="font-semibold text-gray-500">Requested by</dt><dd className="mt-0.5 text-gray-800">{review.requestedBy}</dd></div>
+                                  <div><dt className="font-semibold text-gray-500">Policy version</dt><dd className="mt-0.5 font-mono text-gray-800">{review.policyVersion}</dd></div>
+                                  <div><dt className="font-semibold text-gray-500">Reviewer</dt><dd className="mt-0.5 text-gray-800">{review.resolvedBy ?? REVIEWER}</dd></div>
+                                </dl>
+                                {review.resolvedAt && (
+                                  <p className="mt-3 rounded bg-white/70 p-2 text-xs text-gray-700">
+                                    <strong>{review.status === 'approved' ? 'Approval' : 'Denial'} reason:</strong> {review.resolutionReason} · {new Date(review.resolvedAt).toLocaleString()}
+                                  </p>
+                                )}
+                                <label className="mt-3 block text-xs font-semibold text-gray-700" htmlFor={`review-reason-${sim.simulation_id}`}>Resolution reason</label>
+                                <textarea
+                                  id={`review-reason-${sim.simulation_id}`}
+                                  value={resolutionReasons[sim.simulation_id] ?? ''}
+                                  onChange={(event) => setResolutionReasons((current) => ({ ...current, [sim.simulation_id]: event.target.value }))}
+                                  placeholder="Document evidence or remaining risk"
+                                  rows={2}
+                                  className="mt-1 w-full rounded-md border border-amber-300 bg-white px-3 py-2 text-xs text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                                />
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                  <button type="button" disabled={!resolutionReasons[sim.simulation_id]?.trim()} onClick={() => resolveReview(sim, 'approved')} className="inline-flex items-center gap-1.5 rounded bg-green-700 px-3 py-2 text-xs font-semibold text-white hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-40"><CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />Approve</button>
+                                  <button type="button" disabled={!resolutionReasons[sim.simulation_id]?.trim()} onClick={() => resolveReview(sim, 'denied')} className="inline-flex items-center gap-1.5 rounded bg-white px-3 py-2 text-xs font-semibold text-red-700 ring-1 ring-inset ring-red-300 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"><XCircle className="h-3.5 w-3.5" aria-hidden="true" />Deny</button>
+                                  <button type="button" onClick={() => checkProductionAccess(sim)} className="ml-auto rounded bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:bg-gray-700">Check production deploy access</button>
+                                </div>
+                                {accessMessages[sim.simulation_id] && (
+                                  <div role="alert" className={`mt-3 rounded border p-3 text-xs leading-relaxed ${accessMessages[sim.simulation_id].allowed ? 'border-green-200 bg-green-50 text-green-800' : 'border-red-200 bg-red-50 text-red-800'}`}>
+                                    {accessMessages[sim.simulation_id].text}
+                                  </div>
+                                )}
+                                <p className="mt-2 text-[10px] text-gray-500">Review resolution is stored in this browser because the current backend schema has no governance review table.</p>
+                              </section>
+                            )}
                           </div>
                         </td>
                       </tr>

@@ -4,7 +4,7 @@
  * Tests UI behavior, validation, and state management.
  */
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { FlagConfig, SimulationResult } from '@jikken/shared';
 import FlagEditor from '../pages/FlagEditor';
@@ -58,6 +58,24 @@ const mockResult: SimulationResult = {
   exit_code: 0,
   evaluated_at: '2026-07-13T14:23:01Z',
   total_latency_ms: 4.2,
+};
+
+const warningResult: SimulationResult = {
+  ...mockResult,
+  simulation_id: 'sim_review_123',
+  result: 'warning',
+  summary: { passed: 1, conflicted: 0, warned: 1, total: 2 },
+  exit_code: 2,
+  decisions: [
+    mockResult.decisions[0],
+    {
+      user_id: 'user_002',
+      decision: 'partial',
+      matched_rules: ['segment:early_adopter'],
+      reason: 'User matches only one of two audience rules',
+      rule_sources: ['flags/dark-mode.json:9'],
+    },
+  ],
 };
 
 const mockFlags: FlagConfig[] = [
@@ -178,6 +196,22 @@ describe('SimulationView', () => {
       );
     });
   });
+
+  it('labels bundled audience provenance and its freshness', async () => {
+    render(
+      <MemoryRouter initialEntries={['/flags/simulate/dark-mode?scenario=warning']}>
+        <Routes>
+          <Route path="/flags/simulate/:id" element={<SimulationView />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText('Deterministic demo data')).toBeInTheDocument();
+    expect(screen.getByText(/Bundled fixture users/)).toBeInTheDocument();
+    expect(screen.getByText('10 users')).toBeInTheDocument();
+    expect(screen.getByText('account_type, country, segment')).toBeInTheDocument();
+    expect(screen.getByText(/Fixed snapshot/)).toBeInTheDocument();
+  });
 });
 
 describe('dashboard search', () => {
@@ -195,6 +229,11 @@ describe('dashboard search', () => {
 });
 
 describe('HistoryPage', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
   it('expands a simulation row to show metadata and decisions', async () => {
     vi.mocked(flagStore.listSimulations).mockResolvedValueOnce([mockResult]);
     renderWithRouter(<HistoryPage />);
@@ -205,5 +244,28 @@ describe('HistoryPage', () => {
     expect(screen.getByText('4.2 ms')).toBeInTheDocument();
     expect(screen.getByText('Decision details')).toBeInTheDocument();
     expect(screen.getByText('User matches segment and rollout')).toBeInTheDocument();
+  });
+
+  it('denies an unresolved production action and persists a named approval', async () => {
+    vi.mocked(flagStore.listSimulations).mockResolvedValueOnce([warningResult]);
+    renderWithRouter(<HistoryPage />);
+
+    fireEvent.click(await screen.findByText('sim_review_123'));
+    expect(screen.getByText('Pending review')).toBeInTheDocument();
+    expect(screen.getByText('targeting-safety/v1.3')).toBeInTheDocument();
+    expect(screen.getByText('Maya Chen · Release Manager')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Check production deploy access'));
+    expect(screen.getByRole('alert')).toHaveTextContent('Production deployment denied');
+    expect(screen.getByRole('alert')).toHaveTextContent('Recovery:');
+
+    fireEvent.change(screen.getByLabelText('Resolution reason'), {
+      target: { value: 'Country exceptions verified with the release owner.' },
+    });
+    fireEvent.click(screen.getByText('Approve'));
+
+    expect(screen.getByText('Approved')).toBeInTheDocument();
+    expect(screen.getAllByText(/Country exceptions verified/)).toHaveLength(2);
+    expect(localStorage.getItem('jikken-governance-reviews-v1')).toContain('Maya Chen');
   });
 });
