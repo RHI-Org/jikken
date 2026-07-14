@@ -8,16 +8,20 @@ interface Column {
   id: number;
   characters: string[];
   position: number;
+  velocity: number;
   opacity: number[];
 }
 
-const CHARACTERS = '○●◐◑─│✦◆01/\\|-';
+// Experiment, targeting, and decision symbols give Jikken its own visual
+// language while retaining the quiet terminal texture of Folio's animation.
+const CHARACTERS = 'Δ∑±×·•<>[]{}01/\\|-=+?';
 
 function makeColumn(id: number, position = Math.random() * -100): Column {
-  const length = Math.floor(Math.random() * 8) + 5;
+  const length = Math.floor(Math.random() * 11) + 4;
   return {
     id,
     position,
+    velocity: Math.random() * 0.85 + 0.55,
     characters: Array.from(
       { length },
       () => CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)],
@@ -48,7 +52,7 @@ export default function AsciiAnimation() {
     if (reducedMotion || columns.length === 0) return;
     const interval = window.setInterval(() => {
       setColumns((current) => current.map((column) => {
-        const position = column.position + 1;
+        const position = column.position + column.velocity;
         return position > 120 ? makeColumn(column.id, -20) : { ...column, position };
       }));
     }, 50);
