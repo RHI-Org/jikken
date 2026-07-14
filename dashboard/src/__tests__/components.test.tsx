@@ -138,6 +138,29 @@ describe('FlagEditor', () => {
     fireEvent.click(toggle);
 
     expect(screen.getByText(/Audience Rules/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add audience rule' })).toBeInTheDocument();
+  });
+
+  it('builds and saves an audience rule', async () => {
+    renderWithRouter(<FlagEditor />);
+
+    fireEvent.change(screen.getByPlaceholderText('dark-mode'), { target: { value: 'new-checkout' } });
+    fireEvent.change(screen.getByPlaceholderText('Dark Mode Toggle'), { target: { value: 'New Checkout' } });
+    fireEvent.click(screen.getByText(/Show advanced/i));
+    fireEvent.click(screen.getByRole('button', { name: 'Add audience rule' }));
+    fireEvent.change(screen.getByRole('combobox', { name: 'Rule 1 attribute' }), { target: { value: 'country' } });
+    fireEvent.change(screen.getByRole('combobox', { name: 'Rule 1 operator' }), { target: { value: 'in_list' } });
+    fireEvent.change(screen.getByRole('textbox', { name: 'Rule 1 value' }), { target: { value: 'US, CA, UK' } });
+
+    expect(screen.getByLabelText('Audience rule preview')).toHaveTextContent('Country is one of “US, CA, UK”');
+
+    const save = screen.getByRole('button', { name: 'Save Flag' });
+    await waitFor(() => expect(save).toBeEnabled());
+    fireEvent.click(save);
+
+    await waitFor(() => expect(flagStore.saveFlag).toHaveBeenCalledWith(expect.objectContaining({
+      audience_rules: [{ type: 'country', operator: 'in_list', value: ['US', 'CA', 'UK'] }],
+    })));
   });
 
   it('disables Save while the form is invalid', () => {
