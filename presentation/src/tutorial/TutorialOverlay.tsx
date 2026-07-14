@@ -82,6 +82,11 @@ export function TutorialOverlay() {
   const calloutRef = useRef<HTMLDivElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
   const centered = !currentStep?.anchor || currentStep.placement === 'center';
+  // Capture mode keeps the walkthrough choreography and spotlight targets but
+  // removes explanatory chrome from the recorded product surface. Navigation
+  // remains available through the existing left/right arrow bindings.
+  const recordingMode = typeof window !== 'undefined'
+    && new URLSearchParams(window.location.search).get('recording') === '1';
 
   const measure = useCallback(() => {
     if (!currentStep?.anchor) {
@@ -176,7 +181,7 @@ export function TutorialOverlay() {
   const calloutPosition = positionCallout(anchorBox, calloutBox, placement);
   const lastStep = currentIndex === totalSteps - 1;
   const showNext = currentStep.allowNext === true;
-  const dimBackground = currentStep.dimBackground !== false;
+  const dimBackground = !recordingMode && currentStep.dimBackground !== false;
   const spotlightVerticalPadding = currentStep.spotlightVerticalPadding ?? 6;
   const spotlightOffsetY = currentStep.spotlightOffsetY ?? 0;
 
@@ -210,6 +215,7 @@ export function TutorialOverlay() {
       ) : null}
 
       <div
+        aria-hidden={recordingMode || undefined}
         aria-describedby={`tutorial-body-${currentStep.id}`}
         aria-labelledby={`tutorial-title-${currentStep.id}`}
         aria-modal={centered || undefined}
@@ -233,6 +239,7 @@ export function TutorialOverlay() {
           top: calloutPosition.top,
           transition: reducedMotion ? 'none' : 'left 180ms ease-out, top 180ms ease-out',
           width: 'min(360px, calc(100vw - 24px))',
+          display: recordingMode ? 'none' : undefined,
         }}
       >
         <div style={{ alignItems: 'center', display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
