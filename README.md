@@ -2,9 +2,9 @@
 
 [![Flag Validation](https://github.com/RHI-Org/jikken/actions/workflows/flag-validation.yml/badge.svg)](https://github.com/RHI-Org/jikken/actions/workflows/flag-validation.yml)
 
-One design intent, four surfaces. A feature-flag lifecycle tool built as a cross-surface UX demonstration.
+Govern feature-flag changes across CLI, Dashboard, SDK, and CI—preview audience impact, preserve explainable decisions, and block risky rollouts.
 
-**Current case-study release: v1.1.0** — an iteration driven by explicitly labeled AI-simulated UX research and followed by full automated verification.
+**Current release: v1.1.0** — an iteration driven by explicitly labeled AI-simulated UX research and followed by full automated verification.
 
 ### What changed in v1.1
 
@@ -12,15 +12,15 @@ One design intent, four surfaces. A feature-flag lifecycle tool built as a cross
 - Feature and scenario selection now prepares shared context; an explicit Run action executes the CLI diff without surprising navigation.
 - The Dashboard identifies audience provenance and supports a review lifecycle with actor, policy version, rationale, approval or denial, and a contextual access check.
 - The recommended first run is clearer, narrow-screen navigation behaves as a drawer, and the walkthrough labels its research-driven additions as AI-simulated hypotheses—not real-user validation.
-- Security constraints appear in the workflow, and the case study records where human evaluation corrected AI-generated implementation.
+- Security constraints appear in the workflow, and the project record shows where human evaluation corrected AI-generated implementation.
 
 **Jikken** is Japanese for **experiment**. The name reflects the app's purpose: test a proposed feature-flag change against a representative audience before it reaches production. Jikken turns that experiment into a governed decision by showing who gains access, who is excluded, and which changes need review—then carries the same verdict into the CLI, Dashboard, SDK, and CI gate.
 
 Developer tooling can keep one coherent design language across every surface it touches. Green means "receives the flag" everywhere. Red means "excluded" everywhere. Yellow means "needs review" everywhere. The field is spelled `rollout_percentage` on every surface. Exit code 1 means the same conflict in the CLI, Dashboard, SDK, and CI gate. The hard part is not building one good interface — it is building four that feel like they came from the same mind.
 
-### Why the domain is a stand-in
+### A governance lifecycle
 
-The example is feature flags, but the shape is a **governance lifecycle**: a policy decided once, then evaluated and enforced coherently across the people who configure it, the engineers who call it, and the pipelines that gate on it — with a **decision** (`allow` / `hold` / `needs-review`), a **reason**, and a **tamper-evident audit trail** at every surface. The same architecture fits access control, data validation, or **agent tool-use policy** just as well. When code is cheap, the scarce resource isn't another screen — it's the *same decision, legible everywhere it's read*. Flags are simply a domain small enough to build end-to-end and verify in a day; the point on display is the coherence method, not the breadth of the ruleset.
+Jikken applies a **governance lifecycle** to feature flags: a policy is decided once, then evaluated and enforced coherently across the people who configure it, the engineers who call it, and the pipelines that gate on it—with a **decision** (`allow` / `hold` / `needs-review`), a **reason**, and a **tamper-evident audit trail** at every surface. The same architecture extends to access control, data validation, and **agent tool-use policy**. When code is cheap, governance is the scarce resource: the same decision must remain legible and enforceable everywhere it is read.
 
 ## Four surfaces, one mind
 
@@ -163,7 +163,7 @@ jikken/
 ├── cli/             # `jikken` binary — Commander.js, exit codes 0–6
 ├── dashboard/       # React/Vite/Tailwind — five pages
 ├── sdk/             # @jikken/sdk — FlagClient + FlagApiError
-├── presentation/    # the stage — guided demo shell with a live terminal (xterm.js)
+├── presentation/    # guided product shell with a live terminal (xterm.js)
 ├── docs/            # product walkthrough images and planning documents
 ├── supabase/        # Edge Function (simulate) + migrations
 ├── flags/           # sample flag JSON
@@ -171,9 +171,9 @@ jikken/
 └── tests/integration/  # cross-surface coherence tests
 ```
 
-## Live demo
+## Live product
 https://jk.experienceplus.ai
-A guided walkthrough shell with the real CLI running in the browser and the real dashboard mounted beside it. Ten clickable design principles drop pins on the exact UI elements demonstrating them. Sign-in required.
+A guided product walkthrough with the real CLI running in the browser and the real Dashboard mounted beside it. Ten clickable design principles connect the rationale to the exact product interactions that implement it. Sign-in required.
 
 ## CI as a consumer
 `.github/workflows/flag-validation.yml` runs all unit and coherence suites. The pipeline's pass/fail status is determined by the CLI's own exit code, run against the shared engine.
