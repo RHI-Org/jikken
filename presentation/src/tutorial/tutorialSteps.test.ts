@@ -67,6 +67,6 @@ describe('Jikken tutorial contract', () => {
 
     expect(steps.filter((step) => visibleSteps.includes(step.id)).every((step) => step.dimBackground === false)).toBe(true);
     expect(steps.find((step) => step.id === 'ci-verdict')?.spotlightVerticalPadding).toBe(2);
-    expect(steps.find((step) => step.id === 'ci-verdict')?.spotlightOffsetY).toBe(-10);
+    expect(steps.find((step) => step.id === 'ci-verdict')?.spotlightOffsetY).toBe(-7);
   });
 });

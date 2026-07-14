@@ -153,7 +153,7 @@ export function createJikkenTutorialSteps(
       allowNext: true,
       dimBackground: false,
       spotlightVerticalPadding: 2,
-      spotlightOffsetY: -10,
+      spotlightOffsetY: -7,
     },
     {
       id: 'complete',
