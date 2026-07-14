@@ -6,6 +6,10 @@ One design intent, four surfaces. A feature-flag lifecycle tool built as a cross
 
 Developer tooling can keep one coherent design language across every surface it touches. Green means "receives the flag" everywhere. Red means "excluded" everywhere. Yellow means "needs review" everywhere. The field is spelled `rollout_percentage` on every surface. Exit code 1 means the same conflict in the CLI, Dashboard, SDK, and CI gate. The hard part is not building one good interface — it is building four that feel like they came from the same mind.
 
+### Why the domain is a stand-in
+
+The example is feature flags, but the shape is a **governance lifecycle**: a policy decided once, then evaluated and enforced coherently across the people who configure it, the engineers who call it, and the pipelines that gate on it — with a **decision** (`allow` / `hold` / `needs-review`), a **reason**, and a **tamper-evident audit trail** at every surface. The same architecture fits access control, data validation, or **agent tool-use policy** just as well. When code is cheap, the scarce resource isn't another screen — it's the *same decision, legible everywhere it's read*. Flags are simply a domain small enough to build end-to-end and verify in a day; the point on display is the coherence method, not the breadth of the ruleset.
+
 ## Four surfaces, one mind
 
 | Surface | Audience | Tech Stack | Key Features |
@@ -23,43 +27,43 @@ The flow starts with a developer checking a proposed targeting change and ends w
 
 The diff identifies exactly which users would lose access and returns exit code 1.
 
-![Jikken CLI showing a conflict diff and three users losing access](docs/images/mockups/01-cli-conflict-mockup.png)
+![Jikken CLI showing a conflict diff and three users losing access](docs/images/01-cli-conflict.jpg)
 
 ### 2. Review the flag portfolio
 
 The Dashboard summarizes flag status and rollout exposure before a reviewer opens a specific flag.
 
-![Feature Flags landing page with portfolio charts and rollout bars](docs/images/mockups/02-flags-portfolio-mockup.png)
+![Feature Flags landing page with portfolio charts and rollout bars](docs/images/02-flags-portfolio.jpg)
 
 ### 3. Inspect audience impact
 
 The flag detail view translates the result into decision counts, governance signals, and per-user reasoning.
 
-![Flag simulation detail with decision mix and governance charts](docs/images/mockups/03-flag-simulation-mockup.png)
+![Flag simulation detail with decision mix and governance charts](docs/images/03-flag-simulation.jpg)
 
 ### 4. Preserve the audit trail
 
 Simulation History keeps every verdict searchable and expands each run to show metadata and decision details.
 
-![Expanded Simulation History row with exit code, latency, audience, and decisions](docs/images/mockups/04-simulation-history-mockup.png)
+![Expanded Simulation History row with exit code, latency, audience, and decisions](docs/images/04-simulation-history.jpg)
 
 ### 5. Verify workspace configuration
 
 Settings makes the active data source, deployment environments, and shared authentication model explicit.
 
-![Settings page showing Supabase connection, environments, and authentication](docs/images/mockups/05-settings-mockup.png)
+![Settings page showing Supabase connection, environments, and authentication](docs/images/05-settings.jpg)
 
 ### 6. Use the same contract from the SDK
 
 The SDK asks the same safety question in application code and maps the result directly to process behavior.
 
-![SDK example using FlagClient to gate a deployment](docs/images/mockups/06-sdk-contract-mockup.png)
+![SDK example using FlagClient to gate a deployment](docs/images/06-sdk-contract.jpg)
 
 ### 7. Enforce the decision in CI
 
 The CI gate consumes exit code 1, blocks production, and prevents the risky change from reaching users.
 
-![CI pipeline with the Jikken gate blocking deployment to production](docs/images/mockups/07-ci-gate-mockup.png)
+![CI pipeline with the Jikken gate blocking deployment to production](docs/images/07-ci-gate.jpg)
 
 ## The thesis is executable
 The `tests/integration/coherence.test.ts` suite enforces design consistency through code:
