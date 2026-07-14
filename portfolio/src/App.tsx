@@ -6,7 +6,6 @@ import {
   CircleDot,
   Code2,
   ExternalLink,
-  Flag,
   Github,
   Menu,
   Play,
@@ -45,6 +44,14 @@ const principles = [
 
 function Reveal({ children, className = '' }: { children: ReactNode; className?: string }) {
   return <div className={`reveal ${className}`}>{children}</div>;
+}
+
+function FlagMark({ size = 22 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 256 256" aria-hidden="true">
+      <polyline points="152 224 232 56 40 56 88 104 40 152 186.29 152" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16" />
+    </svg>
+  );
 }
 
 const terminalCommand = 'jikken diff dark-mode --rollout 25';
@@ -204,7 +211,7 @@ function Header() {
   return (
     <header className="site-header">
       <div className="header-inner">
-        <a className="wordmark" href="#top" aria-label="Jikken home"><span className="mark"><Flag size={18} /></span><span>Jikken</span></a>
+        <a className="wordmark" href="#top" aria-label="Jikken home"><span className="mark"><FlagMark /></span><span>Jikken</span></a>
         <nav className={open ? 'nav open' : 'nav'} aria-label="Main navigation">
           {nav.map(([label, href]) => <a key={href} href={href} onClick={() => setOpen(false)}>{label}</a>)}
           <a className="nav-cta" href={PRODUCT_URL} target="_blank" rel="noreferrer">Open product <ExternalLink size={14} /></a>
@@ -320,7 +327,7 @@ function App() {
         </section>
       </main>
 
-      <footer><div className="wrap"><a className="wordmark" href="#top"><span className="mark"><Flag size={18} /></span><span>Jikken</span></a><p>A product engineering and UX systems case study.</p><span>© 2026 Ryan Hanau</span></div></footer>
+      <footer><div className="wrap"><a className="wordmark" href="#top"><span className="mark"><FlagMark /></span><span>Jikken</span></a><p>A product engineering and UX systems case study.</p><span>© 2026 Ryan Hanau</span></div></footer>
       {videoOpen && <VideoModal onClose={() => setVideoOpen(false)} />}
     </div>
   );
