@@ -83,9 +83,10 @@ function MeshBackground() {
       const time = reduceMotion ? .7 : ms * .00042;
       ctx.clearRect(0, 0, width, height);
       const fade = ctx.createLinearGradient(width * .24, 0, width, 0);
-      fade.addColorStop(0, 'rgba(21,128,61,0)');
-      fade.addColorStop(.24, 'rgba(21,128,61,.14)');
-      fade.addColorStop(1, 'rgba(20,83,45,.5)');
+      fade.addColorStop(0, 'rgba(37,99,235,0)');
+      fade.addColorStop(.22, 'rgba(37,99,235,.2)');
+      fade.addColorStop(.62, 'rgba(109,40,217,.42)');
+      fade.addColorStop(1, 'rgba(219,39,119,.58)');
       ctx.strokeStyle = fade;
       ctx.lineWidth = 1;
 
