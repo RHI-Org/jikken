@@ -177,6 +177,7 @@ export function TutorialOverlay() {
   const lastStep = currentIndex === totalSteps - 1;
   const showNext = currentStep.allowNext === true;
   const dimBackground = currentStep.dimBackground !== false;
+  const spotlightVerticalPadding = currentStep.spotlightVerticalPadding ?? 6;
 
   return createPortal(
     <div
@@ -194,11 +195,11 @@ export function TutorialOverlay() {
             boxShadow: dimBackground
               ? '0 0 0 9999px rgba(12, 10, 9, 0.72)'
               : '0 0 0 4px rgba(37, 99, 235, 0.18)',
-            height: anchorBox.height + 12,
+            height: anchorBox.height + spotlightVerticalPadding * 2,
             left: anchorBox.left - 6,
             pointerEvents: 'none',
             position: 'fixed',
-            top: anchorBox.top - 6,
+            top: anchorBox.top - spotlightVerticalPadding,
             transition: reducedMotion ? 'none' : 'all 180ms ease-out',
             width: anchorBox.width + 12,
           }}

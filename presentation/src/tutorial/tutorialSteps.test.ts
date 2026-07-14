@@ -66,5 +66,6 @@ describe('Jikken tutorial contract', () => {
     const visibleSteps = ['ci-verdict', 'complete'];
 
     expect(steps.filter((step) => visibleSteps.includes(step.id)).every((step) => step.dimBackground === false)).toBe(true);
+    expect(steps.find((step) => step.id === 'ci-verdict')?.spotlightVerticalPadding).toBe(2);
   });
 });

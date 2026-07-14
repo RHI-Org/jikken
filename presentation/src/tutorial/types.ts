@@ -22,6 +22,8 @@ export interface TutorialStep {
   researchNote?: string;
   /** Explains a security boundary at the moment it becomes relevant. */
   securityNote?: string;
+  /** Vertical breathing room around the highlighted anchor. Defaults to 6px. */
+  spotlightVerticalPadding?: number;
   nextLabel?: string;
   placement?: TutorialPlacement;
   title: string;
