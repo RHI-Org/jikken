@@ -16,8 +16,8 @@ import {
 } from 'lucide-react';
 
 const PRODUCT_URL = 'https://jk.experienceplus.ai';
-const WALKTHROUGH_URL = 'https://jk.experienceplus.ai/walkthrough';
 const REPO_URL = 'https://github.com/RHI-Org/jikken';
+const WALKTHROUGH_VIDEO = 'https://jk.experienceplus.ai/media/jikken-walkthrough.mp4';
 
 const walkthrough = [
   ['01', 'Catch the conflict', 'The CLI identifies exactly who would lose access and returns exit code 1.', '01-cli-conflict-gradient.jpg'],
@@ -91,6 +91,34 @@ function AnimatedTerminal() {
         <p className={`dim terminal-line ${lines >= 5 ? 'shown' : ''}`}>exit code 1 · sim_49c2eec8</p>
       </div>
     </Reveal>
+  );
+}
+
+function VideoModal({ onClose }: { onClose: () => void }) {
+  useEffect(() => {
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const closeOnEscape = (event: KeyboardEvent) => event.key === 'Escape' && onClose();
+    window.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [onClose]);
+
+  return (
+    <div className="video-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <div className="video-modal" role="dialog" aria-modal="true" aria-labelledby="walkthrough-title">
+        <div className="video-modal-bar">
+          <div><span>Product walkthrough</span><strong id="walkthrough-title">One decision across four surfaces · 83 sec</strong></div>
+          <button type="button" autoFocus onClick={onClose} aria-label="Close walkthrough video"><X size={20} /></button>
+        </div>
+        <video autoPlay controls playsInline preload="metadata" poster="/images/walkthrough-poster.png" aria-label="Narrated Jikken product walkthrough">
+          <source src={WALKTHROUGH_VIDEO} type="video/mp4" />
+          Your browser does not support embedded video.
+        </video>
+      </div>
+    </div>
   );
 }
 
@@ -189,6 +217,7 @@ function Header() {
 }
 
 function App() {
+  const [videoOpen, setVideoOpen] = useState(false);
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => entry.isIntersecting && entry.target.classList.add('visible'));
@@ -214,7 +243,7 @@ function App() {
               <p className="hero-lede">Jikken governs feature-flag changes across CLI, Dashboard, SDK, and CI—so a decision keeps the same meaning everywhere it is read.</p>
               <div className="pills"><span>Seeded engine</span><span>Explainable decisions</span><span>Governed rollout</span></div>
               <div className="actions">
-                <a className="button light" href={WALKTHROUGH_URL} target="_blank" rel="noreferrer"><Play size={17} fill="currentColor" /> Watch the 83-sec walkthrough</a>
+                <button className="button light" type="button" onClick={() => setVideoOpen(true)}><Play size={17} fill="currentColor" /> Watch the 83-sec walkthrough</button>
                 <a className="button ghost" href="#story">Read the case study <ArrowRight size={17} /></a>
               </div>
             </Reveal>
@@ -292,6 +321,7 @@ function App() {
       </main>
 
       <footer><div className="wrap"><a className="wordmark" href="#top"><span className="mark"><Flag size={18} /></span><span>Jikken</span></a><p>A product engineering and UX systems case study.</p><span>© 2026 Ryan Hanau</span></div></footer>
+      {videoOpen && <VideoModal onClose={() => setVideoOpen(false)} />}
     </div>
   );
 }
