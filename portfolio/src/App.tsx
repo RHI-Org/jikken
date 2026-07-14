@@ -78,7 +78,25 @@ function App() {
 
       <main>
         <section className="hero">
-          <div className="hero-art" aria-hidden="true"><div className="signal signal-a" /><div className="signal signal-b" /><div className="signal signal-c" /></div>
+          <div className="hero-art" aria-hidden="true">
+            <div className="mesh-orb">
+              <svg viewBox="0 0 800 800" role="presentation">
+                <defs>
+                  <radialGradient id="mesh-fill" cx="32%" cy="26%" r="72%"><stop offset="0" stopColor="#fef3c7" /><stop offset=".34" stopColor="#86efac" /><stop offset=".7" stopColor="#22c55e" /><stop offset="1" stopColor="#166534" /></radialGradient>
+                  <linearGradient id="mesh-line" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#fff" stopOpacity=".82" /><stop offset=".55" stopColor="#14532d" stopOpacity=".28" /><stop offset="1" stopColor="#052e16" stopOpacity=".7" /></linearGradient>
+                  <clipPath id="mesh-clip"><circle cx="400" cy="400" r="352" /></clipPath>
+                  <filter id="mesh-shadow"><feDropShadow dx="0" dy="34" stdDeviation="28" floodColor="#14532d" floodOpacity=".2" /></filter>
+                </defs>
+                <circle cx="400" cy="400" r="352" fill="url(#mesh-fill)" filter="url(#mesh-shadow)" />
+                <g clipPath="url(#mesh-clip)" fill="none" stroke="url(#mesh-line)" strokeWidth="1.4">
+                  {[80,140,200,260,320,380,440,500,560,620,680,740].map((y,i)=><path key={`h${y}`} d={`M 22 ${y} Q 210 ${y-90+i*8}, 400 ${y+8} T 778 ${y-25}`} />)}
+                  {[70,130,190,250,310,370,430,490,550,610,670,730].map((x,i)=><path key={`v${x}`} d={`M ${x} 20 Q ${x+100-i*7} 210, ${x-4} 400 T ${x+35} 780`} />)}
+                  <ellipse cx="400" cy="400" rx="310" ry="122" /><ellipse cx="400" cy="400" rx="348" ry="225" />
+                </g>
+              </svg>
+            </div>
+            <div className="mesh-glow" />
+          </div>
           <div className="wrap hero-inner">
             <Reveal className="hero-copy">
               <p className="eyebrow">Product engineering · UX systems · 2026</p>
