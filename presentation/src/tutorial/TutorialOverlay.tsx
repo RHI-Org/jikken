@@ -117,6 +117,18 @@ export function TutorialOverlay() {
 
   useEffect(() => {
     if (!active || !autoPlaying || totalSteps === 0) return;
+    // Recording mode hides the first narrative cards, so move through those
+    // setup frames quickly; otherwise Play appears broken for ~17 seconds.
+    // The remaining frames share the balance and the complete run stays 90s.
+    const hiddenSetupSteps = Math.min(3, totalSteps);
+    const setupStepMs = 500;
+    const setupDuration = hiddenSetupSteps * setupStepMs;
+    const remainingSteps = Math.max(1, totalSteps - hiddenSetupSteps);
+    const delay = recordingMode && currentIndex < hiddenSetupSteps
+      ? setupStepMs
+      : recordingMode
+        ? (90_000 - setupDuration) / remainingSteps
+        : 90_000 / totalSteps;
     const timer = window.setTimeout(() => {
       if (currentIndex === totalSteps - 1) {
         setAutoPlaying(false);
@@ -124,9 +136,9 @@ export function TutorialOverlay() {
       } else {
         next();
       }
-    }, 90_000 / totalSteps);
+    }, delay);
     return () => window.clearTimeout(timer);
-  }, [active, autoPlaying, currentIndex, finish, next, totalSteps]);
+  }, [active, autoPlaying, currentIndex, finish, next, recordingMode, totalSteps]);
 
   const measure = useCallback(() => {
     if (!currentStep?.anchor) {
