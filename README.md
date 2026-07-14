@@ -171,5 +171,7 @@ A guided walkthrough shell with the real CLI running in the browser and the real
 ## How this was built
 This project used an AI-native workflow: a written [product spec](docs/planning/2026-07-12-spec) led to an [implementation plan and design review](docs/planning/IMPLEMENTATION_PLAN.md). Claude Code acted as architect, delegating boilerplate to a smaller open model via `scripts/gemma.mjs`. Every delegated artifact was reviewed and typechecked before integration. Total time from spec to deployed product was roughly one working day.
 
+The repository also includes [AI-simulated synthetic UX research](docs/research/AI_SIMULATED_UX_RESEARCH.md) using product, platform-engineering, security, and hiring-reviewer personas. It is explicitly a hypothesis-generating cognitive walkthrough—not real-user research—and includes a prioritized list of possible fixes plus a plan for human validation.
+
 ## Design principles
 Ten principles guide the UX: scannable in 3 seconds; colors functional, not decorative; exit codes are the real product; suggestions beat diagnoses; consistency is the hardest feature; transparent reasoning; explicit role division; intentional restraint; validate before you compute; graceful failure is a feature.
