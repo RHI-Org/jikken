@@ -68,7 +68,7 @@ export function Shell() {
   useEffect(() => {
     if (!tutorial.active) return;
     const step = tutorial.currentStep?.id;
-    if (step === 'welcome') {
+    if (step === 'app-overview') {
       tutorialCliRan.current = false;
       setPanelOpen(true);
       setNotesTab('overview');

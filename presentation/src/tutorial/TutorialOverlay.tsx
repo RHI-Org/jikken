@@ -235,7 +235,7 @@ export function TutorialOverlay() {
       >
         <div style={{ alignItems: 'center', display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
           <span style={{ color: ACCENT_DARK, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-            {currentIndex + 1} of {totalSteps}
+            Step {currentIndex} of {totalSteps - 1}
           </span>
           <button
             aria-label="Exit walkthrough"
@@ -314,7 +314,7 @@ export function TutorialOverlay() {
       </div>
 
       <div aria-live="polite" aria-atomic="true" style={{ height: 1, margin: -1, overflow: 'hidden', padding: 0, position: 'absolute', width: 1, clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' }}>
-        Step {currentIndex + 1} of {totalSteps}: {currentStep.title}
+        Step {currentIndex} of {totalSteps - 1}: {currentStep.title}
       </div>
     </div>,
     document.body,

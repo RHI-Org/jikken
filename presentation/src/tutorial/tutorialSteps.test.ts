@@ -2,10 +2,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { createJikkenTutorialSteps } from './tutorialSteps';
 
 describe('Jikken tutorial contract', () => {
-  it('defines a stable, unique sequence from welcome through completion', () => {
+  it('defines a stable, unique sequence from overview through completion', () => {
     const steps = createJikkenTutorialSteps();
 
-    expect(steps[0].id).toBe('welcome');
+    expect(steps[0].id).toBe('app-overview');
+    expect(steps[1].id).toBe('welcome');
     expect(steps.at(-1)?.id).toBe('complete');
     expect(new Set(steps.map((step) => step.id)).size).toBe(steps.length);
   });
@@ -24,22 +25,24 @@ describe('Jikken tutorial contract', () => {
     expect(steps.some((step) => step.id === 'open-commands')).toBe(false);
   });
 
-  it('prepares the deterministic demo when entering the welcome step', async () => {
+  it('prepares the deterministic demo when entering step zero', async () => {
     const resetDemo = vi.fn();
-    const [welcome] = createJikkenTutorialSteps({ resetDemo });
+    const [overview] = createJikkenTutorialSteps({ resetDemo });
 
-    await welcome.prepare?.();
+    await overview.prepare?.();
 
     expect(resetDemo).toHaveBeenCalledOnce();
   });
 
   it('discloses the synthetic-research basis at the first walkthrough step', () => {
-    const [welcome] = createJikkenTutorialSteps();
+    const [overview] = createJikkenTutorialSteps();
 
-    expect(welcome.researchNote).toContain('AI-simulated synthetic UX research');
-    expect(welcome.researchNote).toContain('rapid multi-persona testing');
-    expect(welcome.researchNote).toContain('v1.1 improvements');
-    expect(welcome.researchNote).not.toContain('not real-user validation');
+    expect(overview.title).toBe('What this app is');
+    expect(String(overview.body)).toContain('feature-flag governance simulator');
+    expect(overview.researchNote).toContain('AI-simulated synthetic UX research');
+    expect(overview.researchNote).toContain('rapid multi-persona testing');
+    expect(overview.researchNote).toContain('v1.1 improvements');
+    expect(overview.researchNote).not.toContain('not real-user validation');
   });
 
   it('explains least-privilege security when the walkthrough reaches CI', () => {

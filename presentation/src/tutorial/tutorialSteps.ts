@@ -25,14 +25,22 @@ export function createJikkenTutorialSteps(
 ): readonly TutorialStep[] {
   return [
     {
-      id: 'welcome',
-      title: 'Catch a risky change before it ships',
-      body: 'Follow one Dark Mode change from the command line to a blocked deployment.',
+      id: 'app-overview',
+      title: 'What this app is',
+      body: 'Jikken is a feature-flag governance simulator. Before a change ships, it shows who gains access, who loses it, and whether policy should allow, hold, or review the rollout. The same decision then carries through the CLI, Dashboard, SDK, and CI gate.',
       researchNote: 'AI-simulated synthetic UX research made rapid multi-persona testing possible, surfaced friction, and turned those hypotheses into the v1.1 improvements you will see in this walkthrough.',
       placement: 'center',
       allowNext: true,
-      nextLabel: 'Start walkthrough',
+      nextLabel: 'See the workflow',
       prepare: preparation.resetDemo,
+    },
+    {
+      id: 'welcome',
+      title: 'Catch a risky change before it ships',
+      body: 'Follow one Dark Mode change from the command line to a blocked deployment.',
+      placement: 'center',
+      allowNext: true,
+      nextLabel: 'Start walkthrough',
     },
     {
       id: 'type-cli-command',
