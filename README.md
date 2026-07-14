@@ -8,7 +8,9 @@ Govern feature-flag changes across CLI, Dashboard, SDK, and CI—preview audienc
 
 See one targeting decision move through the CLI, Dashboard, SDK, and CI gate in this narrated 83-second walkthrough.
 
-[![Watch the narrated Jikken product walkthrough](docs/images/00-video-walkthrough.jpg)](https://jk.experienceplus.ai/walkthrough)
+<a href="https://jk.experienceplus.ai/walkthrough">
+  <img src="docs/images/00-video-walkthrough-native.jpg" alt="Watch the narrated Jikken product walkthrough" width="760">
+</a>
 
 [▶ Watch the walkthrough](https://jk.experienceplus.ai/walkthrough)
 
