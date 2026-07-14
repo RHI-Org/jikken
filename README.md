@@ -41,7 +41,7 @@ The Dashboard summarizes flag status and rollout exposure before a reviewer open
 
 ### 3. Inspect audience impact
 
-The flag detail view translates the result into decision counts, governance signals, and per-user reasoning.
+The flag detail view translates the result into decision counts, governance signals, audience provenance, and per-user reasoning.
 
 ![Flag simulation detail with decision mix and governance charts](docs/images/03-flag-simulation.jpg)
 
@@ -63,11 +63,17 @@ The SDK asks the same safety question in application code and maps the result di
 
 ![SDK example using FlagClient to gate a deployment](docs/images/06-sdk-contract.jpg)
 
-### 7. Enforce the decision in CI
+### 7. Inspect the machine response
+
+The live response exposes the same simulation ID, conflict verdict, exit code, and audience summary without requiring automation to parse presentation text.
+
+![SDK live response showing the shared simulation contract](docs/images/07-sdk-response.jpg)
+
+### 8. Enforce the decision in CI
 
 The CI gate consumes exit code 1, blocks production, and prevents the risky change from reaching users.
 
-![CI pipeline with the Jikken gate blocking deployment to production](docs/images/07-ci-gate.jpg)
+![CI pipeline with the Jikken gate blocking deployment to production](docs/images/08-ci-gate.jpg)
 
 ## The thesis is executable
 The `tests/integration/coherence.test.ts` suite enforces design consistency through code:
