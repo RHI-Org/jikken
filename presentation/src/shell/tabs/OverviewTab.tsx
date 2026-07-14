@@ -69,7 +69,7 @@ export function OverviewTab({
                 <X size={16} />
               </button>
             </div>
-            <video autoPlay controls playsInline preload="metadata" poster="/media/jikken-walkthrough-poster.jpg" style={{ display: 'block', width: '100%', maxHeight: 'calc(92vh - 64px)', aspectRatio: '16 / 9', borderRadius: '0.45rem', background: '#000' }} aria-label="Narrated Jikken product walkthrough">
+            <video autoPlay controls playsInline preload="metadata" poster="/media/jikken-walkthrough-poster.jpg" style={{ display: 'block', width: '100%', maxHeight: 'calc(92vh - 64px)', aspectRatio: '16 / 9', objectFit: 'contain', borderRadius: '0.45rem', background: '#000' }} aria-label="Narrated Jikken product walkthrough">
               <source src="/media/jikken-walkthrough.mp4" type="video/mp4" />
               Your browser does not support embedded video. <a href="/media/jikken-walkthrough.mp4">Open the walkthrough video</a>.
             </video>

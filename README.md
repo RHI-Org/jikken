@@ -8,9 +8,9 @@ Govern feature-flag changes across CLI, Dashboard, SDK, and CI—preview audienc
 
 See one targeting decision move through the CLI, Dashboard, SDK, and CI gate in this narrated 83-second walkthrough.
 
-[![Watch the narrated Jikken product walkthrough](docs/images/00-video-walkthrough.jpg)](presentation/public/media/jikken-walkthrough.mp4)
+[![Watch the narrated Jikken product walkthrough](docs/images/00-video-walkthrough.jpg)](https://jk.experienceplus.ai/walkthrough)
 
-[▶ Watch the walkthrough](presentation/public/media/jikken-walkthrough.mp4)
+[▶ Watch the walkthrough](https://jk.experienceplus.ai/walkthrough)
 
 **Current release: v1.1.0** — an iteration driven by explicitly labeled AI-simulated UX research and followed by full automated verification.
 
