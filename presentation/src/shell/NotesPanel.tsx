@@ -10,17 +10,19 @@ import { OverviewTab } from './tabs/OverviewTab';
 import { DesignTab } from './tabs/DesignTab';
 import { PrinciplesTab } from './tabs/PrinciplesTab';
 import { TechTab } from './tabs/TechTab';
+import { SecurityTab } from './tabs/SecurityTab';
 import { CommandsTab } from './tabs/CommandsTab';
 import type { Principle } from './types';
 import { JikkenMark } from '@/components/JikkenMark';
 
-export type NotesTab = 'overview' | 'details' | 'commands' | 'tech';
+export type NotesTab = 'overview' | 'details' | 'commands' | 'tech' | 'security';
 
 const TABS: { id: NotesTab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
   { id: 'commands', label: 'Commands' },
   { id: 'details', label: 'UX' },
   { id: 'tech', label: 'Tech' },
+  { id: 'security', label: 'Security' },
 ];
 
 // Collapsible section inside the UX tab. Design starts open because it carries
@@ -171,6 +173,7 @@ export function NotesPanel({
           </div>
         )}
         {tab === 'tech' && <TechTab />}
+        {tab === 'security' && <SecurityTab />}
         {tab === 'commands' && (
           <CommandsTab
             features={features}
