@@ -10,6 +10,7 @@
  * Design Principle: Transparent reasoning — every decision explained.
  */
 import { ArrowLeft, ChevronDown, ChevronRight, Copy, Database, Download, RefreshCw } from 'lucide-react';
+import { Warning } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -305,7 +306,19 @@ export default function SimulationView({ simulationResult: providedResult }: Sim
             <div className="text-sm text-gray-600">Included</div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-red-600">{summary.conflicted}</div>
+            <div className="inline-flex items-center justify-center gap-1.5 text-2xl font-bold" style={{ color: COLORS.EXCLUDE.hex }}>
+              {summary.conflicted}
+              {summary.conflicted > 0 && (
+                <span
+                  role="img"
+                  aria-label={`${summary.conflicted} users would lose existing access`}
+                  title={`${summary.conflicted} users would lose existing access`}
+                  className="inline-flex"
+                >
+                  <Warning aria-hidden="true" size={18} weight="fill" />
+                </span>
+              )}
+            </div>
             <div className="text-sm text-gray-600">Excluded</div>
           </div>
           <div>
@@ -372,7 +385,19 @@ export default function SimulationView({ simulationResult: providedResult }: Sim
 
                   <div className="flex items-center space-x-2">
                     <span className={`px-2 py-1 rounded text-xs font-medium ${style.bg} ${style.text}`}>
-                      {DECISION_LABELS[dec.decision]}
+                      <span className="inline-flex items-center gap-1">
+                        {DECISION_LABELS[dec.decision]}
+                        {dec.decision === 'exclude' && (
+                          <span
+                            role="img"
+                            aria-label={`${dec.user_id} would lose existing access`}
+                            title={`${dec.user_id} would lose existing access`}
+                            className="inline-flex"
+                          >
+                            <Warning aria-hidden="true" size={13} weight="fill" />
+                          </span>
+                        )}
+                      </span>
                     </span>
                     {isExpanded ? (
                       <ChevronDown className="w-4 h-4 text-gray-400" />

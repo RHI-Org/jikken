@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@jikken/shared": "*",
+    "@phosphor-icons/react": "^2.1.10",
     "@supabase/supabase-js": "^2.93.2",
     "jspdf": "^4.2.1",
     "lucide-react": "^0.462.0",

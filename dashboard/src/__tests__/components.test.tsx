@@ -164,6 +164,36 @@ describe('SimulationView', () => {
     expect(screen.getByText('Governance signal')).toBeInTheDocument();
   });
 
+  it('flags excluded users as lost access', () => {
+    const conflictResult: SimulationResult = {
+      ...mockResult,
+      result: 'conflict',
+      exit_code: 1,
+      summary: { passed: 22, conflicted: 3, warned: 0, total: 25 },
+      decisions: [
+        ...mockResult.decisions,
+        {
+          user_id: 'user_004',
+          decision: 'exclude',
+          matched_rules: ['email_domain:external.example'],
+          reason: 'User excluded by proposed audience rule',
+          rule_sources: ['flags/dark-mode.json:14'],
+        },
+      ],
+    };
+
+    renderWithRouter(<SimulationView simulationResult={conflictResult} />);
+
+    expect(screen.getByRole('img', { name: '3 users would lose existing access' })).toHaveAttribute(
+      'title',
+      '3 users would lose existing access',
+    );
+    expect(screen.getByRole('img', { name: 'user_004 would lose existing access' })).toHaveAttribute(
+      'title',
+      'user_004 would lose existing access',
+    );
+  });
+
   it('expands decision on click', () => {
     renderWithRouter(<SimulationView simulationResult={mockResult} />);
 
