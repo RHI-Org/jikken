@@ -128,7 +128,23 @@ export function CommandsTab({
           exact same input.
         </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
+        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: '0.7rem', paddingLeft: '1.25rem' }}>
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 16 100"
+            preserveAspectRatio="none"
+            style={{ position: 'absolute', left: 0, top: '0.15rem', width: '0.85rem', height: 'calc(100% - 0.3rem)', overflow: 'visible' }}
+          >
+            <path
+              d="M15 1H9C5 1 4 4 4 9V42C4 47 2 50 0 50C2 50 4 53 4 58V91C4 96 5 99 9 99H15"
+              fill="none"
+              stroke="#2563eb"
+              strokeWidth="1.5"
+              vectorEffect="non-scaling-stroke"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
             <label htmlFor="feature-menu" style={MICRO_LABEL}>Feature</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
