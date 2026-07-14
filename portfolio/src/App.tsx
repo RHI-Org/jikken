@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   ArrowRight,
   Check,
@@ -45,6 +45,81 @@ function Reveal({ children, className = '' }: { children: ReactNode; className?:
   return <div className={`reveal ${className}`}>{children}</div>;
 }
 
+function MeshBackground() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let width = 0;
+    let height = 0;
+    let frame = 0;
+
+    const resize = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      width = canvas.clientWidth;
+      height = canvas.clientHeight;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+
+    const point = (col: number, row: number, time: number) => {
+      const u = col / 22;
+      const v = row / 18;
+      const depth = .2 + v * 1.12;
+      const wave = Math.sin(col * .58 + time) * 23 + Math.cos(row * .7 - time * .72) * 17 + Math.sin((col + row) * .31 + time * .45) * 12;
+      const perspective = .42 + depth * .78;
+      return {
+        x: width * .43 + (u - .28) * width * perspective,
+        y: height * .18 + v * height * .78 + wave * (1 - v * .35) - u * height * .08,
+      };
+    };
+
+    const draw = (ms = 0) => {
+      const time = reduceMotion ? .7 : ms * .00042;
+      ctx.clearRect(0, 0, width, height);
+      const fade = ctx.createLinearGradient(width * .24, 0, width, 0);
+      fade.addColorStop(0, 'rgba(21,128,61,0)');
+      fade.addColorStop(.24, 'rgba(21,128,61,.14)');
+      fade.addColorStop(1, 'rgba(20,83,45,.5)');
+      ctx.strokeStyle = fade;
+      ctx.lineWidth = 1;
+
+      for (let row = 0; row <= 18; row++) {
+        ctx.beginPath();
+        for (let col = 0; col <= 22; col++) {
+          const p = point(col, row, time);
+          col ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y);
+        }
+        ctx.stroke();
+      }
+      for (let col = 0; col <= 22; col++) {
+        ctx.beginPath();
+        for (let row = 0; row <= 18; row++) {
+          const p = point(col, row, time);
+          row ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y);
+        }
+        ctx.stroke();
+      }
+      if (!reduceMotion) frame = requestAnimationFrame(draw);
+    };
+
+    resize();
+    draw();
+    window.addEventListener('resize', resize);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('resize', resize);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="mesh-canvas" aria-hidden="true" />;
+}
+
 function Header() {
   const [open, setOpen] = useState(false);
   const nav = [['Story', '#story'], ['Product', '#product'], ['System', '#system'], ['Principles', '#principles']];
@@ -79,23 +154,8 @@ function App() {
       <main>
         <section className="hero">
           <div className="hero-art" aria-hidden="true">
-            <div className="mesh-orb">
-              <svg viewBox="0 0 800 800" role="presentation">
-                <defs>
-                  <radialGradient id="mesh-fill" cx="32%" cy="26%" r="72%"><stop offset="0" stopColor="#fef3c7" /><stop offset=".34" stopColor="#86efac" /><stop offset=".7" stopColor="#22c55e" /><stop offset="1" stopColor="#166534" /></radialGradient>
-                  <linearGradient id="mesh-line" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#fff" stopOpacity=".82" /><stop offset=".55" stopColor="#14532d" stopOpacity=".28" /><stop offset="1" stopColor="#052e16" stopOpacity=".7" /></linearGradient>
-                  <clipPath id="mesh-clip"><circle cx="400" cy="400" r="352" /></clipPath>
-                  <filter id="mesh-shadow"><feDropShadow dx="0" dy="34" stdDeviation="28" floodColor="#14532d" floodOpacity=".2" /></filter>
-                </defs>
-                <circle cx="400" cy="400" r="352" fill="url(#mesh-fill)" filter="url(#mesh-shadow)" />
-                <g clipPath="url(#mesh-clip)" fill="none" stroke="url(#mesh-line)" strokeWidth="1.4">
-                  {[80,140,200,260,320,380,440,500,560,620,680,740].map((y,i)=><path key={`h${y}`} d={`M 22 ${y} Q 210 ${y-90+i*8}, 400 ${y+8} T 778 ${y-25}`} />)}
-                  {[70,130,190,250,310,370,430,490,550,610,670,730].map((x,i)=><path key={`v${x}`} d={`M ${x} 20 Q ${x+100-i*7} 210, ${x-4} 400 T ${x+35} 780`} />)}
-                  <ellipse cx="400" cy="400" rx="310" ry="122" /><ellipse cx="400" cy="400" rx="348" ry="225" />
-                </g>
-              </svg>
-            </div>
-            <div className="mesh-glow" />
+            <MeshBackground />
+            <div className="mesh-light" />
           </div>
           <div className="wrap hero-inner">
             <Reveal className="hero-copy">

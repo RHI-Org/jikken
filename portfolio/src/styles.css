@@ -14,3 +14,7 @@
 .dark-section{background:#eef2ed;color:#1c1917}.dark-section .section-heading h2{color:#1c1917}.dark-section .section-heading p:last-child,.dark-section .walk-copy p{color:#57534e}.dark-section .product-frame{background:#fff;border:1px solid #d6d3d1;box-shadow:0 25px 55px rgba(28,25,23,.14)}
 .final-cta{background:#dcfce7;color:#14532d}.final-cta:before{width:700px;height:700px;background:radial-gradient(circle,rgba(255,255,255,.9),transparent 66%)}.final-cta h2{color:#1c1917}.final-cta p:not(.eyebrow){color:#3f6212}.final-cta .button.ghost{color:#1c1917;border-color:rgba(28,25,23,.25)}
 @media(max-width:850px){.mesh-orb{width:900px;height:900px;right:-420px;opacity:.62}}@media(max-width:560px){.mesh-orb{right:-520px;opacity:.48}}@media(prefers-reduced-motion:reduce){.mesh-orb,.mesh-orb svg,.mesh-orb g{animation:none}}
+
+/* Full-bleed animated terrain mesh */
+.mesh-orb,.mesh-glow{display:none}.mesh-canvas{position:absolute;inset:0;width:100%;height:100%}.mesh-light{position:absolute;inset:0;background:radial-gradient(ellipse at 78% 52%,rgba(134,239,172,.32),transparent 47%),linear-gradient(90deg,transparent 38%,rgba(255,255,255,.2))}.hero:after{background:linear-gradient(90deg,rgba(245,245,240,.99) 0%,rgba(245,245,240,.94) 35%,rgba(245,245,240,.48) 57%,rgba(245,245,240,.08) 100%)}
+@media(max-width:850px){.mesh-canvas{opacity:.58}.hero:after{background:linear-gradient(90deg,rgba(245,245,240,.98),rgba(245,245,240,.7))}}@media(max-width:560px){.mesh-canvas{opacity:.4}}
