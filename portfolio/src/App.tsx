@@ -178,7 +178,7 @@ function MeshBackground() {
         ctx.beginPath();
         for (let col = 0; col <= 22; col++) {
           const p = point(col, row, time);
-          col ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y);
+          if (col) ctx.lineTo(p.x, p.y); else ctx.moveTo(p.x, p.y);
         }
         ctx.stroke();
       }
@@ -186,7 +186,7 @@ function MeshBackground() {
         ctx.beginPath();
         for (let row = 0; row <= 18; row++) {
           const p = point(col, row, time);
-          row ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y);
+          if (row) ctx.lineTo(p.x, p.y); else ctx.moveTo(p.x, p.y);
         }
         ctx.stroke();
       }
