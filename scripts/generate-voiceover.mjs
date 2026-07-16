@@ -28,10 +28,10 @@ const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN;
 const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || 'pNInz6obpgDQGcFmaJgB';
 const MODEL_ID = 'eleven_multilingual_v2';
 
-// Replicate: MiniMax Speech-02-HD with a trustworthy male narrator voice.
+// Replicate: MiniMax Speech 2.8 HD with a measured male narrator voice.
 // Both knobs overridable via env if the read doesn't fit.
-const REPLICATE_TTS_MODEL = process.env.REPLICATE_TTS_MODEL || 'minimax/speech-02-hd';
-const REPLICATE_TTS_VOICE = process.env.REPLICATE_TTS_VOICE || 'English_Trustworth_Man';
+const REPLICATE_TTS_MODEL = process.env.REPLICATE_TTS_MODEL || 'minimax/speech-2.8-hd';
+const REPLICATE_TTS_VOICE = process.env.REPLICATE_TTS_VOICE || 'English_Insightful_Speaker';
 
 const VIDEO_IN = 'presentation/public/media/jikken-walkthrough.mp4';
 const VIDEO_OUT = 'presentation/public/media/jikken-walkthrough-vo.mp4';

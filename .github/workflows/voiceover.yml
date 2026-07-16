@@ -48,5 +48,5 @@ jobs:
             echo "No video changes - skipping commit."
             exit 0
           fi
-          git commit -m "content: AI voiceover on walkthrough video (ElevenLabs)"
+          git commit -m "content: AI voiceover on walkthrough video (MiniMax TTS)"
           git push origin HEAD:"${GITHUB_REF_NAME}"
