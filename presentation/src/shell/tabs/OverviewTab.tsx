@@ -46,7 +46,7 @@ export function OverviewTab({
           Follow one risky change end to end
         </div>
         <p style={{ margin: '0.35rem 0 0.85rem', fontSize: '0.78rem', lineHeight: 1.55, color: 'var(--portfolio-text-secondary)' }}>
-          Watch the 83-second recording or explore the CLI, Dashboard, SDK, and CI gate yourself.
+          Watch the 82-second recording or explore the CLI, Dashboard, SDK, and CI gate yourself.
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
           <button type="button" onClick={() => setVideoOpen(true)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.7rem 0.6rem', border: 0, borderRadius: '0.45rem', background: '#2563eb', color: '#fff', cursor: 'pointer', fontSize: '0.76rem', fontWeight: 'var(--font-weight-semibold)' }}>
@@ -64,7 +64,7 @@ export function OverviewTab({
         <div role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setVideoOpen(false); }} style={{ position: 'fixed', inset: 0, zIndex: 20_000, display: 'grid', placeItems: 'center', padding: '1.5rem', background: 'rgba(250, 250, 249, 0.88)', backdropFilter: 'blur(8px)' }}>
           <div role="dialog" aria-modal="true" aria-labelledby="walkthrough-video-title" style={{ width: 'min(1100px, 94vw, calc((92vh - 64px) * 353 / 270))', overflow: 'hidden', border: '1px solid var(--portfolio-border)', borderRadius: '0.75rem', background: '#fff', boxShadow: '0 24px 80px rgba(28, 25, 23, 0.24)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', padding: '0.65rem 0.75rem', color: 'var(--portfolio-text-primary)', background: '#fff', borderBottom: '1px solid var(--portfolio-border-muted)' }}>
-              <div id="walkthrough-video-title" style={{ fontSize: '0.85rem', fontWeight: 'var(--font-weight-semibold)' }}>Jikken product walkthrough · 83 sec</div>
+              <div id="walkthrough-video-title" style={{ fontSize: '0.85rem', fontWeight: 'var(--font-weight-semibold)' }}>Jikken product walkthrough · 82 sec</div>
               <button type="button" autoFocus onClick={() => setVideoOpen(false)} aria-label="Close walkthrough video" style={{ display: 'grid', placeItems: 'center', width: 30, height: 30, padding: 0, border: '1px solid var(--portfolio-border)', borderRadius: '0.4rem', background: 'var(--portfolio-bg-card-alt)', color: 'var(--portfolio-text-primary)', cursor: 'pointer' }}>
                 <X size={16} />
               </button>

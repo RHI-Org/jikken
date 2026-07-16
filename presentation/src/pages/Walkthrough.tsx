@@ -20,7 +20,7 @@ export default function Walkthrough() {
 
         <section style={{ maxWidth: 760, marginBottom: '1.75rem' }}>
           <div style={{ color: '#1d4ed8', fontSize: '0.68rem', fontWeight: 'var(--font-weight-bold)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-            Product walkthrough · 83 seconds
+            Product walkthrough · 82 seconds
           </div>
           <h1 style={{ margin: '0.65rem 0 0', fontFamily: 'var(--font-serif)', fontSize: 'clamp(2rem, 5vw, 4rem)', lineHeight: 1.05, letterSpacing: '-0.025em' }}>
             See a risky change before it ships.
