@@ -28,7 +28,7 @@ export function createJikkenTutorialSteps(
       id: 'app-overview',
       title: 'What this app is',
       body: 'Jikken is a feature-flag governance simulator. Before a change ships, it shows who gains access, who loses it, and whether policy should allow, hold, or review the rollout. The same decision then carries through the CLI, Dashboard, SDK, and CI gate.',
-      researchNote: 'AI-simulated synthetic UX research made rapid multi-persona testing possible, surfaced friction, and turned those hypotheses into the v1.1 improvements you will see in this walkthrough.',
+      researchNote: 'AI synthetic UX research made rapid multi-persona testing possible, surfaced friction, and turned those hypotheses into the v1.1 improvements you will see in this walkthrough.',
       placement: 'center',
       allowNext: true,
       nextLabel: 'See the workflow',

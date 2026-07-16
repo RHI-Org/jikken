@@ -39,7 +39,7 @@ describe('Jikken tutorial contract', () => {
 
     expect(overview.title).toBe('What this app is');
     expect(String(overview.body)).toContain('feature-flag governance simulator');
-    expect(overview.researchNote).toContain('AI-simulated synthetic UX research');
+    expect(overview.researchNote).toContain('AI synthetic UX research');
     expect(overview.researchNote).toContain('rapid multi-persona testing');
     expect(overview.researchNote).toContain('v1.1 improvements');
     expect(overview.researchNote).not.toContain('not real-user validation');
