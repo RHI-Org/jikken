@@ -1,0 +1,50 @@
+# Generates the ElevenLabs voiceover and muxes it over the walkthrough video.
+# Manually triggered. Requires the ELEVENLABS_API_KEY repository secret.
+name: Generate walkthrough voiceover
+
+on:
+  workflow_dispatch:
+    inputs:
+      replace:
+        description: 'Overwrite jikken-walkthrough.mp4 with the narrated version'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  voiceover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install ffmpeg binary
+        run: npm install --no-save @ffmpeg-installer/ffmpeg
+
+      - name: Generate voiceover
+        run: node scripts/generate-voiceover.mjs ${{ inputs.replace && '--replace' || '' }}
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+
+      - name: Commit narrated video
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add presentation/public/media/
+          if git diff --cached --quiet; then
+            echo "No video changes - skipping commit."
+            exit 0
+          fi
+          git commit -m "content: AI voiceover on walkthrough video (ElevenLabs)"
+          git push origin HEAD:"${GITHUB_REF_NAME}"
