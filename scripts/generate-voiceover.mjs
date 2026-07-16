@@ -47,7 +47,7 @@ const SEGMENTS = [
   {
     start: 0.8,
     text:
-      'Jikken is a feature-flag governance tool, built to explore how one complex workflow can remain coherent across multiple surfaces.',
+      'Jai-ken is a feature-flag governance tool, built to explore how one complex workflow can remain coherent across multiple surfaces.',
   },
   {
     start: 14,
@@ -72,7 +72,7 @@ const SEGMENTS = [
   {
     start: 66,
     text:
-      'Jikken was designed and built with an AI-native workflow, then refined through synthetic UX research—systems thinking, translated into working software across an entire experience.',
+      'Jai-ken was designed and built with an AI-native workflow, then refined through synthetic UX research—systems thinking, translated into working software across an entire experience.',
   },
 ];
 
