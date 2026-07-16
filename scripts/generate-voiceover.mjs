@@ -41,36 +41,38 @@ const WORK_DIR = '.voiceover-tmp';
 
 // Narration segments and when each should start (seconds into the 82s video).
 // Tune the start times to match the section cuts in the footage.
+// Neutral third-person narration - this is a synthetic voice, so it never
+// speaks as the designer.
 const SEGMENTS = [
   {
     start: 0.8,
     text:
-      'Hi, I’m Ryan, a UX designer and software engineer. I created Jikken to explore how one complex workflow can remain coherent across multiple surfaces.',
+      'Jikken is a feature-flag governance tool, built to explore how one complex workflow can remain coherent across multiple surfaces.',
   },
   {
     start: 14,
     text:
-      'For the CLI, I prioritized ergonomics and fast scanning. Users can quickly understand the impact and act on a clear exit code.',
+      'The CLI prioritizes ergonomics and fast scanning. Users can quickly understand the impact of a change and act on a clear exit code.',
   },
   {
     start: 28,
     text:
-      'In the Dashboard, I used progressive disclosure—showing the decision first, with users, rules, and metadata available when needed.',
+      'The Dashboard uses progressive disclosure—showing the decision first, with users, rules, and metadata available when needed.',
   },
   {
     start: 42,
     text:
-      'The SDK uses the same language and underlying model. Each surface is different, but the user should never have to relearn the system.',
+      'The SDK uses the same language and underlying model. Each surface is different, but the user never has to relearn the system.',
   },
   {
     start: 56,
     text:
-      'The CI gate turns that shared decision into governance by blocking a risky change before it reaches users.',
+      'The CI gate turns that shared decision into governance, blocking a risky change before it reaches users.',
   },
   {
     start: 66,
     text:
-      'I designed and built Jikken using an AI-native workflow, then iterated through synthetic UX research. It demonstrates how I think in systems, translate intent into working software, and refine the result across an entire experience.',
+      'Jikken was designed and built with an AI-native workflow, then refined through synthetic UX research—systems thinking, translated into working software across an entire experience.',
   },
 ];
 
@@ -184,8 +186,8 @@ async function main() {
 
   const ffmpeg = resolveFfmpeg();
 
-  // Mix: original audio ducked to 25%, each narration segment delayed to its
-  // start time, everything mixed into one track alongside the untouched video.
+  // Replace the original audio track entirely: the narration segments,
+  // each delayed to its start time, are the ONLY audio in the output.
   const inputs = ['-i', VIDEO_IN];
   for (const f of files) inputs.push('-i', f);
 
@@ -194,9 +196,8 @@ async function main() {
   );
   const voLabels = SEGMENTS.map((_, i) => `[vo${i}]`).join('');
   const filter = [
-    '[0:a]volume=0.25[bg]',
     ...delays,
-    `[bg]${voLabels}amix=inputs=${SEGMENTS.length + 1}:duration=first:normalize=0[out]`,
+    `${voLabels}amix=inputs=${SEGMENTS.length}:duration=longest:normalize=0[out]`,
   ].join(';');
 
   console.log('Muxing narration over video...');
