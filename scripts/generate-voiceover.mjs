@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 /**
- * Generates an ElevenLabs AI voiceover for the product walkthrough video and
- * muxes it over the existing footage, producing a new narrated version.
+ * Generates an AI voiceover for the product walkthrough video and muxes it
+ * over the existing footage, producing a new narrated version.
+ *
+ * TTS provider: ElevenLabs when ELEVENLABS_API_KEY is set, otherwise
+ * Replicate (MiniMax Speech-02-HD) via REPLICATE_API_TOKEN.
  *
  * Usage:
- *   ELEVENLABS_API_KEY=xxx node scripts/generate-voiceover.mjs [--replace]
+ *   REPLICATE_API_TOKEN=xxx node scripts/generate-voiceover.mjs [--replace]
  *
  * Output: presentation/public/media/jikken-walkthrough-vo.mp4
  * With --replace, the narrated version overwrites jikken-walkthrough.mp4.
@@ -19,11 +22,16 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
+const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN;
 
-// "Adam" - ElevenLabs pre-made male voice (deep, neutral American).
-// Swap for another voice id if the read doesn't fit.
+// ElevenLabs: "Adam" - pre-made deep male American voice.
 const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || 'pNInz6obpgDQGcFmaJgB';
 const MODEL_ID = 'eleven_multilingual_v2';
+
+// Replicate: MiniMax Speech-02-HD with a trustworthy male narrator voice.
+// Both knobs overridable via env if the read doesn't fit.
+const REPLICATE_TTS_MODEL = process.env.REPLICATE_TTS_MODEL || 'minimax/speech-02-hd';
+const REPLICATE_TTS_VOICE = process.env.REPLICATE_TTS_VOICE || 'English_Trustworth_Man';
 
 const VIDEO_IN = 'presentation/public/media/jikken-walkthrough.mp4';
 const VIDEO_OUT = 'presentation/public/media/jikken-walkthrough-vo.mp4';
@@ -64,7 +72,7 @@ const SEGMENTS = [
   },
 ];
 
-async function synthesize(text, outPath) {
+async function synthesizeElevenLabs(text, outPath) {
   const response = await fetch(
     `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}?output_format=mp3_44100_128`,
     {
@@ -89,6 +97,56 @@ async function synthesize(text, outPath) {
   fs.writeFileSync(outPath, Buffer.from(await response.arrayBuffer()));
 }
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function synthesizeReplicate(text, outPath) {
+  const createResponse = await fetch(
+    `https://api.replicate.com/v1/models/${REPLICATE_TTS_MODEL}/predictions`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${REPLICATE_API_TOKEN}`,
+        'Content-Type': 'application/json',
+        Prefer: 'wait=60',
+      },
+      body: JSON.stringify({
+        input: { text, voice_id: REPLICATE_TTS_VOICE, speed: 1, pitch: 0 },
+      }),
+    }
+  );
+
+  let prediction = await createResponse.json();
+  if (!createResponse.ok) {
+    throw new Error(`Replicate TTS failed: ${createResponse.status} - ${JSON.stringify(prediction)}`);
+  }
+
+  const startedAt = Date.now();
+  while (!['succeeded', 'failed', 'canceled'].includes(prediction.status)) {
+    if (Date.now() - startedAt > 5 * 60 * 1000) throw new Error('Replicate TTS timed out');
+    await sleep(3000);
+    const pollResponse = await fetch(prediction.urls.get, {
+      headers: { Authorization: `Bearer ${REPLICATE_API_TOKEN}` },
+    });
+    prediction = await pollResponse.json();
+  }
+
+  if (prediction.status !== 'succeeded') {
+    throw new Error(`Replicate TTS ended "${prediction.status}": ${JSON.stringify(prediction.error)}`);
+  }
+
+  const url = typeof prediction.output === 'string' ? prediction.output : prediction.output?.[0];
+  if (!url) throw new Error(`No audio URL in Replicate output: ${JSON.stringify(prediction.output)}`);
+
+  const audio = await fetch(url);
+  if (!audio.ok) throw new Error(`Audio download failed: ${audio.status}`);
+  fs.writeFileSync(outPath, Buffer.from(await audio.arrayBuffer()));
+}
+
+async function synthesize(text, outPath) {
+  if (ELEVENLABS_API_KEY) return synthesizeElevenLabs(text, outPath);
+  return synthesizeReplicate(text, outPath);
+}
+
 function resolveFfmpeg() {
   try {
     // eslint-disable-next-line no-undef
@@ -101,14 +159,17 @@ function resolveFfmpeg() {
 }
 
 async function main() {
-  if (!ELEVENLABS_API_KEY) {
-    console.error('Error: ELEVENLABS_API_KEY environment variable is not set.');
+  if (!ELEVENLABS_API_KEY && !REPLICATE_API_TOKEN) {
+    console.error('Error: set ELEVENLABS_API_KEY or REPLICATE_API_TOKEN.');
     process.exit(1);
   }
 
   fs.mkdirSync(WORK_DIR, { recursive: true });
 
-  console.log(`Synthesizing ${SEGMENTS.length} narration segments (voice ${VOICE_ID})...`);
+  const provider = ELEVENLABS_API_KEY
+    ? `ElevenLabs (voice ${VOICE_ID})`
+    : `Replicate ${REPLICATE_TTS_MODEL} (voice ${REPLICATE_TTS_VOICE})`;
+  console.log(`Synthesizing ${SEGMENTS.length} narration segments via ${provider}...`);
   const files = [];
   for (let i = 0; i < SEGMENTS.length; i++) {
     const outPath = path.join(WORK_DIR, `seg-${i}.mp3`);
