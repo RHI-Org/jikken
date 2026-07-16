@@ -33,7 +33,9 @@ const MODEL_ID = 'eleven_multilingual_v2';
 const REPLICATE_TTS_MODEL = process.env.REPLICATE_TTS_MODEL || 'minimax/speech-2.8-hd';
 const REPLICATE_TTS_VOICE = process.env.REPLICATE_TTS_VOICE || 'English_Insightful_Speaker';
 
-const VIDEO_IN = 'presentation/public/media/jikken-walkthrough.mp4';
+// Always narrate over the pristine un-narrated source so re-runs never
+// stack voiceovers. --replace overwrites the published file, not the source.
+const VIDEO_IN = 'presentation/public/media/jikken-walkthrough-src.mp4';
 const VIDEO_OUT = 'presentation/public/media/jikken-walkthrough-vo.mp4';
 const WORK_DIR = '.voiceover-tmp';
 
@@ -221,8 +223,9 @@ async function main() {
   );
 
   if (process.argv.includes('--replace')) {
-    fs.renameSync(VIDEO_OUT, VIDEO_IN);
-    console.log(`Replaced ${VIDEO_IN} with the narrated version.`);
+    const published = 'presentation/public/media/jikken-walkthrough.mp4';
+    fs.renameSync(VIDEO_OUT, published);
+    console.log(`Replaced ${published} with the narrated version.`);
   } else {
     console.log(`Wrote ${VIDEO_OUT}`);
   }
