@@ -49,13 +49,13 @@ export function OverviewTab({
           Watch the 82-second recording or explore the CLI, Dashboard, SDK, and CI gate yourself.
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-          <button type="button" onClick={() => setVideoOpen(true)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.7rem 0.6rem', border: 0, borderRadius: '0.45rem', background: '#2563eb', color: '#fff', cursor: 'pointer', fontSize: '0.76rem', fontWeight: 'var(--font-weight-semibold)' }}>
-            <Play size={13} fill="currentColor" />
-            Watch video
-          </button>
           <button type="button" onClick={onStartTutorial} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.7rem 0.6rem', border: '1px solid #93c5fd', borderRadius: '0.45rem', background: '#fff', color: '#1d4ed8', cursor: 'pointer', fontSize: '0.76rem', fontWeight: 'var(--font-weight-semibold)' }}>
             <ArrowRight size={13} />
             Interactive tour
+          </button>
+          <button type="button" onClick={() => setVideoOpen(true)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.7rem 0.6rem', border: 0, borderRadius: '0.45rem', background: '#2563eb', color: '#fff', cursor: 'pointer', fontSize: '0.76rem', fontWeight: 'var(--font-weight-semibold)' }}>
+            <Play size={13} fill="currentColor" />
+            Watch video
           </button>
         </div>
       </section>
