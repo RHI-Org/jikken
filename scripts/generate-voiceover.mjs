@@ -148,13 +148,15 @@ async function synthesize(text, outPath) {
 }
 
 function resolveFfmpeg() {
+  // Prefer the system binary (modern ffmpeg with amix normalize support);
+  // fall back to the npm-packaged build if none is installed.
   try {
-    // eslint-disable-next-line no-undef
+    execFileSync('ffmpeg', ['-version'], { stdio: 'ignore' });
+    return 'ffmpeg';
+  } catch {
     return execFileSync('node', ['-e', "console.log(require('@ffmpeg-installer/ffmpeg').path)"], {
       encoding: 'utf8',
     }).trim();
-  } catch {
-    return 'ffmpeg'; // fall back to a system binary
   }
 }
 

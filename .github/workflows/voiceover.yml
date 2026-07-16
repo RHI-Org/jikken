@@ -29,8 +29,8 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install ffmpeg binary
-        run: npm install --no-save @ffmpeg-installer/ffmpeg
+      - name: Install ffmpeg
+        run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
 
       - name: Generate voiceover
         run: node scripts/generate-voiceover.mjs ${{ inputs.replace && '--replace' || '' }}
