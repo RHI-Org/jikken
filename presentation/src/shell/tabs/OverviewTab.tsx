@@ -70,8 +70,8 @@ export function OverviewTab({
               </button>
             </div>
             <video autoPlay controls playsInline preload="metadata" poster="/media/jikken-walkthrough-poster-upscaled.png" style={{ display: 'block', width: '100%', aspectRatio: '353 / 270', objectFit: 'contain', background: '#fff' }} aria-label="Narrated Jikken product walkthrough">
-              <source src="/media/jikken-walkthrough.mp4?v=2" type="video/mp4" />
-              Your browser does not support embedded video. <a href="/media/jikken-walkthrough.mp4?v=2">Open the walkthrough video</a>.
+              <source src="/media/jikken-walkthrough.mp4?v=3" type="video/mp4" />
+              Your browser does not support embedded video. <a href="/media/jikken-walkthrough.mp4?v=3">Open the walkthrough video</a>.
             </video>
           </div>
         </div>
