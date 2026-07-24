@@ -131,11 +131,11 @@ const Login: React.FC = () => {
               We use limited cookies as described in our Privacy Policy.
             </p>
             <div style={{ fontSize: '0.7rem' }}>
-              <a href="https://www.ryanh.com/terms-and-conditions" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--portfolio-text-subtle)', textDecoration: 'none' }}>
+              <a href="https://www.experienceplus.ai/terms-and-conditions" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--portfolio-text-subtle)', textDecoration: 'none' }}>
                 Terms of Use/Notices
               </a>
               <span style={{ color: 'var(--portfolio-text-faint)', margin: '0 0.6rem' }}>·</span>
-              <a href="https://www.ryanh.com/privacy-policy" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--portfolio-text-subtle)', textDecoration: 'none' }}>
+              <a href="https://www.experienceplus.ai/privacy-policy" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--portfolio-text-subtle)', textDecoration: 'none' }}>
                 Privacy Policy
               </a>
             </div>
