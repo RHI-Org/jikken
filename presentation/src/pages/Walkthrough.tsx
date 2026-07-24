@@ -39,7 +39,7 @@ export default function Walkthrough() {
 
         <footer style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', marginTop: '1.5rem', paddingBottom: '1rem' }}>
           <span style={{ color: 'var(--portfolio-text-muted)', fontSize: '0.78rem' }}>
-            Designed and built by Ryan Hanau
+            Designed and built by Ryan H
           </span>
           <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.65rem 0.9rem', borderRadius: '0.45rem', background: 'var(--portfolio-text-primary)', color: '#fff', fontSize: '0.78rem', fontWeight: 'var(--font-weight-semibold)', textDecoration: 'none' }}>
             Open Jikken

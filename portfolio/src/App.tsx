@@ -273,7 +273,7 @@ function App() {
           <Reveal className="wrap project-role">
             <div><span>Role</span><strong>Product design + engineering</strong></div>
             <div><span>Scope</span><strong>Research, UX systems, frontend, SDK + CI</strong></div>
-            <div><span>Contribution</span><strong>Designed and built end to end by Ryan Hanau</strong></div>
+            <div><span>Contribution</span><strong>Designed and built end to end by Ryan H</strong></div>
           </Reveal>
         </section>
 
