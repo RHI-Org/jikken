@@ -19,14 +19,14 @@ const REPO_URL = 'https://github.com/RHI-Org/jikken';
 const WALKTHROUGH_VIDEO = 'https://jk.experienceplus.ai/media/jikken-walkthrough.mp4';
 
 const walkthrough = [
-  ['01', 'Catch the conflict', 'The CLI identifies exactly who would lose access and returns exit code 1.', '01-cli-conflict-gradient.jpg'],
-  ['02', 'Review the portfolio', 'The Dashboard makes rollout exposure and flag health scannable before a reviewer opens a flag.', '02-flags-portfolio-gradient.jpg'],
-  ['03', 'Inspect audience impact', 'Decision counts, governance signals, provenance, and per-user reasoning share one view.', '03-flag-simulation-gradient.jpg'],
-  ['04', 'Preserve the audit trail', 'Every verdict stays searchable, attributable, and expandable in Simulation History.', '04-simulation-history-gradient.jpg'],
-  ['05', 'Verify the workspace', 'Settings makes the active data source, environments, and authentication model explicit.', '05-settings-gradient.jpg'],
-  ['06', 'Use the same contract', 'The SDK asks the same safety question in application code and maps it to process behavior.', '06-sdk-contract-gradient.jpg'],
-  ['07', 'Read the machine response', 'Automation receives the same simulation ID, verdict, exit code, and audience summary.', '07-sdk-response-gradient.jpg'],
-  ['08', 'Block the risky deploy', 'The CI gate consumes exit code 1 and prevents the change from reaching production.', '08-ci-gate-gradient.jpg'],
+  ['01', 'Catch the conflict', 'The CLI identifies exactly who would lose access and returns exit code 1.', '01-cli-conflict-steel.jpg'],
+  ['02', 'Review the portfolio', 'The Dashboard makes rollout exposure and flag health scannable before a reviewer opens a flag.', '02-flags-portfolio-steel.jpg'],
+  ['03', 'Inspect audience impact', 'Decision counts, governance signals, provenance, and per-user reasoning share one view.', '03-flag-simulation-steel.jpg'],
+  ['04', 'Preserve the audit trail', 'Every verdict stays searchable, attributable, and expandable in Simulation History.', '04-simulation-history-steel.jpg'],
+  ['05', 'Verify the workspace', 'Settings makes the active data source, environments, and authentication model explicit.', '05-settings-steel.jpg'],
+  ['06', 'Use the same contract', 'The SDK asks the same safety question in application code and maps it to process behavior.', '06-sdk-contract-steel.jpg'],
+  ['07', 'Read the machine response', 'Automation receives the same simulation ID, verdict, exit code, and audience summary.', '07-sdk-response-steel.jpg'],
+  ['08', 'Block the risky deploy', 'The CI gate consumes exit code 1 and prevents the change from reaching production.', '08-ci-gate-steel.jpg'],
 ];
 
 const principles = [
