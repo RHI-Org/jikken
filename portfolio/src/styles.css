@@ -75,3 +75,8 @@ footer{background:#08090b}
 .video-modal-bar{background:#12151a}.video-modal-bar strong{color:#f2f2f2}.video-modal-bar button{background:#0e1013;border-color:rgba(255,255,255,.16);color:#e7e5e4}.video-modal-bar button:hover,.video-modal-bar button:focus-visible{background:#1d1531;color:#c4b5fd}
 @media(max-width:850px){.menu{color:#e7e5e4}.nav{background:#0e1013;border-bottom-color:var(--line)}.mesh-canvas{opacity:.5}.hero:after{background:linear-gradient(90deg,rgba(14,16,19,.96),rgba(14,16,19,.7))}.runtime-grid>div:nth-child(2){border-right-color:rgba(255,255,255,.1)}}
 @media(max-width:560px){.runtime-grid>div{border-right-color:rgba(255,255,255,.1)}.runtime-grid>div:last-child{border-bottom-color:rgba(255,255,255,.1)}}
+
+/* rev: footer legal links (canonical RHI policy URLs) */
+.footer-legal{display:flex;gap:18px}
+.footer-legal a{color:#8b8f98;font-size:12px;text-decoration:none;transition:color .2s ease}
+.footer-legal a:hover,.footer-legal a:focus-visible{color:#fff}

@@ -327,7 +327,7 @@ function App() {
         </section>
       </main>
 
-      <footer><div className="wrap"><a className="wordmark" href="#top"><span className="mark"><FlagMark /></span><span>Jikken</span></a><p>A product engineering and UX systems case study.</p><span>© 2026 Ryan Hanau</span></div></footer>
+      <footer><div className="wrap"><a className="wordmark" href="#top"><span className="mark"><FlagMark /></span><span>Jikken</span></a><p>A product engineering and UX systems case study.</p><span>© 2026 Ryan Hanau</span><div className="footer-legal"><a href="https://www.experienceplus.ai/privacy-policy" target="_blank" rel="noreferrer">Privacy Policy</a><a href="https://www.experienceplus.ai/terms-and-conditions" target="_blank" rel="noreferrer">Terms &amp; Conditions</a></div></div></footer>
       {videoOpen && <VideoModal onClose={() => setVideoOpen(false)} />}
     </div>
   );
