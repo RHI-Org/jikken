@@ -10,7 +10,7 @@
  * Design Principle: Transparent reasoning — the audit trail is always visible.
  */
 import { Fragment, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { CheckCircle2, ChevronDown, ChevronRight, Search, ShieldAlert, X, XCircle } from 'lucide-react';
 import type { SimulationResult } from '@jikken/shared';
 import { COLORS, DECISION_LABELS } from '@jikken/shared';

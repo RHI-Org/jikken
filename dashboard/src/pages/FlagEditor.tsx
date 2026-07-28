@@ -9,7 +9,7 @@
  */
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import { Plus, Trash2 } from 'lucide-react';
 import type { AudienceRule, Environment, FlagConfig } from '@jikken/shared';
 import { PATTERNS } from '@jikken/shared';

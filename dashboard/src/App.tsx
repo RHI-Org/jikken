@@ -7,7 +7,7 @@
  * Design Principle: Graceful failure is a feature.
  */
 import { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router';
 import { Toaster } from 'react-hot-toast';
 import FlagList from './pages/FlagList';
 import FlagEditor from './pages/FlagEditor';

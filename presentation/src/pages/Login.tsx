@@ -6,7 +6,7 @@
  * anywhere on .experienceplus.ai, and vice versa — no separate Jikken account.
  */
 import React, { useEffect, useRef, useState } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router';
 import { Lock, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import AsciiAnimation from '@/components/AsciiAnimation';

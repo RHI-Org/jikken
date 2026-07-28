@@ -6,7 +6,7 @@
  * Design Principle: Output scannable in 3 seconds.
  */
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { Search, X } from 'lucide-react';
 import { FEATURES, type FlagConfig } from '@jikken/shared';
 import { flagStore } from '@/store/flagStore';

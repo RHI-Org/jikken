@@ -4,7 +4,7 @@
  * Tests UI behavior, validation, and state management.
  */
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { FlagConfig, SimulationResult } from '@jikken/shared';
 import FlagEditor from '../pages/FlagEditor';

@@ -1,5 +1,5 @@
 import { ArrowRight, Github } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { JikkenMark } from '@/components/JikkenMark';
 
 /** Public, shareable product-film page. Authentication is intentionally not required. */

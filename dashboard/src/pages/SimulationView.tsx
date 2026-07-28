@@ -12,7 +12,7 @@
 import { ArrowLeft, ChevronDown, ChevronRight, Copy, Database, Download } from 'lucide-react';
 import { Warning } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router';
 import toast from 'react-hot-toast';
 import type { SimulationResult } from '@jikken/shared';
 import { COLORS, DECISION_LABELS, FEATURES, SCENARIOS, evaluateFlag, type ScenarioId } from '@jikken/shared';
