@@ -1,0 +1,49 @@
+# Snyk policy file — jikken
+#
+# Every entry below is a Snyk Code (SAST) finding that was triaged against the
+# actual source before being suppressed.
+#
+# Reviewed: 2026-08-27. Expiries are set so each suppression is re-argued
+# rather than inherited.
+version: v1.25.0
+
+ignore:
+  # ── Use of Password Hash With Insufficient Computational Effort (CWE-916) ──
+  #
+  # Location: supabase/functions/jikken-simulate/index.ts — timingSafeKeyMatch()
+  #
+  # The rule fires because a fast hash (SHA-256, via crypto.subtle.digest) is
+  # applied to a credential — the JIKKEN_API_KEY presented in the x-jikken-key
+  # header. Read in context, this is not password hashing at all:
+  #
+  #   - The digest is never stored and never transmitted. Both digests are
+  #     computed in-process, compared byte-by-byte, and discarded when the
+  #     request ends.
+  #   - It is the standard constant-time comparison idiom: hashing both sides
+  #     to a fixed 32-byte digest before comparing means the comparison's
+  #     duration does not leak how much of the key prefix matched. The loop
+  #     runs the full digest length and accumulates with |= rather than
+  #     short-circuiting.
+  #   - CWE-916 is about work factor resisting OFFLINE brute force of a stored
+  #     hash. There is no stored hash here, so there is no offline attack
+  #     surface for a work factor to protect. Substituting bcrypt/scrypt/argon2
+  #     would add per-request latency and defeat the constant-time property
+  #     without removing any real risk.
+  #
+  # The expected key itself is read from a Deno environment secret
+  # (Deno.env.get('JIKKEN_API_KEY')) — it is not hardcoded in the repo.
+  #
+  # This suppression covers ONLY this constant-time comparison. It would NOT
+  # be valid for a fast hash used to derive or persist a stored credential
+  # verifier; that remains a real finding. If timingSafeKeyMatch is ever
+  # changed to store or return the digest, delete this entry and re-triage.
+  'javascript/InsecureHash':
+    - 'supabase/functions/jikken-simulate/index.ts':
+        reason: >-
+          SHA-256 here implements constant-time API-key comparison, not
+          password storage. The digest is computed in-memory, compared, and
+          discarded — never persisted or transmitted — so there is no offline
+          cracking surface for a work factor to defend. A slow KDF would add
+          latency and break the constant-time property without reducing risk.
+        expires: 2027-08-27T00:00:00.000Z
+        created: 2026-08-27T00:00:00.000Z
