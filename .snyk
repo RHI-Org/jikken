@@ -1,0 +1,31 @@
+# Snyk (https://snyk.io) policy file
+version: v1.25.0
+ignore:
+  javascript/HardcodedNonCryptoSecret:
+    - presentation/.env.production:
+        reason: >-
+          Value is a Supabase publishable/anon key (sb_publishable_...), not a
+          secret — it is designed to ship in client-side bundles. The security
+          boundary for this project is Postgres Row-Level Security, not
+          concealment of this key. Verified no service_role key or other
+          credential is present in this file.
+        expires: 2027-08-27T00:00:00.000Z
+    - presentation/.env.example:
+        reason: >-
+          Same public Supabase publishable/anon key as presentation/.env.production,
+          committed as the example value for local setup. Safe by design.
+        expires: 2027-08-27T00:00:00.000Z
+    - dashboard/.env.production:
+        reason: >-
+          Value is a Supabase publishable/anon key (sb_publishable_...), not a
+          secret — it is designed to ship in client-side bundles. The security
+          boundary for this project is Postgres Row-Level Security, not
+          concealment of this key. Verified no service_role key or other
+          credential is present in this file.
+        expires: 2027-08-27T00:00:00.000Z
+    - dashboard/.env.example:
+        reason: >-
+          Same public Supabase publishable/anon key as dashboard/.env.production,
+          committed as the example value for local setup. Safe by design.
+        expires: 2027-08-27T00:00:00.000Z
+patch: {}
