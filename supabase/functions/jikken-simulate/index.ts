@@ -10,7 +10,7 @@
  *  - `x-jikken-key` header matching the JIKKEN_API_KEY secret (SDK / CI), or
  *  - a valid Supabase user JWT in Authorization (browser callers).
  */
-import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { createClient } from 'npm:@supabase/supabase-js@2.106.2';
 import { evaluateFlag } from './engine.ts';
 import { SCENARIOS } from './scenarios.ts';
 import type { ScenarioId } from './scenarios.ts';
