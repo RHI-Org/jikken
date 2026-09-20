@@ -20,12 +20,12 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: true
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: '20'
 
@@ -33,8 +33,13 @@ jobs:
         run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
 
       - name: Generate voiceover
-        run: node scripts/generate-voiceover.mjs ${{ inputs.replace && '--replace' || '' }}
+        # The flag goes through env rather than straight into the shell line:
+        # expression output in a run: step is an injection surface, and this
+        # keeps the input as data. Unquoted on purpose so an empty value passes
+        # no argument at all.
+        run: node scripts/generate-voiceover.mjs $REPLACE_FLAG
         env:
+          REPLACE_FLAG: ${{ inputs.replace && '--replace' || '' }}
           # ElevenLabs preferred if its key exists; otherwise Replicate TTS
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
           REPLICATE_API_TOKEN: ${{ secrets.REPLICATE_TOKEN }}
